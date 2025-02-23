@@ -1,0 +1,18 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <form action="/expense/delete/<%= expense._id %>" method="POST">
+            <h2>Delete Expense</h2>
+            <p>Are you sure you want to delete the expense "<strong><%= expense.Name %></strong>"?</p>
+            <p>This action cannot be undone.</p>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-danger">Delete</button>
+                <a href="/expense" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

@@ -1,0 +1,34 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Update Group</h2>
+        <form action="/group/update/<%= group._id %>" method="POST">
+            <div class="form-group">
+                <label for="Name">Group Name:</label>
+                <input type="text" id="Name" name="Name" value="<%= group.Name %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Description">Description:</label>
+                <textarea id="Description" name="Description" required><%= group.Description %></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="Community">Community:</label>
+                <select id="Community" name="Community" required>
+                    <% communities.forEach(community => { %>
+                        <option value="<%= community._id %>" <%= group.Community._id.toString() === community._id.toString() ? 'selected' : '' %>><%= community.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit">Update</button>
+                <a href="/group" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

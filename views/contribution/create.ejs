@@ -1,0 +1,38 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    <div class="detail-ui content">
+        <h2>New Contribution</h2>
+        <form action="/contribution" method="POST">
+            <div class="form-group">
+                <label for="Name">Name:</label>
+                <input type="text" id="Name" name="Name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Amount">Amount:</label>
+                <input type="number" id="Amount" name="Amount" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Group">Group:</label>
+                <select id="Group" name="Group" required>
+                    <% groups.forEach(group => { %>
+                        <option value="<%= group._id %>"><%= group.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="DueDate">Due Date:</label>
+                <input type="date" id="DueDate" name="DueDate" required>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit">Create</button>
+                <a href="/contribution" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

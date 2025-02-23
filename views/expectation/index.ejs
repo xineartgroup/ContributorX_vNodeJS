@@ -1,0 +1,55 @@
+<%- include('../partials/header.ejs') %>
+    <body>
+        <%- include('../partials/nav.ejs') %>
+        
+        <div class="table-container">
+            <h2>All Expectations</h2>
+            <% if (expectations.length > 0) { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Contributor</th>
+                            <th>Contribution</th>
+                            <th>Amount Paid</th>
+                            <th>Amount To Approve</th>
+                            <th>Payment Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% expectations.forEach(expectation => { %>
+                            <tr>
+                                <td><a href="/expectation/edit/<%= expectation._id %>"><%= expectation.Contributor.UserName %></a></td>
+                                <td><%= expectation.Contribution.Name %></td>
+                                <td><%= expectation.AmountPaid.toLocaleString() %></td>
+                                <td><%= expectation.AmountToApprove.toLocaleString() %></td>
+                                <td><%= expectation.PaymentStatus %></td>
+                                <td>
+                                    <a href="/expectation/delete/<%= expectation._id %>">Delete</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+        <div class="pagination">
+            <% if (currentPage > 1) { %>
+                <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+            <% } %>
+        
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+        
+            <% if (currentPage < totalPages) { %>
+                <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+            <% } %>
+        </div>
+        <div class="row pb-3">
+            <div class="col-6 text-end">
+                <a href="/expectation/create" class="btn">Create Expectation</a>
+            </div>
+        </div>
+    </body>
+    <%- include('../partials/footer.ejs') %>

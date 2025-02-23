@@ -1,0 +1,20 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2><%= title %></h2>
+        <form action="/contributor/delete/<%= contributor._id %>" method="POST">
+            <p>Are you sure you want to delete "<%= contributor.UserName %>"?</p>
+            <div class="form-buttons">
+                <button type="submit">Delete</button>
+                <a href="/contributor" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+<%- include('../partials/footer.ejs') %>
+</html>

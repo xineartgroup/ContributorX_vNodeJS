@@ -1,0 +1,22 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2><%= title %></h2>
+        <form action="/community/update/<%= community._id %>" method="POST">
+            <label for="Name">Community Name:</label>
+            <input type="text" id="Name" name="Name" value="<%= community.Name %>" required>
+
+            <label for="Description">Description:</label>
+            <textarea id="Description" name="Description" required><%= community.Description %></textarea>
+
+            <div class="form-buttons">
+                <button type="submit">Update</button>
+                <a href="/community" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

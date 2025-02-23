@@ -1,0 +1,177 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    
+    <div class="detail-ui content">
+        <h2><%= title %></h2>
+        <form action="/contributor" method="GET">
+
+            <div class="form-group">
+                <label for="UserName">Username:</label>
+                <span id="UserName"><%= contributor.UserName %> (<%= contributor.Role %>)</span>
+            </div>
+    
+            <div class="form-group">
+                <label for="FullName">Name:</label>
+                <span id="FullName"><%= contributor.FirstName %> <%= contributor.LastName %></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="Email">Email:</label>
+                <span id="Email"><%= contributor.Email %></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="PhoneNumber">Phone Number:</label>
+                <span id="PhoneNumber"><%= contributor.PhoneNumber %></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="IsActive">Status:</label>
+                <select id="IsActive" name="IsActive">
+                    <option value="true" <%= contributor.IsActive ? 'selected' : '' %>>Active</option>
+                    <option value="false" <%= !contributor.IsActive ? 'selected' : '' %>>Inactive</option>
+                </select>
+            </div>
+    
+            <div class="form-group-inline">
+                <select id="dropdownGroups" name="dropdownGroups">
+                    <option value="">--Select--</option>
+                    <% groups.forEach(group => { %>
+                        <option value="<%= group._id %>"><%= group.Name %></option>
+                    <% }) %>
+                </select>
+    
+                <input type="button" value="Add" onclick="addGroup()" class="btn btn-outline-primary" />
+            </div>
+
+            <div class="col-sm-10 pb-3">
+                <% if (groupings.Count > 0) { %>
+                    <table id="selectedOptionTable" class="table">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <% groupings.forEach (item => { %>
+                            <% if (item.Group != null) { %>
+                                <tr>
+                                    <td>
+                                        <% item.Group.Name %>
+                                    </td>
+                                    <td>
+                                        <input type="button" value="Remove" onclick="removeGroup('<%= item.Group.Name %>')" class="btn btn-outline-primary btn-sm" />
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <tr>
+                                    <td>
+                                        --Something's wrong--
+                                    </td>
+                                    <td>
+                                        --Something's wrong--
+                                    </td>
+                                </tr>
+                            <% } %>
+                        <% }) %>
+                    </table>
+                <% } else { %>
+                    <table id="selectedOptionTable" class="table">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                <% } %>
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" onclick="contributorUpdate('<%= contributor._id %>')">Update</button>
+                <a href="/contributor" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <script>
+        function addGroup()
+        {
+            var table = document.getElementById("selectedOptionTable");
+
+            var e = document.getElementById("dropdownGroups");
+            var text = e.options[e.selectedIndex].text;
+
+            var found = false;
+
+            for (var i = 0; i < table.rows.length; i++)
+            {
+                var optionText = table.rows[i].cells[0].innerText;
+                if (optionText == text)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (text != '--Select--' && !found)
+            {
+                if (table.rows[0].cells[0].innerText === "There are no groups attached to this contributor") {
+                    table.rows[0].cells[0].innerHTML = '<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>';
+                }
+                else {
+                    $('#selectedOptionTable').append('<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>');
+                }
+            }
+        }
+
+        function removeGroup(text)
+        {
+            var table = document.getElementById("selectedOptionTable");
+
+            for (var i = 0; i < table.rows.length; i++)
+            {
+                var optionText = table.rows[i].cells[0].innerText;
+                if (optionText == text)
+                {
+                    table.deleteRow(i);
+                    break;
+                }
+            }
+
+            if (table.rows.length == 0) {
+                $('#selectedOptionTable').append('There are no groups attached to this contributor');
+            }
+        }
+
+        function contributorUpdate(id)
+        {
+            var table = document.getElementById("selectedOptionTable");
+            var groupsText = [];
+
+            for (var i = 0; i < table.rows.length; i++) {
+                var optionText = table.rows[i].cells[0].innerText.trim();
+                if (optionText) {
+                    groupsText.push(optionText);
+                }
+            }
+
+            $.ajax({
+                url: '/contributor/update1',
+                type: 'POST', // Changed from GET to POST
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ groups: groupsText, id: id }),
+                success: function (response) {
+                    alert(response.message);
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert("Error updating contributor. " + error + " " + xhr.responseText);
+                }
+            });
+
+            window.location.replace('/contributor');
+        }
+
+    </script>
+</body>
+<%- include('../partials/footer.ejs') %>
+</html>

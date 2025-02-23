@@ -1,0 +1,44 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>New Expense</h2>
+        <form action="/expense" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="Name">Expense Name:</label>
+            <input type="text" id="Name" name="Name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Description">Description:</label>
+            <textarea id="Description" name="Description" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="AmountPaid">Amount Paid:</label>
+            <input type="number" id="AmountPaid" name="AmountPaid" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Community">Community:</label>
+            <select id="Community" name="Community" required>
+                <% communities.forEach(community => { %>
+                    <option value="<%= community._id %>"><%= community.Name %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="PaymentReciept">Upload Receipt:</label>
+            <input type="file" id="PaymentReciept" name="PaymentReciept" required>
+        </div>
+
+        <div class="form-buttons">
+            <button type="submit">Create</button>
+            <a href="/expense" class="cancel-button">Cancel</a>
+        </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

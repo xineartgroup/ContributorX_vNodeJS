@@ -1,0 +1,54 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    <div class="table-container">
+        <h2>All Contributions</h2>
+        <% if (contributions.length > 0) { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Group</th>
+                        <th>Due Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% contributions.forEach(contribution => { %>
+                        <tr>
+                            <td><a href="/contribution/update/<%= contribution._id %>"><%= contribution.Name %></a></td>
+                            <td><%= contribution.Amount %></td>
+                            <td><%= contribution.Group.Name %></td>
+                            <td><%= new Date(contribution.DueDate).toLocaleDateString() %></td>
+                            <td>
+                                <a class="delete" href="/contribution/delete/<%= contribution._id %>">
+                                    <img src="/images/delete-icon.png" alt="Delete" width="20">
+                                </a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+        <% } %>
+    
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+    
+        <% if (currentPage < totalPages) { %>
+            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+        <% } %>
+    </div>
+    <div class="row pb-3">
+        <div class="col-6 text-end">
+            <a href="/contribution/create" class="btn">Create Contribution</a>
+        </div>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

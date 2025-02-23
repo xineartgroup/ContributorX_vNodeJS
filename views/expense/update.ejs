@@ -1,0 +1,45 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Update Expense</h2>
+        <form action="/expense/update/<%= expense._id %>" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="Name">Expense Name:</label>
+                <input type="text" id="Name" name="Name" value="<%= expense.Name %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Description">Description:</label>
+                <textarea id="Description" name="Description" required><%= expense.Description %></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="AmountPaid">Amount Paid:</label>
+                <input type="number" id="AmountPaid" name="AmountPaid" value="<%= expense.AmountPaid %>" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Community">Community:</label>
+                <select id="Community" name="Community" required>
+                    <% communities.forEach(community => { %>
+                        <option value="<%= community._id %>" <%= expense.Community._id.toString() === community._id.toString() ? 'selected' : '' %>><%= community.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PaymentReciept">Receipt (optional):</label>
+                <input type="file" id="PaymentReciept" name="PaymentReciept">
+                <p><a href="<%= expense.PaymentReciept %>" target="_blank">ViewCurrent Receipt</a></p>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit">Update</button>
+                <a href="/expense" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

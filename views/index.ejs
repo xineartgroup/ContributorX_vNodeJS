@@ -1,0 +1,89 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('./partials/header.ejs') %>
+<body>
+    <%- include('./partials/nav.ejs') %>
+
+    <div class="table-container">
+        <h2 class="text-white">Welcome</h2>
+        
+        <% if (sessionData.contributor) { %>
+        
+            <% if (expectations.length > 0) { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Bill/Pledge</th>
+                            <th>Amount Paid</th>
+                            <th>Amount Owed</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% let totalPaid = 0; %>
+                        <% let totalOutstanding = 0; %>
+                        <% let contributorId = 0; %>
+                        
+                        <% expectations.forEach(item => { %>
+                            <% if (contributorId === 0) contributorId = item.Contributor; %>
+                            <% if (item.Contribution) { %>
+                                <tr>
+                                    <td><%= item.Contribution.Name %></td>
+                                    <td><%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
+                                    <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
+                                    <td>
+                                        <% if (item.PaymentStatus === 1) { %>
+                                            <label class="control-label pt-2" style="font-size:18px;">
+                                                Awaiting Approval of <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
+                                            </label>
+                                        <% } else if (item.PaymentStatus !== 2) { %>
+                                            <% totalPaid += item.AmountPaid; %>
+                                            <% totalOutstanding += (item.Contribution.Amount - item.AmountPaid); %>
+                                            <a class="btn btn-success form-control" href="/expectation/ExpectationPayment/<%= item._id %>">
+                                                Pay
+                                            </a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            <% } %>
+                        <% }); %>
+                        
+                        <% if (totalOutstanding > 0) { %>
+                            <tr>
+                                <td><b>Total</b></td>
+                                <td><b><%= totalPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
+                                <td><b><%= totalOutstanding.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
+                                <td>
+                                    <a class="btn btn-success form-control" href="/expectation/ExpectationsPayment/<%= contributorId %>">
+                                        Pay All
+                                    </a>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            There are no expectations for this contributor
+                        </tr>
+                    </tbody>
+                </table>
+            <% } %>
+        
+        <% } %>
+    </div>
+</body>
+<%- include('./partials/footer.ejs') %>
+</html>

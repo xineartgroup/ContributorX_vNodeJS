@@ -1,0 +1,58 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="table-container">
+        <h2>All Communities</h2>
+        <% if (communities.length > 0) { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Date Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% communities.forEach(community => { %>
+                        <tr>
+                            <td>
+                                <a href="/community/update/<%= community._id %>">
+                                    <%= community.Name %>
+                                </a>
+                            </td>
+                            <td><%= community.Description %></td>
+                            <td><%= community.DateCreated.toLocaleDateString() %></td>
+                            <td>
+                                <a class="delete" href="/community/delete/<%= community._id %>">
+                                    <img src="/images/delete-icon.png" alt="Delete" width="20" height="20">
+                                </a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+        <% } %>
+    
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+    
+        <% if (currentPage < totalPages) { %>
+            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+        <% } %>
+    </div>
+    <div class="row pb-3">
+        <div class="col-6 text-end">
+            <a href="/community/create" class="btn">Create Community</a>
+        </div>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

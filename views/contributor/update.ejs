@@ -1,0 +1,78 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Update Contributor</h2>
+        <form action="/contributor/update/<%= contributor._id %>" method="POST">
+            <div class="form-group">
+                <label for="UserName">Username:</label>
+                <input type="text" id="UserName" name="UserName" value="<%= contributor.UserName %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="FirstName">First Name:</label>
+                <input type="text" id="FirstName" name="FirstName" value="<%= contributor.FirstName %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="LastName">Last Name:</label>
+                <input type="text" id="LastName" name="LastName" value="<%= contributor.LastName %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Email">Email:</label>
+                <input type="text" id="Email" name="Email" value="<%= contributor.Email %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Role">Role:</label>
+                <select id="Role" name="Role" value="<%= contributor.Role %>" required>
+                    <option value="">--Select--</option>
+                    <option value="Administrator" <%= contributor.Role === "Administrator" ? 'selected' : '' %>>Administrator</option>
+                    <option value="Contributor" <%= contributor.Role === "Contributor" ? 'selected' : '' %>>Contributor</option>
+                    <option value="Observer" <%= contributor.Role === "Observer" ? 'selected' : '' %>>Observer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PhoneNumber">Phone Number:</label>
+                <input type="text" id="PhoneNumber" name="PhoneNumber" value="<%= contributor.PhoneNumber %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Picture">Picture ID:</label>
+                <input type="number" id="Picture" name="Picture" value="<%= contributor.Picture %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Community">Community:</label>
+                <select id="Community" name="Community" required>
+                    <% communities.forEach(community => { %>
+                        <option value="<%= community._id %>" <%= contributor.Community._id.toString() === community._id.toString() ? 'selected' : '' %>><%= community.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="IsActive">Status:</label>
+                <select id="IsActive" name="IsActive">
+                    <option value="true" <%= contributor.IsActive ? 'selected' : '' %>>Yes</option>
+                    <option value="false" <%= !contributor.IsActive ? 'selected' : '' %>>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <div class="form-buttons">
+                    <button type="submit">Update</button>
+                    <a href="/contributor" class="cancel-button">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+<%- include('../partials/footer.ejs') %>
+</html>

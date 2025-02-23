@@ -1,0 +1,82 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    
+    <div class="detail-ui content">
+        <h2><%= title %></h2>
+        <form action="/contributor" method="POST">
+            <div class="form-group">
+                <label for="UserName">Username:</label>
+                <input type="text" id="UserName" name="UserName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Password">Password:</label>
+                <input type="text" id="Password" name="Password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="FirstName">First Name:</label>
+                <input type="text" id="FirstName" name="FirstName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="LastName">Last Name:</label>
+                <input type="text" id="LastName" name="LastName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Email">Email:</label>
+                <input type="text" id="Email" name="Email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Role">Role:</label>
+                <select id="Role" name="Role" required>
+                    <option value="">--Select--</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Contributor">Contributor</option>
+                    <option value="Observer">Observer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PhoneNumber">Phone Number:</label>
+                <input type="text" id="PhoneNumber" name="PhoneNumber" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Picture">Picture ID:</label>
+                <input type="number" id="Picture" name="Picture" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Community">Community:</label>
+                <select id="Community" name="Community" required>
+                    <% communities.forEach(community => { %>
+                        <option value="<%= community._id %>"><%= community.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="IsActive">Active:</label>
+                <select id="IsActive" name="IsActive">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+
+            <!--<label for="StartDate">Start Date:</label>
+            <input type="date" id="StartDate" name="StartDate">-->
+
+            <div class="form-buttons">
+                <button type="submit">Create</button>
+                <a href="/contributor" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>
+</html>

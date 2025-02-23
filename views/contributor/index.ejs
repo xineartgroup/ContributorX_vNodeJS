@@ -1,0 +1,147 @@
+<html xmlns="http://xineartsolutions.com">
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    
+    <div class="table-container">
+        <h2>All Contributors</h2>
+        <% if (contributors.length > 0) { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Date Registered</th>
+                            <th>Status</th>
+                            <th>Amount Owed</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% contributors.forEach(contributor => { %>
+                            <tr>
+                                <td>
+                                    <a href="/contributor/detail/<%= contributor._id %>"</a>
+                                        <%= contributor.UserName %>
+                                    </a>
+                                </td>
+                                <td><%= contributor.FirstName %> <%= contributor.LastName %></td>
+                                <td><%= contributor.Email %></td>
+                                <td><%= contributor.PhoneNumber %></td>
+                                <td><%= contributor.StartDate.toLocaleString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}) %></td>
+                                <td><%= contributor.IsActive ? "Active" : "Inactive" %></td>
+                                <td></td>
+                                <td>
+                                    <a class="delete" href="/contributor/delete/<%= contributor._id %>">
+                                        <img src="/images/delete-icon.png" alt="Delete" width="20" height="20">
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+        <% } %>
+    </div>
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+        <% } %>
+    
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+    
+        <% if (currentPage < totalPages) { %>
+            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+        <% } %>
+    </div>
+    <div class="row pb-3">
+        <div class="col-6 text-end">
+            <a href="/contributor/create" class="btn">Create Contributor</a>
+        </div>
+    </div>
+    <script>
+        function addGroup()
+        {
+            var table = document.getElementById("selectedOptionTable");
+
+            var e = document.getElementById("dropdownGroups");
+            var text = e.options[e.selectedIndex].text;
+
+            var found = false;
+
+            for (var i = 0; i < table.rows.length; i++)
+            {
+                var optionText = table.rows[i].cells[0].innerText;
+                if (optionText == text)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (text != '--Select--' && !found)
+            {
+                if (table.rows[0].cells[0].innerText === "There are no groups attached to this contributor") {
+                    table.rows[0].cells[0].innerHTML = '<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>';
+                }
+                else {
+                    $('#selectedOptionTable').append('<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>');
+                }
+            }
+        }
+
+        function removeGroup(text)
+        {
+            var table = document.getElementById("selectedOptionTable");
+
+            for (var i = 0; i < table.rows.length; i++)
+            {
+                var optionText = table.rows[i].cells[0].innerText;
+                if (optionText == text)
+                {
+                    table.deleteRow(i);
+                    break;
+                }
+            }
+
+            if (table.rows.length == 0) {
+                $('#selectedOptionTable').append('There are no groups attached to this contributor');
+            }
+        }
+
+        function contributorUpdate(id)
+        {
+            var table = document.getElementById("selectedOptionTable");
+
+            var groupsText = "";
+                    
+            for (var i = 0; i < table.rows.length; i++)
+            {
+                var optionText = table.rows[i].cells[0].innerText;
+                groupsText = groupsText + "," + optionText;
+            }
+
+            $.ajax({
+                url: '/Contributor/ContributorUpdate1',
+                type: 'GET',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                mimeType: 'text/html',
+                data: { groups: groupsText, id: id },
+                success: function (returnValue) {
+                    alert(returnValue);
+                }
+            });
+
+            var strJSON = '@ViewData["groupingsJson"]';
+            const json_data = JSON.parse(strJSON);
+
+            document.getElementById("divGroup").innerHTML = '@AddGroup()';
+        }
+    </script>
+</body>
+<%- include('../partials/footer.ejs') %>
+</html>

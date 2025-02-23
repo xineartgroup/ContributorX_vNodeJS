@@ -1,0 +1,59 @@
+<%- include('../partials/header.ejs') %>
+    <body>
+        <%- include('../partials/nav.ejs') %>
+        
+        <div class="table-container">
+            <h2>All Expenses</h2>
+            <% if (expenses.length > 0) { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Amount Paid</th>
+                            <th>Community</th>
+                            <th>Date Created</th>
+                            <th>Payment Receipt</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% expenses.forEach(expense => { %>
+                            <tr>
+                                <td><a href="/expense/update/<%= expense._id %>"><%= expense.Name %></a></td>
+                                <td><%= expense.Description %></td>
+                                <td>$<%= expense.AmountPaid.toFixed(2) %></td>
+                                <td><%= expense.Community.Name %></td>
+                                <td><%= expense.DateCreated.toLocaleDateString() %></td>
+                                <td><a href="<%= expense.PaymentReciept %>" target="_blank">View Receipt</a></td>
+                                <td>
+                                    <a class="delete" href="/expense/delete/<%= expense._id %>">
+                                        <img src="/images/delete-icon.png" alt="Delete" width="20">
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+        <div class="pagination">
+            <% if (currentPage > 1) { %>
+                <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+            <% } %>
+        
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+        
+            <% if (currentPage < totalPages) { %>
+                <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+            <% } %>
+        </div>
+        <div class="row pb-3">
+            <div class="col-6 text-end">
+                <a href="/expense/create" class="btn">Create Expense</a>
+            </div>
+        </div>
+    </body>
+    <%- include('../partials/footer.ejs') %>

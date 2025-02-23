@@ -1,0 +1,18 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <form action="/group/delete/<%= group._id %>" method="POST">
+            <h2>Delete Group</h2>
+            <p>Are you sure you want to delete the group "<strong><%= group.Name %></strong>"?</p>
+            <p>This action cannot be undone.</p>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-danger">Delete</button>
+                <a href="/group" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>

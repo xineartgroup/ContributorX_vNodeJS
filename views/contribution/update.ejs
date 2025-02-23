@@ -1,0 +1,39 @@
+<%- include('../partials/header.ejs') %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Update Contribution</h2>
+        <form action="/contribution/update/<%= contribution._id %>" method="POST">
+            <div class="form-group">
+                <label for="Name">Contribution Name:</label>
+                <input type="text" id="Name" name="Name" value="<%= contribution.Name %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Amount">Amount:</label>
+                <input type="number" id="Amount" name="Amount" value="<%= contribution.Amount %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Group">Group:</label>
+                <select id="Group" name="Group" required>
+                    <% groups.forEach(group => { %>
+                        <option value="<%= group._id %>" <%= contribution.Group._id.toString() === group._id.toString() ? 'selected' : '' %>><%= group.Name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="DueDate">Due Date:</label>
+                <input type="date" id="DueDate" name="DueDate" value="<%= contribution.DueDate.toISOString().split('T')[0] %>" required>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit">Update</button>
+                <a href="/contribution" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+<%- include('../partials/footer.ejs') %>
