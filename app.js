@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const session = require('express-session');
 
@@ -29,6 +30,7 @@ app.set('views', 'views');
 
 app.use(express.json());
 app.use(express.static('public')); //all static files in 'public' folder will be accessible to the app
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploads directory
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
@@ -59,8 +61,6 @@ app.get('/', async (req, res) => { // Add 'async' to the function
 
         // Await the query to get the actual array
         const expectations = await Expectation.find({ Contributor: contributor }).populate('Contributor Contribution');
-
-        console.log("Number of expectations:", expectations.length); // Debugging output
 
         res.render('index', { title: "Home", sessionData, expectations });
     } catch (err) {

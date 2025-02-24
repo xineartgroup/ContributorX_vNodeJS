@@ -32,7 +32,14 @@
             <div class="form-group">
                 <label for="PaymentReciept">Receipt (optional):</label>
                 <input type="file" id="PaymentReciept" name="PaymentReciept">
-                <p><a href="<%= expense.PaymentReciept %>" target="_blank">ViewCurrent Receipt</a></p>
+            </div>
+
+            <div class="image-container">
+                <% if (expense.PaymentReciept) { %>
+                <img id="imagePreview" alt="" width="600"
+                    style="border: 1px solid #ddd; padding: 5px; display: block;" 
+                    src="<%= expense.PaymentReciept ? '/uploads/' + expense.PaymentReciept : '' %>">
+                <% } %>
             </div>
 
             <div class="form-buttons">
@@ -41,5 +48,26 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.getElementById("PaymentReciept").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgElement = document.getElementById("imagePreview");
+                    imgElement.src = e.target.result;
+                    imgElement.style.display = "block"; // Show image when uploaded
+                    imgElement.width = 600;
+                };
+                reader.readAsDataURL(file);
+            }
+            else{
+                const imgElement = document.getElementById("imagePreview");
+                imgElement.src = "";
+                imgElement.style.display = "none"; // Hide image when no file selected
+            }
+        });
+    </script>
 </body>
 <%- include('../partials/footer.ejs') %>

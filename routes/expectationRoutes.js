@@ -12,6 +12,6 @@ router.post('/update/:id', expectationController.expectationUpdatePost);
 router.get('/delete/:id', expectationController.expectationDeleteGet);
 router.post('/delete/:id', expectationController.expectationDeletePost);
 router.get('/payment/:id', expectationController.expectationPaymentGet);
-router.post('/payment/:id', upload.single("PaymentReceipt"), expectationController.expectationPaymentPost);
+router.post('/payment/:id', upload.single("PaymentReciept"), expectationController.expectationPaymentPost);
 
 module.exports = router;

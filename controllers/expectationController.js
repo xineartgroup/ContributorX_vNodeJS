@@ -175,10 +175,7 @@ const expectationPaymentPost = async (req, res) => {
         expectation.AmountToApprove = req.body.AmountToApprove;
         expectation.PaymentMethod = req.body.PaymentMethod;
         expectation.PaymentStatus = 1; // Mark as processing
-
-        if (req.file) {
-            expectation.PaymentReciept = req.file.filename;
-        }
+        expectation.PaymentReciept = req.file ? req.file.filename : "";
 
         await expectation.save();
         console.log("Updated Expectation:", expectation); // Debugging

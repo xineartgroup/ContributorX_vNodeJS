@@ -176,6 +176,13 @@
             width: 100%; /* Makes it match input widths */
         }
 
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
         .login-container {
             background: white;
             padding: 20px;

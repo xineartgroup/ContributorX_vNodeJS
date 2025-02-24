@@ -43,13 +43,14 @@
             </div>
 
             <div class="form-group">
-                <label for="PaymentReceipt">Payment Receipt:</label>
-                <input type="file" id="PaymentReceipt" name="PaymentReceipt">
-                <% if (expectation.PaymentReciept) { %>
-                    <p><a href="<%= expectation.PaymentReciept %>" target="_blank">View Current Receipt</a></p>
-                <% } %>
+                <label for="PaymentReciept">Payment Receipt:</label>
+                <input type="file" id="PaymentReciept" name="PaymentReciept">
             </div>
 
+            <div class="image-container">
+                <img id="imagePreview" alt="">
+            </div>
+    
             <div class="form-buttons">
                 <button id="btnSend" type="submit">Send for Approval</button>
                 <button id="btnPay">Make Payment</button>
@@ -71,7 +72,28 @@
                 document.getElementById("btnSend").style.display = "none";
             }
         }
+
         selectPaymentMethod(); // Initialize on page load
+
+        document.getElementById("PaymentReciept").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgElement = document.getElementById("imagePreview");
+                    imgElement.src = e.target.result;
+                    imgElement.style.display = "block"; // Show image when uploaded
+                    imgElement.width = 600;
+                };
+                reader.readAsDataURL(file);
+            }
+            else{
+                const imgElement = document.getElementById("imagePreview");
+                imgElement.src = "";
+                imgElement.style.display = "none"; // Hide image when no file selected
+            }
+        });
+
     </script>
 </body>
 

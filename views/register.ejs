@@ -60,6 +60,10 @@
                 </select>
             </div>
 
+            <div class="image-container">
+                <img id="imagePreview" alt="" style="display: none; border: 1px solid #ddd; padding: 5px;">
+            </div>
+
             <!-- Hidden Fields -->
             <input type="hidden" name="Role" value="Observer" />
             <input type="hidden" name="IsActive" value="true" />
@@ -74,5 +78,26 @@
     <div class="form-buttons">
         <p>Already have an account? <a href="/login">Login here</a></p>
     </div>
+
+    <script>
+        document.getElementById("Picture").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgElement = document.getElementById("imagePreview");
+                    imgElement.src = e.target.result;
+                    imgElement.style.display = "block"; // Show image when uploaded
+                    imgElement.width = 200;
+                };
+                reader.readAsDataURL(file);
+            }
+            else{
+                const imgElement = document.getElementById("imagePreview");
+                imgElement.src = "";
+                imgElement.style.display = "none"; // Hide image when no file selected
+            }
+        });
+    </script>
 </body>
 </html>
