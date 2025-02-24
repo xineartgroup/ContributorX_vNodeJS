@@ -5,7 +5,7 @@
     
     <div class="detail-ui content">
         <h2><%= title %></h2>
-        <form action="/contributor" method="POST">
+        <form action="/contributor" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="UserName">Username:</label>
                 <input type="text" id="UserName" name="UserName" required>
@@ -47,8 +47,8 @@
             </div>
 
             <div class="form-group">
-                <label for="Picture">Picture ID:</label>
-                <input type="number" id="Picture" name="Picture" required>
+                <label for="Picture">Upload Picture:</label>
+                <input type="file" id="Picture" name="Picture" required>
             </div>
 
             <div class="form-group">
@@ -67,9 +67,6 @@
                     <option value="false">No</option>
                 </select>
             </div>
-
-            <!--<label for="StartDate">Start Date:</label>
-            <input type="date" id="StartDate" name="StartDate">-->
 
             <div class="form-buttons">
                 <button type="submit">Create</button>

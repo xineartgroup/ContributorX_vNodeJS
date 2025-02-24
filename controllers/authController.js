@@ -1,3 +1,5 @@
+const multer = require('multer');
+const path = require('path');
 const Contributor = require("../models/contributor");
 const Community = require('../models/community');
 
@@ -54,7 +56,7 @@ const register = async (req, res) => {
             Email,
             Role,
             PhoneNumber,
-            Picture,
+            Picture: req.file ? req.file.filename : null,
             Community
         });
 

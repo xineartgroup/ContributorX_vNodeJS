@@ -1,9 +1,11 @@
- const Contributor = require('../models/contributor');
- const Community = require('../models/community');
- const Group = require('../models/group');
- const Grouping = require('../models/grouping');
+const multer = require('multer');
+const path = require('path');
+const Contributor = require('../models/contributor');
+const Community = require('../models/community');
+const Group = require('../models/group');
+const Grouping = require('../models/grouping');
 
- const contributorIndex = async (req, res) => {
+const contributorIndex = async (req, res) => {
     try {
         const sessionData = req.session;
     
@@ -123,7 +125,7 @@ const contributorUpdatePost = async (req, res) => {
             Email: req.body.Email,
             Role: req.body.Role,
             PhoneNumber: req.body.PhoneNumber,
-            Picture: req.body.Picture,
+            Picture: req.file ? req.file.filename : req.body.Picture,
             Community: req.body.Community,
             IsActive: req.body.IsActive === 'true'
         };
@@ -214,7 +216,7 @@ const contributorCreatePost = (req, res) => {
         Email,
         Role,
         PhoneNumber,
-        Picture,
+        Picture: req.file ? req.file.filename : null,
         Community
     });
 

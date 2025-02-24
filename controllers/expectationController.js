@@ -190,10 +190,6 @@ const expectationPaymentPost = async (req, res) => {
     }
 };
 
-function paymentComplete(status) {
-    return status === 2 || status === 3;
-}
-
 module.exports = {
     expectationIndex,
     expectationCreateGet,

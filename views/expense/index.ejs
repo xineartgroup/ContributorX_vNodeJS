@@ -3,17 +3,16 @@
         <%- include('../partials/nav.ejs') %>
         
         <div class="table-container">
-            <h2>All Expenses</h2>
+            <h2>Expenses</h2>
             <% if (expenses.length > 0) { %>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
+                            <!--<th>Community</th>-->
+                            <th>Date</th>
                             <th>Amount Paid</th>
-                            <th>Community</th>
-                            <th>Date Created</th>
-                            <th>Payment Receipt</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -22,10 +21,9 @@
                             <tr>
                                 <td><a href="/expense/update/<%= expense._id %>"><%= expense.Name %></a></td>
                                 <td><%= expense.Description %></td>
-                                <td>$<%= expense.AmountPaid.toFixed(2) %></td>
-                                <td><%= expense.Community.Name %></td>
+                                <!--<td><%= expense.Community.Name %></td>-->
                                 <td><%= expense.DateCreated.toLocaleDateString() %></td>
-                                <td><a href="<%= expense.PaymentReciept %>" target="_blank">View Receipt</a></td>
+                                <td>$<%= expense.AmountPaid.toFixed(2) %></td>
                                 <td>
                                     <a class="delete" href="/expense/delete/<%= expense._id %>">
                                         <img src="/images/delete-icon.png" alt="Delete" width="20">
