@@ -130,11 +130,11 @@
         
         .form-group label {
             font-weight: bold;
-            width: 25%; /* Adjust as needed */
+            width: 35%; /* Adjust as needed */
         }
         
         .form-group span {
-            width: 75%; /* Adjust as needed */
+            width: 65%; /* Adjust as needed */
             padding: 5px 10px;
             border-radius: 4px;
         }
@@ -167,6 +167,13 @@
         
         .form-group-inline input[type="button"]:hover {
             background-color: #0056b3;
+        }
+
+        .form-group p {
+            margin: 0; /* Removes extra spacing */
+            padding: 5px 10px;
+            border-radius: 4px;
+            width: 100%; /* Makes it match input widths */
         }
 
         .login-container {

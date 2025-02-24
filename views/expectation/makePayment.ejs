@@ -1,0 +1,78 @@
+<%- include('../partials/header.ejs') %>
+
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Make Payment</h2>
+        <form action="/expectation/payment/<%= expectation._id %>" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="ContributionId" value="<%= expectation.Contribution._id %>">
+            <input type="hidden" name="ContributorId" value="<%= expectation.Contributor._id %>">
+
+            <div class="form-group">
+                <label>Contribution:</label>
+                <p><%= expectation.Contribution ? expectation.Contribution.Name : 'N/A' %></p>
+            </div>
+
+            <div class="form-group">
+                <label>Amount:</label>
+                <p><%= expectation.Contribution ? expectation.Contribution.Amount.toFixed(2) : '0.00' %></p>
+            </div>
+
+            <div class="form-group">
+                <label>Due Date:</label>
+                <p><%= expectation.Contribution ? expectation.Contribution.DueDate.toDateString() : 'N/A' %></p>
+            </div>
+
+            <div class="form-group">
+                <label>Amount Paid:</label>
+                <p><%= expectation.AmountPaid.toFixed(2) %></p>
+            </div>
+
+            <div class="form-group">
+                <label for="AmountToApprove">Amount Remaining:</label>
+                <input type="number" id="AmountToApprove" name="AmountToApprove" value="<%= expectation.AmountToApprove %>" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dropdownPaymentMethod">Payment Method:</label>
+                <select id="dropdownPaymentMethod" name="PaymentMethod" onchange="selectPaymentMethod()" class="form-select">
+                    <option value="0">Send for Approval</option>
+                    <option value="1">Use Payment Gateway</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PaymentReceipt">Payment Receipt:</label>
+                <input type="file" id="PaymentReceipt" name="PaymentReceipt">
+                <% if (expectation.PaymentReciept) { %>
+                    <p><a href="<%= expectation.PaymentReciept %>" target="_blank">View Current Receipt</a></p>
+                <% } %>
+            </div>
+
+            <div class="form-buttons">
+                <button id="btnSend" type="submit">Send for Approval</button>
+                <button id="btnPay">Make Payment</button>
+                <a href="/" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function selectPaymentMethod() {
+            var e = document.getElementById("dropdownPaymentMethod");
+            var value = e.value;
+
+            if (value == '0') {
+                document.getElementById("btnSend").style.display = "inline-block";
+                document.getElementById("btnPay").style.display = "none";
+            } else if (value == '1') {
+                document.getElementById("btnPay").style.display = "inline-block";
+                document.getElementById("btnSend").style.display = "none";
+            }
+        }
+        selectPaymentMethod(); // Initialize on page load
+    </script>
+</body>
+
+<%- include('../partials/footer.ejs') %>

@@ -11,7 +11,7 @@ const contributionRoutes = require('./routes/contributionRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const expectationRoutes = require('./routes/expectationRoutes');
 
-const Expectation = require('./models/Expectation');
+const Expectation = require('./models/expectation');
 
 const app = express();
 

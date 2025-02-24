@@ -1,55 +1,67 @@
-<%- include('../partials/header.ejs') %>
-    <body>
-        <%- include('../partials/nav.ejs') %>
+<%- include('../partials/header', { title: 'Expectations' }) %>
+<body>
+    <%- include('../partials/nav.ejs') %>
+    <div class="table-container">
+        <h2>Expectations</h2>
         
-        <div class="table-container">
-            <h2>All Expectations</h2>
-            <% if (expectations.length > 0) { %>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Contributor</th>
-                            <th>Contribution</th>
-                            <th>Amount Paid</th>
-                            <th>Amount To Approve</th>
-                            <th>Payment Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% expectations.forEach(expectation => { %>
+        <% if (expectations.length > 0) { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Contributor</th>
+                        <th>Bill/Pledge</th>
+                        <th>Amount Owed</th>
+                        <th>Previously Paid</th>
+                        <th>Amount to Approve</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% expectations.forEach(item => { %>
+                        <% if (item.Contributor && item.Contribution) { %>
                             <tr>
-                                <td><a href="/expectation/edit/<%= expectation._id %>"><%= expectation.Contributor.UserName %></a></td>
-                                <td><%= expectation.Contribution.Name %></td>
-                                <td><%= expectation.AmountPaid.toLocaleString() %></td>
-                                <td><%= expectation.AmountToApprove.toLocaleString() %></td>
-                                <td><%= expectation.PaymentStatus %></td>
+                                <td><%= item.Contributor.UserName %></td>
+                                <td><%= item.Contribution.Name %></td>
+                                <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
-                                    <a href="/expectation/delete/<%= expectation._id %>">Delete</a>
+                                    <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
+                                        <form action="/expectation/rollback/<%= item._id %>" method="POST">
+                                            <input type="submit" value="Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>" class="btn btn-warning form-control" />
+                                        </form>
+                                    <% } else { %>
+                                        <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
+                                        <label class="control-label pt-2"><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
+                                    <% } else if (item.PaymentStatus === "Processing") { %>
+                                        <a href="/expectation/paymentApproval/<%= item._id %>" class="btn btn-primary form-control">
+                                            Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
+                                        </a>
+                                    <% } else { %>
+                                        <a href="/expectation/paymentWriteOff/<%= item._id %>" class="btn btn-secondary form-control">
+                                            Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
+                                        </a>
+                                    <% } %>
                                 </td>
                             </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            <% } %>
-        </div>
-        <div class="pagination">
-            <% if (currentPage > 1) { %>
-                <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
-            <% } %>
-        
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
-            <% } %>
-        
-            <% if (currentPage < totalPages) { %>
-                <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
-            <% } %>
-        </div>
-        <div class="row pb-3">
-            <div class="col-6 text-end">
-                <a href="/expectation/create" class="btn">Create Expectation</a>
-            </div>
-        </div>
-    </body>
-    <%- include('../partials/footer.ejs') %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5"></td>
+                            </tr>
+                        <% } %>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th>No expectations found for the search</th>
+                    </tr>
+                </thead>
+            </table>
+        <% } %>
+    </div>
+</body>
+<%- include('../partials/footer') %>

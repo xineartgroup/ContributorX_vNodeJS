@@ -38,7 +38,7 @@
                                         <% } else if (item.PaymentStatus !== 2) { %>
                                             <% totalPaid += item.AmountPaid; %>
                                             <% totalOutstanding += (item.Contribution.Amount - item.AmountPaid); %>
-                                            <a class="btn btn-success form-control" href="/expectation/ExpectationPayment/<%= item._id %>">
+                                            <a class="btn btn-success form-control" href="/expectation/payment/<%= item._id %>">
                                                 Pay
                                             </a>
                                         <% } %>
@@ -60,7 +60,7 @@
                                 <td><b><%= totalPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
                                 <td><b><%= totalOutstanding.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
                                 <td>
-                                    <a class="btn btn-success form-control" href="/expectation/ExpectationsPayment/<%= contributorId %>">
+                                    <a class="btn btn-success form-control" href="/expectation/payment/<%= contributorId %>">
                                         Pay All
                                     </a>
                                 </td>
