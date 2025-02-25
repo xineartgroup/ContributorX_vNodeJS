@@ -35,7 +35,7 @@ const showRegisterPage = async (req, res) => {
 };
 
 const register = async (req, res) => {
-    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community } = req.body;
+    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, community } = req.body;
 
     try {
         // Check if username already exists
@@ -44,10 +44,22 @@ const register = async (req, res) => {
             return res.render("register", { error: "Username already exists." });
         }
 
-        // Hash the password
-        const hashedPassword = Password; // await bcrypt.hash(Password, 10);
+        console.log(req.body);
 
-        // Create new contributor
+        const hashedPassword = Password; // await bcrypt.hash(Password, 10);
+        let communityId = req.body.Community;
+
+        if (!communityId || communityId == '') {
+            if (req.body.CommunityName && req.body.CommunityName.trim() !== '') {
+                const newCommunity = new Community({
+                    Name: req.body.CommunityName,
+                    Description: req.body.CommunityName
+                });
+                await newCommunity.save();
+                communityId = newCommunity._id;
+            }
+        }
+
         const newContributor = new Contributor({
             UserName,
             Password: hashedPassword,
@@ -57,16 +69,20 @@ const register = async (req, res) => {
             Role,
             PhoneNumber,
             Picture: req.file ? req.file.filename : null,
-            Community
+            Community: communityId // Assign the corrected communityId
         });
 
         await newContributor.save();
 
-        // Redirect to login page after successful registration
         res.redirect("/login");
     } catch (error) {
         console.error("Registration error:", error);
-        res.render("register", { error: "An error occurred. Please try again." });
+        try {
+        const communities = await Community.find();
+    
+        res.render("register", { error: "An error occurred. Please try again.", communities });
+        } catch (error) {
+        }
     }
 };
 

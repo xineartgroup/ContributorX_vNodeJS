@@ -51,13 +51,24 @@
             </div>
 
             <div class="form-group">
+                <label for="Role">Role:</label>
+                <select id="Role" name="Role" onchange="addGroup()" required>
+                    <option value="">--Select--</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Contributor">Contributor</option>
+                    <option value="Observer">Observer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="Community">Community:</label>
-                <select id="Community" name="Community" required>
+                <select id="Community" name="Community">
                     <option value="">--Select--</option>
                     <% communities.forEach(community => { %>
                         <option value="<%= community._id %>"><%= community.Name %></option>
                     <% }) %>
                 </select>
+                <input type="text" id="CommunityName" name="CommunityName">
             </div>
 
             <div class="image-container">
@@ -65,7 +76,6 @@
             </div>
 
             <!-- Hidden Fields -->
-            <input type="hidden" name="Role" value="Observer" />
             <input type="hidden" name="IsActive" value="true" />
             <input type="hidden" name="CreatedAt" value="<%= new Date().toISOString() %>" />
 
@@ -80,6 +90,24 @@
     </div>
 
     <script>
+        addGroup();
+
+        function addGroup() {
+            var ddlRoles = document.getElementById("Role");
+            var ddlCommunities = document.getElementById("Community");
+            var txtCommunity = document.getElementById("CommunityName");
+            var text = ddlRoles.options[ddlRoles.selectedIndex].text;
+
+            if (text == "Administrator") {
+                ddlCommunities.style.display = "none";
+                txtCommunity.style.display = "block";
+            }
+            else {
+                ddlCommunities.style.display = "block";
+                txtCommunity.style.display = "none";
+            }
+        }
+
         document.getElementById("Picture").addEventListener("change", function (event) {
             const file = event.target.files[0];
             if (file) {

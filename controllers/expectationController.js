@@ -187,7 +187,7 @@ const expectationPaymentPost = async (req, res) => {
     }
 };
 
-const paymentApprovalGet = async (req, res) => {
+const paymentApproval = async (req, res) => {
     try {
         const sessionData = req.session;
         if (!sessionData || !req.session.isLoggedIn) {
@@ -211,7 +211,7 @@ const paymentApprovalGet = async (req, res) => {
     }
 };
 
-const paymentApproval = async (req, res) => {
+const paymentApprove = async (req, res) => {
     try {
         const sessionData = req.session;
         if (!sessionData || !req.session.isLoggedIn) {
@@ -224,8 +224,32 @@ const paymentApproval = async (req, res) => {
         if (expectation) {
             expectation.AmountPaid = expectation.AmountToApprove;
             expectation.AmountToApprove = 0.0;
-            expectation.PaymentStatus = contribution.Amount - expectation.AmountPaid === 0 ? 3 : 2; //"Cleared" : "Approved"
+            expectation.PaymentStatus = expectation.Contribution.Amount - expectation.AmountPaid === 0 ? 3 : 2; //"Cleared" : "Approved"
+            await expectation.save();
 
+            return res.redirect("/expectation");
+        } else {
+            console.error("Error: Expectation not found");
+        }
+
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+};
+
+const paymentReject = async (req, res) => {
+    try {
+        const sessionData = req.session;
+        if (!sessionData || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+    
+        const { id } = req.params;
+        const expectation = await Expectation.findById(id);
+
+        if (expectation) {
+            expectation.AmountToApprove = 0.0;
+            expectation.PaymentStatus = 0; //"New"
             await expectation.save();
 
             return res.redirect("/expectation");
@@ -275,7 +299,8 @@ module.exports = {
     expectationDeletePost,
     expectationPaymentGet,
     expectationPaymentPost,
-    paymentApprovalGet,
     paymentApproval,
+    paymentReject,
+    paymentApprove,
     paymentWriteOff
 };

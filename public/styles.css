@@ -20,7 +20,7 @@
             margin-bottom: 60px;
             padding-bottom: 10px;
             border-bottom: 1px solid #ddd;
-            text-transform: uppercase;
+            /*text-transform: uppercase;*/
         }
         /*nav ul{
             display: flex;
@@ -166,6 +166,12 @@
         .form-group span {
             width: 70%;
             padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .form-group input {
+            width: 70%;
+            padding: 8px 10px;
             border-radius: 4px;
         }
         
@@ -487,7 +493,8 @@
         }
         
         th {
-            text-transform: uppercase;
+            text-align: left;
+            /*text-transform: uppercase;*/
         }
         
         tr:nth-child(even) {
