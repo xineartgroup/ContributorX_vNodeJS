@@ -36,8 +36,8 @@
 
             <div class="image-container">
                 <% if (expense.PaymentReciept) { %>
-                <img id="imagePreview" alt="" width="600"
-                    style="border: 1px solid #ddd; padding: 5px; display: block;" 
+                <img id="imagePreview" alt=""
+                    style="max-width: 100%; height: auto; padding: 5px; display: block;" 
                     src="<%= expense.PaymentReciept ? '/uploads/' + expense.PaymentReciept : '' %>">
                 <% } %>
             </div>
@@ -58,7 +58,7 @@
                     const imgElement = document.getElementById("imagePreview");
                     imgElement.src = e.target.result;
                     imgElement.style.display = "block"; // Show image when uploaded
-                    imgElement.width = 600;
+                    imgElement.style.maxWidth = 600;
                 };
                 reader.readAsDataURL(file);
             }

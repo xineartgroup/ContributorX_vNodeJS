@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const flash = require("connect-flash");
 
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
@@ -39,6 +40,14 @@ app.use(session({
     saveUninitialized: false,
     cookie: { maxAge: 3600000 } // session timeout of 60 minutes
   }));
+
+app.use(flash());
+
+app.use((req, res, next) => {
+    res.locals.message = req.flash("message");
+    res.locals.error = req.flash("error");
+    next();
+});
 
 app.use((req, res, next) => {
     console.log('Host: ', req.hostname + ' ' + req.path + ' ' + req.method);

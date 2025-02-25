@@ -13,5 +13,8 @@ router.get('/delete/:id', expectationController.expectationDeleteGet);
 router.post('/delete/:id', expectationController.expectationDeletePost);
 router.get('/payment/:id', expectationController.expectationPaymentGet);
 router.post('/payment/:id', upload.single("PaymentReciept"), expectationController.expectationPaymentPost);
+router.get('/paymentApproval/:id', expectationController.paymentApprovalGet);
+router.post('/paymentapprove/:id', expectationController.paymentApproval);
+router.get('/paymentWriteOff/:id', expectationController.paymentWriteOff);
 
 module.exports = router;

@@ -4,13 +4,13 @@ const Expense = require('../models/expense');
 const Community = require('../models/community');
 
 const expenseIndex = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
-
     try {
+        const sessionData = req.session;
+
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
+
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
@@ -31,13 +31,13 @@ const expenseIndex = async (req, res) => {
 };
 
 const expenseCreateGet = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
-
     try {
+        const sessionData = req.session;
+
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
+
         const communities = await Community.find();
         res.render('expense/create', { title: 'New Expense', communities });
     } catch (err) {

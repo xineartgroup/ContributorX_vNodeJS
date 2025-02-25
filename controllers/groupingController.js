@@ -98,7 +98,7 @@ const groupingDeletePost = async (req, res) => {
         res.redirect('/grouping');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Error deleting grouping" });
+        res.status(500).send({ error: "Error deleting grouping" });
     }
 };
 

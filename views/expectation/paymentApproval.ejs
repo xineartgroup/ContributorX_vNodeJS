@@ -1,0 +1,54 @@
+<%- include('../partials/header.ejs') %>
+
+<body>
+    <%- include('../partials/nav.ejs') %>
+
+    <div class="detail-ui content">
+        <h2>Approve Payment</h2>
+
+        <form action="/expectation/approve" method="POST">
+            <input type="hidden" name="Id" value="<%= expectation._id %>">
+            <input type="hidden" name="ContributionId" value="<%= expectation.ContributionId %>">
+            <input type="hidden" name="ContributorId" value="<%= expectation.ContributorId %>">
+            <input type="hidden" name="AmountToApprove" value="<%= expectation.AmountToApprove %>">
+
+            <hr />
+
+            <div class="form-group">
+                <label>Contribution</label>
+                <span><%= expectation.Contribution ? expectation.Contribution.Name : '' %></span>
+            </div>
+
+            <div class="form-group">
+                <label>Amount Owed</label>
+                <span>$<%= expectation.Contribution ? expectation.Contribution.Amount.toFixed(2) : '0.00' %></span>
+            </div>
+
+            <div class="form-group">
+                <label>Due Date</label>
+                <span><%= expectation.Contribution ? new Date(expectation.Contribution.DueDate).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : '' %></span>
+            </div>
+
+            <div class="form-group">
+                <label>Amount to Approve</label>
+                <span>$<%= expectation.AmountToApprove.toFixed(2) %></span>
+            </div>
+
+            <div class="image-container">
+                <% if (expectation.PaymentReciept) { %>
+                    <img src="/uploads/<%= expectation.PaymentReciept %>" alt="" style="max-width: 100%; height: auto; padding: 5px;">
+                <% } else { %>
+                    <p>No receipt uploaded.</p>
+                <% } %>
+            </div>
+
+            <div class="form-buttons">
+                <a href="/expectation/paymentapprove/<%= expectation._id %>" class="btn">Approve</a>
+                <a href="/expectation/paymentreject/<%= expectation._id %>" class="btndanger">Reject</a>
+                <a href="/expectation" class="btncancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <%- include('../partials/footer.ejs') %>
+</body>

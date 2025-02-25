@@ -133,7 +133,7 @@ const groupDeletePost = async (req, res) => {
         res.redirect('/group');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Error deleting group" });
+        res.status(500).send({ error: "Error deleting group" });
     }
 };
 

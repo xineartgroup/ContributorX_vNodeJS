@@ -24,22 +24,22 @@
                                 <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
-                                        <form action="/expectation/rollback/<%= item._id %>" method="POST">
-                                            <input type="submit" value="Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>" class="btn btn-warning form-control" />
-                                        </form>
+                                        <a href="/expectation/rollback/<%= item._id %>" class="btncancel">
+                                            Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
+                                        </a>
                                     <% } else { %>
                                         <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                     <% } %>
                                 </td>
                                 <td>
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
-                                        <label class="control-label pt-2"><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
-                                    <% } else if (item.PaymentStatus === "Processing") { %>
-                                        <a href="/expectation/paymentApproval/<%= item._id %>" class="btn btn-primary form-control">
+                                        <label><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
+                                    <% } else if (item.PaymentStatus === 1) { %>
+                                        <a href="/expectation/paymentApproval/<%= item._id %>" class="btn">
                                             Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
-                                        <a href="/expectation/paymentWriteOff/<%= item._id %>" class="btn btn-secondary form-control">
+                                        <a href="/expectation/paymentWriteOff/<%= item._id %>" class="btn">
                                             Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } %>
@@ -54,7 +54,7 @@
                 </tbody>
             </table>
         <% } else { %>
-            <table class="table text-center">
+            <table>
                 <thead>
                     <tr>
                         <th>No expectations found for the search</th>

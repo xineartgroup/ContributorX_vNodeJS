@@ -54,7 +54,7 @@
                     const imgElement = document.getElementById("imagePreview");
                     imgElement.src = e.target.result;
                     imgElement.style.display = "block"; // Show image when uploaded
-                    imgElement.width = 600;
+                    imgElement.style.maxWidth = 600;
                 };
                 reader.readAsDataURL(file);
             }

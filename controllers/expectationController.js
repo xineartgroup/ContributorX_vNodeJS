@@ -178,12 +178,90 @@ const expectationPaymentPost = async (req, res) => {
         expectation.PaymentReciept = req.file ? req.file.filename : "";
 
         await expectation.save();
-        console.log("Updated Expectation:", expectation); // Debugging
+        console.log("Updated Expectation:", expectation);
 
         res.redirect('/');
     } catch (err) {
         console.error("Error processing payment:", err);
         res.status(500).send("Server error.");
+    }
+};
+
+const paymentApprovalGet = async (req, res) => {
+    try {
+        const sessionData = req.session;
+        if (!sessionData || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+    
+        const { id } = req.params;
+        const expectation = await Expectation.findById(id);
+
+        if (expectation) {
+            expectation.Contribution = await Contribution.findById(expectation.Contribution._id);
+            expectation.Contributor = await Contributor.findById(expectation.Contributor._id);
+            console.log("Expectation: ", expectation);
+            res.render("expectation/paymentApproval", { title: "Approve Payment", expectation });
+        } else {
+            console.error("Error: Expectation not found");
+        }
+
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+};
+
+const paymentApproval = async (req, res) => {
+    try {
+        const sessionData = req.session;
+        if (!sessionData || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+    
+        const { id } = req.params;
+        const expectation = await Expectation.findById(id);
+
+        if (expectation) {
+            expectation.AmountPaid = expectation.AmountToApprove;
+            expectation.AmountToApprove = 0.0;
+            expectation.PaymentStatus = contribution.Amount - expectation.AmountPaid === 0 ? 3 : 2; //"Cleared" : "Approved"
+
+            await expectation.save();
+
+            return res.redirect("/expectation");
+        } else {
+            console.error("Error: Expectation not found");
+        }
+
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+};
+
+const paymentWriteOff = async (req, res) => {
+    try {
+        const sessionData = req.session;
+        if (!sessionData || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+    
+        const id = req.params.id;
+        const expectation = await Expectation.findById(id);
+
+        if (expectation) {
+            expectation.AmountPaid = expectation.AmountToApprove;
+            expectation.AmountToApprove = 0.0;
+            expectation.PaymentStatus = 3;
+
+            await expectation.save();
+
+            req.flash("message", "Success");
+            return res.redirect("/expectation");
+        } else {
+            console.error("Error: Expectation not found");
+        }
+    } catch (error) {
+        console.error("Error: ", error);
     }
 };
 
@@ -196,5 +274,8 @@ module.exports = {
     expectationDeleteGet,
     expectationDeletePost,
     expectationPaymentGet,
-    expectationPaymentPost
+    expectationPaymentPost,
+    paymentApprovalGet,
+    paymentApproval,
+    paymentWriteOff
 };

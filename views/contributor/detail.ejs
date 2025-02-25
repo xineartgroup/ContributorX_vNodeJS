@@ -35,54 +35,98 @@
                 </select>
             </div>
     
-            <div class="form-group-inline">
-                <select id="dropdownGroups" name="dropdownGroups">
-                    <option value="">--Select--</option>
-                    <% groups.forEach(group => { %>
-                        <option value="<%= group._id %>"><%= group.Name %></option>
-                    <% }) %>
-                </select>
-    
-                <input type="button" value="Add" onclick="addGroup()" class="btn btn-outline-primary" />
+            <div class="form-group">
+                <label for="groups">Groups</label>
+                <div id="groups" class="form-group-inline">
+                    <select id="dropdownGroups" name="dropdownGroups">
+                        <option value="">--Select--</option>
+                        <% groups.forEach(group => { %>
+                            <option value="<%= group._id %>"><%= group.Name %></option>
+                        <% }) %>
+                    </select>
+        
+                    <input type="button" value="Add" onclick="addGroup()" />
+                </div>
             </div>
 
-            <div class="col-sm-10 pb-3">
-                <% if (groupings.Count > 0) { %>
-                    <table id="selectedOptionTable" class="table">
-                        <tr>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <% groupings.forEach (item => { %>
-                            <% if (item.Group != null) { %>
+            <div class="form-group">
+                <label for="groupings"></label>
+                <div id="groupings" class="form-group-inline">
+                    <% if (groupings.length > 0) { %>
+                        <table id="selectedOptionTable">
+                            <% groupings.forEach (item => { %>
+                                <% if (item.Group) { %>
+                                    <tr>
+                                        <td>
+                                            <%= item.Group.Name %>
+                                        </td>
+                                        <td>
+                                            <button type="button" onclick="removeGroup('<%= item.Group.Name %>')" >Remove</button>
+                                        </td>
+                                    </tr>
+                                <% } else { %>
+                                    <tr>
+                                        <td>
+                                            --Something's wrong--
+                                        </td>
+                                        <td>
+                                            --Something's wrong--
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            <% }) %>
+                        </table>
+                    <% } else { %>
+                        <table id="selectedOptionTable">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="expectations">Expectations</label>
+                <div id="expectations" class="form-group-inline">
+                    <% if (expectations.length > 0) { %>
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <% item.Group.Name %>
-                                    </td>
-                                    <td>
-                                        <input type="button" value="Remove" onclick="removeGroup('<%= item.Group.Name %>')" class="btn btn-outline-primary btn-sm" />
-                                    </td>
+                                    <th>Pledge</th>
+                                    <th>Amount Owed</th>
+                                    <th>Amount Paid</th>
                                 </tr>
-                            <% } else { %>
-                                <tr>
-                                    <td>
-                                        --Something's wrong--
-                                    </td>
-                                    <td>
-                                        --Something's wrong--
-                                    </td>
-                                </tr>
-                            <% } %>
-                        <% }) %>
-                    </table>
-                <% } else { %>
-                    <table id="selectedOptionTable" class="table">
-                        <tr>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </table>
-                <% } %>
+                            </tbody>
+                            <tbody>
+                                <% expectations.forEach(item => { %>
+                                    <% if (item.Contribution) { %>
+                                        <% if (item.Contribution.Amount - item.AmountPaid > 0) { %>
+                                            <tr>
+                                                <td><%= item.Contribution.Name %></td>
+                                                <td>$<%= (item.Contribution.Amount - item.AmountPaid).toFixed(2) %></td>
+                                                <td>$<%= item.AmountPaid.toFixed(2) %></td>
+                                            </tr>
+                                        <% } %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td>--Something's wrong--</td>
+                                            <td>--Something's wrong--</td>
+                                            <td>--Something's wrong--</td>
+                                        </tr>
+                                    <% } %>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <table class="table">
+                            <tr>
+                                <td>There are no expectations for this contributor</td>
+                            </tr>
+                        </table>
+                    <% } %>
+                </div>
             </div>
 
             <div class="form-buttons">
@@ -114,10 +158,10 @@
             if (text != '--Select--' && !found)
             {
                 if (table.rows[0].cells[0].innerText === "There are no groups attached to this contributor") {
-                    table.rows[0].cells[0].innerHTML = '<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>';
+                    table.rows[0].cells[0].innerHTML = '<tr><td>' + text + '</td><td>' + '<button type="button" onclick="removeGroup(\'' + text + '\')"/>Remove</tr>';
                 }
                 else {
-                    $('#selectedOptionTable').append('<tr><td>' + text + '</td><td>' + '<input type="button" value="Remove" onclick="removeGroup(\'' + text + '\')" class="btn btn-outline-primary btn-sm" /></tr>');
+                    $('#selectedOptionTable').append('<tr><td>' + text + '</td><td>' + '<button type="button" onclick="removeGroup(\'' + text + '\')"/>Remove</tr>');
                 }
             }
         }

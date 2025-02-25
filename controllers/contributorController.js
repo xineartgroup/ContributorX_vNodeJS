@@ -1,7 +1,9 @@
 const multer = require('multer');
 const path = require('path');
 const Contributor = require('../models/contributor');
+const Contribution = require('../models/contribution');
 const Community = require('../models/community');
+const Expectation = require('../models/expectation');
 const Group = require('../models/group');
 const Grouping = require('../models/grouping');
 
@@ -44,15 +46,30 @@ const contributorDetailGet = async (req, res) => {
           }
     
         const contributor = await Contributor.findById(req.params.id);
-        const communities = await Community.find();
-        const groups = await Group.find();
-        const groupings = await Grouping.find();
+        const groups = await Group.find({ Community: contributor.Community });
+        const groupingTemps = await Grouping.find({ Contributor: req.params.id });
+        const expectationTemps = await Expectation.find({ Contributor: req.params.id });
         const groupHtml = AddGroup();
-        const groupingsJson = '';
-        if (!contributor) {
+        if (contributor) {
+            if (expectationTemps && groupingTemps){
+                const expectations = await Promise.all(
+                    expectationTemps.map(async (exp) => {
+                        exp.Contribution = await Contribution.findById(exp.Contribution);
+                        return exp;
+                    })
+                );
+                const groupings = await Promise.all(
+                    groupingTemps.map(async (exp) => {
+                        exp.Group = await Group.findById(exp.Group);
+                        return exp;
+                    })
+                );
+                console.log("groupings: ", groupings);
+                res.render('contributor/detail', { title: 'Contributor Detail', contributor, groups, groupings, expectations, groupHtml });
+            }
+        } else {
             return res.status(404).send('Contributor not found');
         }
-        res.render('contributor/detail', { title: 'Contributor Detail', contributor, communities, groups, groupings, groupHtml, groupingsJson });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -179,65 +196,68 @@ const contributorUpdate1 = async (req, res) => {
 
         await Grouping.insertMany(newGroupings);
 
-        return res.json({ message: "Contributor updated successfully!" });
+        return res.send({ message: "Contributor updated successfully!" });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).send({ message: "Server error" });
     }
 };
 
 const contributorCreateGet = async (req, res) => {
-    const sessionData = req.session;
+    try{
+        const sessionData = req.session;
 
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
 
-    const communities = await Community.find();
+        const communities = await Community.find();
 
-    res.render('contributor/create', { title: 'New Contributor', communities });
+        res.render('contributor/create', { title: 'New Contributor', communities });
+    } catch(err) {
+        console.error(err);
+        res.status(500).send("Server Error.");
+    };
 }
 
 const contributorCreatePost = (req, res) => {
-    const sessionData = req.session;
+    try{
+        const sessionData = req.session;
 
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
 
-    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community } = req.body;
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community } = req.body;
 
-    const contributor = new Contributor({
-        UserName,
-        Password,
-        FirstName,
-        LastName,
-        Email,
-        Role,
-        PhoneNumber,
-        Picture: req.file ? req.file.filename : null,
-        Community
-    });
-
-    contributor.save()
-        .then(() => {
-            res.redirect('/contributor'); // Redirect to the list page
-        })
-        .catch(err => {
-            console.error("Error saving contributor:", err);
-            res.status(500).send("Error saving contributor.");
+        const contributor = new Contributor({
+            UserName,
+            Password,
+            FirstName,
+            LastName,
+            Email,
+            Role,
+            PhoneNumber,
+            Picture: req.file ? req.file.filename : null,
+            Community
         });
+
+        contributor.save();
+    } catch(err) {
+        console.error("Error saving contributor:", err);
+        res.status(500).send("Error saving contributor.");
+    };
 }
 
 const contributorDeleteGet = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
-
     try {
+        const sessionData = req.session;
+
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
+
         const contributor = await Contributor.findById(req.params.id).populate('Community');
         if (!contributor) {
             return res.status(404).send('Contributor not found');
@@ -250,20 +270,25 @@ const contributorDeleteGet = async (req, res) => {
 }
 
 const contributorDeletePost = async (req, res) => {
-    const sessionData = req.session;
+    try {
+        const sessionData = req.session;
 
-    if (!sessionData || !req.session.isLoggedIn) {
-        res.redirect('/login');
-      }
+        if (!sessionData || !req.session.isLoggedIn) {
+            res.redirect('/login');
+        }
 
-    await Contributor.findByIdAndDelete(req.params.id)
-        .then((result) => {
-            res.redirect('/contributor'); // Redirect to the list page
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).json({ error: "Error deleting contributor" });
-        });
+        await Contributor.findByIdAndDelete(req.params.id)
+            .then((result) => {
+                res.redirect('/contributor'); // Redirect to the list page
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json({ error: "Error deleting contributor" });
+            });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
 }
 
 const AddGroup = async () => {
