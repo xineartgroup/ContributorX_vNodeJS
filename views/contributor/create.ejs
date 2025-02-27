@@ -55,7 +55,7 @@
                 <label for="Community">Community:</label>
                 <select id="Community" name="Community" required>
                     <% communities.forEach(community => { %>
-                        <option value="<%= community._id %>"><%= community.Name %></option>
+                        <option value="<%= community.Id %>"><%= community.Name %></option>
                     <% }) %>
                 </select>
             </div>

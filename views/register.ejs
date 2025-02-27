@@ -65,7 +65,7 @@
                 <select id="Community" name="Community">
                     <option value="">--Select--</option>
                     <% communities.forEach(community => { %>
-                        <option value="<%= community._id %>"><%= community.Name %></option>
+                        <option value="<%= community.Id %>"><%= community.Name %></option>
                     <% }) %>
                 </select>
                 <input type="text" id="CommunityName" name="CommunityName">
@@ -77,7 +77,7 @@
 
             <!-- Hidden Fields -->
             <input type="hidden" name="IsActive" value="true" />
-            <input type="hidden" name="CreatedAt" value="<%= new Date().toISOString() %>" />
+            <input type="hidden" name="DateCreated" value="<%= new Date().toISOString() %>" />
 
             <div class="form-buttons">
                 <button type="submit">Register</button>

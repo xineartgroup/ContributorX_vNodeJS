@@ -41,7 +41,7 @@
                     <select id="dropdownGroups" name="dropdownGroups">
                         <option value="">--Select--</option>
                         <% groups.forEach(group => { %>
-                            <option value="<%= group._id %>"><%= group.Name %></option>
+                            <option value="<%= group.Id %>"><%= group.Name %></option>
                         <% }) %>
                     </select>
         
@@ -130,7 +130,7 @@
             </div>
 
             <div class="form-buttons">
-                <button type="button" onclick="contributorUpdate('<%= contributor._id %>')">Update</button>
+                <button type="button" onclick="contributorUpdate('<%= contributor.Id %>')">Update</button>
                 <a href="/contributor" class="cancel-button">Cancel</a>
             </div>
         </form>
@@ -199,7 +199,7 @@
 
             $.ajax({
                 url: '/contributor/update1',
-                type: 'POST', // Changed from GET to POST
+                type: 'POST',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
                 data: JSON.stringify({ groups: groupsText, id: id }),

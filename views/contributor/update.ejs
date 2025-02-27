@@ -6,7 +6,7 @@
 
     <div class="detail-ui content">
         <h2>Update Contributor</h2>
-        <form action="/contributor/update/<%= contributor._id %>" method="POST" enctype="multipart/form-data">
+        <form action="/contributor/update/<%= contributor.Id %>" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="UserName">Username:</label>
                 <input type="text" id="UserName" name="UserName" value="<%= contributor.UserName %>" required>
@@ -51,7 +51,7 @@
                 <label for="Community">Community:</label>
                 <select id="Community" name="Community" required>
                     <% communities.forEach(community => { %>
-                        <option value="<%= community._id %>" <%= contributor.Community._id.toString() === community._id.toString() ? 'selected' : '' %>><%= community.Name %></option>
+                        <option value="<%= community.Id %>" <%= contributor.Community.Id.toString() === community.Id.toString() ? 'selected' : '' %>><%= community.Name %></option>
                     <% }) %>
                 </select>
             </div>

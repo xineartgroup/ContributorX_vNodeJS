@@ -1,203 +1,249 @@
-const multer = require('multer');
-const path = require('path');
-const Contributor = require('../models/contributor');
-const Contribution = require('../models/contribution');
-const Community = require('../models/community');
-const Expectation = require('../models/expectation');
-const Group = require('../models/group');
-const Grouping = require('../models/grouping');
+const getPool = require('../middleware/sqlconnection');
 
 const contributorIndex = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const page = parseInt(req.query.page) || 1;  // Default to page 1
-        const limit = 10;  // Number of contributors per page
-        const skip = (page - 1) * limit;
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
         
-        const totalContributors = await Contributor.countDocuments();
-        const contributors = await Contributor.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
 
-        res.render('contributor/index', { 
-            title: 'Contributor List', 
-            contributors, 
+        // Get DB connection
+        const pool = await getPool();
+
+        // Get total count of contributors
+        const resultTotal = await pool.request().query("SELECT COUNT(*) AS count FROM Contributors");
+        const resultContributors = await pool.request().query("SELECT * FROM Contributors");
+
+        const totalContributors = resultTotal.recordset[0].count;
+        const contributors = resultContributors.recordset;
+
+        res.render('contributor/index', {
+            title: 'Contributor List',
+            contributors,
             currentPage: page,
             totalPages: Math.ceil(totalContributors / limit)
         });
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).send('Server Error');
     }
 };
 
 const contributorDetailGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const contributor = await Contributor.findById(req.params.id);
-        const groups = await Group.find({ Community: contributor.Community });
-        const groupingTemps = await Grouping.find({ Contributor: req.params.id });
-        const expectationTemps = await Expectation.find({ Contributor: req.params.id });
-        const groupHtml = AddGroup();
-        if (contributor) {
-            if (expectationTemps && groupingTemps){
-                const expectations = await Promise.all(
-                    expectationTemps.map(async (exp) => {
-                        exp.Contribution = await Contribution.findById(exp.Contribution);
-                        return exp;
-                    })
-                );
-                const groupings = await Promise.all(
-                    groupingTemps.map(async (exp) => {
-                        exp.Group = await Group.findById(exp.Group);
-                        return exp;
-                    })
-                );
-                console.log("groupings: ", groupings);
-                res.render('contributor/detail', { title: 'Contributor Detail', contributor, groups, groupings, expectations, groupHtml });
-            }
-        } else {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const pool = await getPool();
+        const contributorId = req.params.id;
+        
+        const resultContributor = await pool.request()
+            .input('contributorId', contributorId)
+            .query("SELECT * FROM Contributors WHERE ID = @contributorId");
+        
+        if (resultContributor.recordset.length === 0) {
             return res.status(404).send('Contributor not found');
         }
+
+        const resultGroups = await pool.request()
+            .input('communityid', resultContributor.recordset[0].CommunityId)
+            .query("SELECT * FROM Groups WHERE CommunityId = @communityid");
+
+        const resultGroupings = await pool.request()
+            .input('contributorId', contributorId)
+            .query("SELECT * FROM Groupings WHERE ContributorId = @contributorId");
+
+        const resultExpectations = await pool.request()
+            .input('contributorId', contributorId)
+            .query("SELECT * FROM Expectations WHERE ContributorId = @contributorId");
+
+        let contributor = resultContributor.recordset[0];
+        let groups = resultGroups.recordset;
+        let groupings = resultGroupings.recordset;
+        let expectations = resultExpectations.recordset;
+
+        for (var i = 0; i < groupings.length; i++){
+            const result1 = await pool.request()
+            .input('Id', groupings[i].GroupId)
+            .query("SELECT * FROM groups WHERE Id = @Id");
+            groupings[i].Group = result1.recordset[0];
+        }
+
+        for (var i = 0; i < expectations.length; i++){
+            const result1 = await pool.request()
+            .input('Id', expectations[i].ContributionId)
+            .query("SELECT * FROM contributions WHERE Id = @Id");
+            expectations[i].Contribution = result1.recordset[0];
+        }
+
+        const groupHtml = await AddGroup();
+
+        res.render('contributor/detail', {
+            title: 'Contributor Detail',
+            contributor,
+            groups,
+            groupings,
+            expectations,
+            groupHtml
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
     }
-}
+};
 
 const contributorDetailPost = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const updatedData = {
-            UserName: req.body.UserName,
-            Password: req.body.Password,
-            FirstName: req.body.FirstName,
-            LastName: req.body.LastName,
-            Email: req.body.Email,
-            Role: req.body.Role,
-            PhoneNumber: req.body.PhoneNumber,
-            Picture: req.body.Picture,
-            Community: req.body.Community,
-            IsActive: req.body.IsActive === 'true'
-        };
-
-        await Contributor.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-
-        res.redirect('/contributor'); // Redirect to list after updating
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error: ' + err);
-    }
-}
-
-const contributorUpdateGet = async (req, res) => {
-    try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const contributor = await Contributor.findById(req.params.id);
-        const communities = await Community.find();
-        if (!contributor) {
-            return res.status(404).send('Contributor not found');
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
         }
-        res.render('contributor/update', { title: 'Update Contributor', contributor, communities });
+        
+        const pool = await getPool();
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } = req.body;
+
+        await pool.request()
+            .input('UserName', UserName)
+            .input('Password', Password)
+            .input('FirstName', FirstName)
+            .input('LastName', LastName)
+            .input('Email', Email)
+            .input('Role', Role)
+            .input('PhoneNumber', PhoneNumber)
+            .input('Picture', Picture)
+            .input('CommunityId', Community.Id)
+            .input('IsActive', IsActive === 'true')
+            .input('id', req.params.id)
+            .query(`UPDATE Contributors SET UserName = @UserName, Password = @Password, FirstName = @FirstName, 
+                    LastName = @LastName, Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, 
+                    Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive WHERE ID = @id`);
+        
+        res.redirect('/contributor');
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
     }
-}
+};
+
+const contributorUpdateGet = async (req, res) => {
+    try {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const contributorId = req.params.id;
+        const pool = await getPool();
+
+        // Fetch contributor from SQL
+        const contributorQuery = `SELECT * FROM Contributors WHERE id = @id`;
+        const contributorResults = await pool.request()
+            .input('id', contributorId)
+            .query(contributorQuery);
+
+        if (contributorResults.recordset.length === 0) {
+            return res.status(404).send('Contributor not found');
+        }
+
+        // Fetch communities from SQL
+        const communitiesQuery = `SELECT * FROM Communities`;
+        const communitiesResults = await pool.request().query(communitiesQuery);
+
+        res.render('contributor/update', { 
+            title: 'Update Contributor', 
+            contributor: contributorResults.recordset[0], 
+            communities: communitiesResults.recordset 
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
 
 const contributorUpdatePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const updatedData = {
-            UserName: req.body.UserName,
-            Password: req.body.Password,
-            FirstName: req.body.FirstName,
-            LastName: req.body.LastName,
-            Email: req.body.Email,
-            Role: req.body.Role,
-            PhoneNumber: req.body.PhoneNumber,
-            Picture: req.file ? req.file.filename : req.body.Picture,
-            Community: req.body.Community,
-            IsActive: req.body.IsActive === 'true'
-        };
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
 
-        await Contributor.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+        const contributorId = req.params.id;
+        const pool = await getPool();
 
-        res.redirect('/contributor'); // Redirect to list after updating
+        const updateQuery = `
+            UPDATE Contributors 
+            SET UserName = @UserName, Password = @Password, FirstName = @FirstName, LastName = @LastName, 
+                Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive 
+            WHERE id = @id
+        `;
+
+        await pool.request()
+            .input('UserName', req.body.UserName)
+            .input('Password', req.body.Password)
+            .input('FirstName', req.body.FirstName)
+            .input('LastName', req.body.LastName)
+            .input('Email', req.body.Email)
+            .input('Role', req.body.Role)
+            .input('PhoneNumber', req.body.PhoneNumber)
+            .input('Picture', req.file ? req.file.filename : req.body.Picture)
+            .input('CommunityId', req.body.CommunityId)
+            .input('IsActive', req.body.IsActive === 'true' ? 1 : 0)
+            .input('id', contributorId)
+            .query(updateQuery);
+
+        res.redirect('/contributor');
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error: ' + err);
     }
-}
+};
 
 const contributorUpdate1 = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const { groups, id } = req.body; // Use req.body for POST
-        
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const { groups, id } = req.body;
         if (!id) {
             return res.status(400).json({ message: "Contributor ID is required." });
         }
 
-        // Convert comma-separated string to an array and remove empty values
-        const groupNames = Array.isArray(groups) ? groups : groups.split(',').filter(name => name.trim() !== "");
+        const pool = await getPool();
+
+        // Convert comma-separated string to an array
+        const groupNames = Array.isArray(groups) ? groups : groups.split(',').map(name => name.trim()).filter(name => name !== "");
+        if (groupNames.length === 0) {
+            return res.status(400).json({ message: "No valid groups provided." });
+        }
 
         // Find group IDs based on names
-        const groupDocs = await Group.find({ Name: { $in: groupNames } });
+        const groupQuery = `SELECT id FROM Groups WHERE Name IN (${groupNames.map((_, i) => `@name${i}`).join(', ')})`;
+        const groupRequest = pool.request();
+        groupNames.forEach((name, i) => groupRequest.input(`name${i}`, name));
+        const groupResults = await groupRequest.query(groupQuery);
 
-        if (groupDocs.length === 0) {
+        if (groupResults.recordset.length === 0) {
             return res.status(400).json({ message: "No valid groups found." });
         }
 
-        const groupIds = groupDocs.map(group => group._id);
+        const groupIds = groupResults.recordset.map(group => group.id);
 
-        let contributor = await Contributor.findById(id);
-        if (!contributor) {
-            return res.status(404).json({ message: "Contributor not found." });
+        // Remove old groupings
+        await pool.request()
+            .input('id', id)
+            .query(`DELETE FROM Groupings WHERE ContributorId = @id`);
+
+        // Insert new groupings
+        for (const groupId of groupIds) {
+            await pool.request()
+                .input('id', id)
+                .input('groupId', groupId)
+                .query(`INSERT INTO Groupings (ContributorId, GroupId) VALUES (@id, @groupId)`);
         }
 
-        // Update contributor's groups in the Grouping model
-        await Grouping.deleteMany({ Contributor: id }); // Remove old groupings
-        const newGroupings = groupIds.map(groupId => ({
-            Contributor: contributor,
-            Group: groupId
-        }));
-
-        await Grouping.insertMany(newGroupings);
-
         return res.send({ message: "Contributor updated successfully!" });
-
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: "Server error" });
@@ -205,106 +251,94 @@ const contributorUpdate1 = async (req, res) => {
 };
 
 const contributorCreateGet = async (req, res) => {
-    try{
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+    try {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        const communities = await Community.find();
-
-        res.render('contributor/create', { title: 'New Contributor', communities });
-    } catch(err) {
+        const pool = await getPool();
+        const communities = await pool.request().query("SELECT * FROM Communities");
+        res.render('contributor/create', { title: 'New Contributor', communities: communities.recordset });
+    } catch (err) {
         console.error(err);
-        res.status(500).send("Server Error.");
-    };
-}
+        res.status(500).send('Server Error');
+    }
+};
 
-const contributorCreatePost = (req, res) => {
-    try{
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+const contributorCreatePost = async (req, res) => {
+    try {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
         }
-
+        
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community } = req.body;
-
-        const contributor = new Contributor({
-            UserName,
-            Password,
-            FirstName,
-            LastName,
-            Email,
-            Role,
-            PhoneNumber,
-            Picture: req.file ? req.file.filename : null,
-            Community
-        });
-
-        contributor.save();
-    } catch(err) {
-        console.error("Error saving contributor:", err);
-        res.status(500).send("Error saving contributor.");
-    };
-}
+        const pool = await getPool();
+        await pool.request()
+            .input('UserName', UserName)
+            .input('Password', Password)
+            .input('FirstName', FirstName)
+            .input('LastName', LastName)
+            .input('Email', Email)
+            .input('Role', Role)
+            .input('PhoneNumber', PhoneNumber)
+            .input('Picture', Picture)
+            .input('CommunityId', Community)
+            .query("INSERT INTO Contributors (UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId) VALUES (@UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId)");
+        
+        res.redirect('/contributor');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
 
 const contributorDeleteGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        const contributor = await Contributor.findById(req.params.id).populate('Community');
-        if (!contributor) {
-            return res.status(404).send('Contributor not found');
-        }
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor });
+        const pool = await getPool();
+        const result = await pool.request()
+            .input('ID', req.params.id)
+            .query("SELECT * FROM Contributors WHERE ID = @ID");
+
+        if (result.recordset.length === 0) return res.status(404).send('Contributor not found');
+        
+        res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.recordset[0] });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
     }
-}
+};
 
 const contributorDeletePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
         }
-
-        await Contributor.findByIdAndDelete(req.params.id)
-            .then((result) => {
-                res.redirect('/contributor'); // Redirect to the list page
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json({ error: "Error deleting contributor" });
-            });
+        
+        const pool = await getPool();
+        await pool.request()
+            .input('ID', req.params.id)
+            .query("DELETE FROM Contributors WHERE ID = @ID");
+        
+        res.redirect('/contributor');
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
     }
-}
+};
 
 const AddGroup = async () => {
-    var result = "";
-    const groupings = await Grouping.find();
-    groupings.forEach (item => {
-        if (item.Group != null)
-        {
-            result += item.Group.Name + "\n";
-        }
-        else
-        {
-            result += "\n";
-        }
-    });
-    return result;
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query("SELECT G.Name FROM Groupings AS GR JOIN Groups AS G ON GR.Group = G.ID");
+        return result.recordset.map(item => item.Name).join("\n");
+    } catch (err) {
+        console.error(err);
+        return "";
+    }
 };
 
 module.exports = {
@@ -319,4 +353,4 @@ module.exports = {
     contributorDeleteGet,
     contributorDeletePost,
     AddGroup
-}
+};

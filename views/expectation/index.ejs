@@ -24,7 +24,7 @@
                                 <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
-                                        <a href="/expectation/rollback/<%= item._id %>" class="btncancel">
+                                        <a href="/expectation/rollback/<%= item.Id %>" class="btncancel">
                                             Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
@@ -35,11 +35,11 @@
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
                                         <label><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
                                     <% } else if (item.PaymentStatus === 1) { %>
-                                        <a href="/expectation/paymentApproval/<%= item._id %>" class="btn">
+                                        <a href="/expectation/paymentApproval/<%= item.Id %>" class="btn">
                                             Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
-                                        <a href="/expectation/paymentWriteOff/<%= item._id %>" class="btn">
+                                        <a href="/expectation/paymentWriteOff/<%= item.Id %>" class="btn">
                                             Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } %>

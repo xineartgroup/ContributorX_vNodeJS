@@ -23,7 +23,7 @@
                         <% contributors.forEach(contributor => { %>
                             <tr>
                                 <td>
-                                    <a href="/contributor/detail/<%= contributor._id %>"</a>
+                                    <a href="/contributor/detail/<%= contributor.Id %>"</a>
                                         <%= contributor.UserName %>
                                     </a>
                                 </td>
@@ -34,7 +34,7 @@
                                 <td><%= contributor.IsActive ? "Active" : "Inactive" %></td>
                                 <td></td>
                                 <td>
-                                    <a class="delete" href="/contributor/delete/<%= contributor._id %>">
+                                    <a class="delete" href="/contributor/delete/<%= contributor.Id %>">
                                         <img src="/images/delete-icon.png" alt="Delete" width="20" height="20">
                                     </a>
                                 </td>

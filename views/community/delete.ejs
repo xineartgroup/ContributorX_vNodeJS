@@ -5,7 +5,7 @@
 
     <div class="detail-ui content">
         <h2><%= title %></h2>
-        <form action="/community/delete/<%= community._id %>" method="POST">
+        <form action="/community/delete/<%= community.Id %>" method="POST">
             <p>Are you sure you want to delete "<%= community.Name %>"?</p>
             <div class="form-buttons">
                 <button type="submit">Delete</button>

@@ -19,14 +19,14 @@
                     <% communities.forEach(community => { %>
                         <tr>
                             <td>
-                                <a href="/community/update/<%= community._id %>">
+                                <a href="/community/update/<%= community.Id %>">
                                     <%= community.Name %>
                                 </a>
                             </td>
                             <td><%= community.Description %></td>
                             <td><%= community.DateCreated.toLocaleDateString() %></td>
                             <td>
-                                <a class="delete" href="/community/delete/<%= community._id %>">
+                                <a class="delete" href="/community/delete/<%= community.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20" height="20">
                                 </a>
                             </td>

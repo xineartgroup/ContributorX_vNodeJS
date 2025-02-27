@@ -3,28 +3,44 @@ const express = require('express');
 const session = require('express-session');
 const flash = require("connect-flash");
 
-const mongoose = require('mongoose');
+/*const mongoose = require('mongoose');*/
 const authRoutes = require('./routes/authRoutes');
 const communityRoutes = require('./routes/communityRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const groupingRoutes = require('./routes/groupingRoutes');
-const contributorRoutes = require('./routes/contributorRoutes');
 const contributionRoutes = require('./routes/contributionRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const expectationRoutes = require('./routes/expectationRoutes');
+const contributorRoutes = require('./routes/contributorRoutes');
 
-const Expectation = require('./models/expectation');
+const sql = require('mssql');
+const getPool = require('./middleware/sqlconnection');
 
 const app = express();
+
+app.listen(3000);
+
+/*const Expectation = require('./models/expectation');
 
 const dbURI = 'mongodb://localhost:27017/cbtr-mgr';
 
 mongoose.set('strictQuery', false);
 
-/*app.listen(3000);*/
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result) => app.listen(3000))
     .catch((err) => console.log(err));
+
+const getGroups = require('./controllers/testconnection');
+
+app.get('/', async (req, res) => {
+    try {
+        const groups = await getGroups();
+        res.json(groups);
+    } catch (error) {
+        console.error("Error fetching groups:", error);
+    }
+});
+*/
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -54,11 +70,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/', async (req, res) => { // Add 'async' to the function
+app.get('/', async (req, res) => {
     const sessionData = req.session;
 
     if (!sessionData || !req.session.isLoggedIn) {
-        return res.redirect('/login'); // Ensure 'return' to prevent further execution
+        return res.redirect('/login');
     }
 
     try {
@@ -68,8 +84,18 @@ app.get('/', async (req, res) => { // Add 'async' to the function
             return res.render('index', { title: "Home", sessionData, expectations: [] });
         }
 
-        // Await the query to get the actual array
-        const expectations = await Expectation.find({ Contributor: contributor }).populate('Contributor Contribution');
+        const pool = await getPool();
+        const result = await pool.request()
+                    .input('ContributorId', sql.Int, contributor.Id)
+                    .query("SELECT * FROM expectations WHERE ContributorId = @ContributorId");
+        const expectations = result.recordset; // await Expectation.find({ Contributor: contributor }).populate('Contributor Contribution');
+        for (var i = 0; i < expectations.length; i++){
+            const result1 = await pool.request()
+            .input('Id', sql.Int, expectations[i].ContributionId)
+            .query("SELECT * FROM contributions WHERE Id = @Id");
+            expectations[i].Contribution = result1.recordset[0];
+        }
+        //console.log("expectations: ", expectations);
 
         res.render('index', { title: "Home", sessionData, expectations });
     } catch (err) {
@@ -89,6 +115,7 @@ app.get('/users', (req, res) => {
 app.use(authRoutes);
 app.use('/community', communityRoutes);
 app.use('/group', groupRoutes);
+app.use('/grouping', groupingRoutes);
 app.use('/contribution', contributionRoutes);
 app.use('/contributor', contributorRoutes);
 app.use('/expense', expenseRoutes);
@@ -97,3 +124,6 @@ app.use('/expectation', expectationRoutes);
 app.use((req, res) => {
     res.status(404).render('error', { title: 'Error' });
 });
+
+/*
+*/

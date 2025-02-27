@@ -17,12 +17,12 @@
                 <tbody>
                     <% contributions.forEach(contribution => { %>
                         <tr>
-                            <td><a href="/contribution/update/<%= contribution._id %>"><%= contribution.Name %></a></td>
+                            <td><a href="/contribution/update/<%= contribution.Id %>"><%= contribution.Name %></a></td>
                             <td><%= contribution.Amount %></td>
                             <td><%= contribution.Group.Name %></td>
                             <td><%= new Date(contribution.DueDate).toLocaleDateString() %></td>
                             <td>
-                                <a class="delete" href="/contribution/delete/<%= contribution._id %>">
+                                <a class="delete" href="/contribution/delete/<%= contribution.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">
                                 </a>
                             </td>

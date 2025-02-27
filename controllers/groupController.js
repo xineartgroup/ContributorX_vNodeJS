@@ -1,20 +1,33 @@
-const Group = require('../models/group');
-const Community = require('../models/community');
+const getPool = require('../middleware/sqlconnection');
+const sql = require('mssql');
 
 const groupIndex = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalGroups = await Group.countDocuments();
-        const groups = await Group.find().populate('Community').sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const pool = await getPool();
+        const resultCountGroups = await pool.request().query('SELECT COUNT(*) AS total FROM Groups');
+        const totalGroups = resultCountGroups.recordset[0].total;
+
+        const resultGetGroups = await pool.request().query(`
+            SELECT * FROM Groups 
+            ORDER BY DateCreated DESC 
+            OFFSET ${skip} ROWS 
+            FETCH NEXT ${limit} ROWS ONLY
+        `);
+        const groups = resultGetGroups.recordset;
+        for (var i = 0; i < groups.length; i++){
+            const result1 = await pool.request()
+            .input('Id', sql.Int, groups[i].CommunityId)
+            .query("SELECT * FROM communities WHERE Id = @Id");
+            groups[i].Community = result1.recordset[0];
+        }
 
         res.render('group/index', { 
             title: 'Group List', 
@@ -23,20 +36,21 @@ const groupIndex = async (req, res) => {
             totalPages: Math.ceil(totalGroups / limit)
         });
     } catch (err) {
-        console.error(err);
+        console.error("Database error:", err);
         res.status(500).send('Server Error');
     }
 };
 
 const groupCreateGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const communities = await Community.find();
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const pool = await getPool();
+        const result = await pool.request().query('SELECT * FROM Community');
+        const communities = result.recordset;
+
         res.render('group/create', { title: 'New Group', communities });
     } catch (err) {
         console.error(err);
@@ -46,15 +60,19 @@ const groupCreateGet = async (req, res) => {
 
 const groupCreatePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
         const { Name, Description, Community } = req.body;
-        const group = new Group({ Name, Description, Community });
-        await group.save();
+        const pool = await getPool();
+
+        await pool.request()
+            .input('Name', Name)
+            .input('Description', Description)
+            .input('Community', Community)
+            .query('INSERT INTO Groups (Name, Description, Community) VALUES (@Name, @Description, @Community)');
+        
         res.redirect('/group');
     } catch (err) {
         console.error("Error saving group:", err);
@@ -64,15 +82,22 @@ const groupCreatePost = async (req, res) => {
 
 const groupUpdateGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const group = await Group.findById(req.params.id);
-        const communities = await Community.find();
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const pool = await getPool();
+        const groupResult = await pool.request().input('id', req.params.id).query('SELECT * FROM Groups WHERE id = @id');
+        const communitiesResult = await pool.request().query('SELECT * FROM Communities');
+        
+        const group = groupResult.recordset[0];
+        const communities = communitiesResult.recordset;
         if (!group) return res.status(404).send('Group not found');
+        
+        const result1 = await pool.request()
+        .input('Id', sql.Int, group.CommunityId)
+        .query("SELECT * FROM communities WHERE Id = @Id");
+        group.Community = result1.recordset[0];
 
         res.render('group/update', { title: 'Update Group', group, communities });
     } catch (err) {
@@ -83,19 +108,20 @@ const groupUpdateGet = async (req, res) => {
 
 const groupUpdatePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const updatedData = {
-            Name: req.body.Name,
-            Description: req.body.Description,
-            Community: req.body.Community
-        };
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
 
-        await Group.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+        const { Name, Description, Community } = req.body;
+        const pool = await getPool();
+
+        await pool.request()
+            .input('id', req.params.id)
+            .input('Name', Name)
+            .input('Description', Description)
+            .input('CommunityId', Community)
+            .query('UPDATE Groups SET Name = @Name, Description = @Description, CommunityId = @CommunityId WHERE id = @id');
+        
         res.redirect('/group');
     } catch (err) {
         console.error(err);
@@ -105,13 +131,13 @@ const groupUpdatePost = async (req, res) => {
 
 const groupDeleteGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        const group = await Group.findById(req.params.id).populate('Community');
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const pool = await getPool();
+        const result = await pool.request().input('id', req.params.id).query('SELECT * FROM Groups WHERE id = @id');
+        const group = result.recordset[0];
         if (!group) return res.status(404).send('Group not found');
 
         res.render('group/delete', { title: 'Delete Group', group });
@@ -123,13 +149,12 @@ const groupDeleteGet = async (req, res) => {
 
 const groupDeletePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-    
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
-          }
-    
-        await Group.findByIdAndDelete(req.params.id);
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const pool = await getPool();
+        await pool.request().input('id', req.params.id).query('DELETE FROM Groups WHERE id = @id');
         res.redirect('/group');
     } catch (err) {
         console.error(err);

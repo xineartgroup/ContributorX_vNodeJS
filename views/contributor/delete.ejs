@@ -6,7 +6,7 @@
 
     <div class="detail-ui content">
         <h2><%= title %></h2>
-        <form action="/contributor/delete/<%= contributor._id %>" method="POST">
+        <form action="/contributor/delete/<%= contributor.Id %>" method="POST">
             <p>Are you sure you want to delete "<%= contributor.UserName %>"?</p>
             <div class="form-buttons">
                 <button type="submit">Delete</button>

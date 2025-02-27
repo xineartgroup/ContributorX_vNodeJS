@@ -18,12 +18,12 @@
                 <tbody>
                     <% groups.forEach(group => { %>
                         <tr>
-                            <td><a href="/group/update/<%= group._id %>"><%= group.Name %></a></td>
+                            <td><a href="/group/update/<%= group.Id %>"><%= group.Name %></a></td>
                             <td><%= group.Description %></td>
                             <td><%= group.Community.Name %></td>
                             <td><%= group.DateCreated.toLocaleDateString() %></td>
                             <td>
-                                <a class="delete" href="/group/delete/<%= group._id %>">
+                                <a class="delete" href="/group/delete/<%= group.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">
                                 </a>
                             </td>

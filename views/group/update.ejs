@@ -4,7 +4,7 @@
 
     <div class="detail-ui content">
         <h2>Update Group</h2>
-        <form action="/group/update/<%= group._id %>" method="POST">
+        <form action="/group/update/<%= group.Id %>" method="POST">
             <div class="form-group">
                 <label for="Name">Group Name:</label>
                 <input type="text" id="Name" name="Name" value="<%= group.Name %>" required>
@@ -19,7 +19,7 @@
                 <label for="Community">Community:</label>
                 <select id="Community" name="Community" required>
                     <% communities.forEach(community => { %>
-                        <option value="<%= community._id %>" <%= group.Community._id.toString() === community._id.toString() ? 'selected' : '' %>><%= community.Name %></option>
+                        <option value="<%= community.Id %>" <%= group.Community.Id === community.Id ? 'selected' : '' %>><%= community.Name %></option>
                     <% }) %>
                 </select>
             </div>

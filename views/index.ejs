@@ -38,7 +38,7 @@
                                         <% } else if (item.PaymentStatus !== 2) { %>
                                             <% totalPaid += item.AmountPaid; %>
                                             <% totalOutstanding += (item.Contribution.Amount - item.AmountPaid); %>
-                                            <a class="btn btn-success form-control" href="/expectation/payment/<%= item._id %>">
+                                            <a class="btn btn-success form-control" href="/expectation/payment/<%= item.Id %>">
                                                 Pay
                                             </a>
                                         <% } %>

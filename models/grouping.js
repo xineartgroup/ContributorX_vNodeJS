@@ -1,12 +1,8 @@
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+let grouping = new Grouping({
+    id: { type: Number, required: true },
+    Contributor: { type: Number, ref: 'Contributor', required: true },
+    Group: { type: Number, ref: 'Group', required: true },
+});
 
-const groupingSchema = new Schema({
-    //id: { type:Schema.Types.ObjectId, required: true },
-    Contributor: { type: Schema.Types.ObjectId, ref: 'Contributor', required: true },
-    Group: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
-}, { timestamps: true });
-
-const Grouping = mongoose.model('Grouping', groupingSchema);
-module.exports = Grouping;
+module.exports = grouping;

@@ -7,7 +7,7 @@
         <h2>Approve Payment</h2>
 
         <form action="/expectation/approve" method="POST">
-            <input type="hidden" name="Id" value="<%= expectation._id %>">
+            <input type="hidden" name="Id" value="<%= expectation.Id %>">
             <input type="hidden" name="ContributionId" value="<%= expectation.ContributionId %>">
             <input type="hidden" name="ContributorId" value="<%= expectation.ContributorId %>">
             <input type="hidden" name="AmountToApprove" value="<%= expectation.AmountToApprove %>">
@@ -43,8 +43,8 @@
             </div>
 
             <div class="form-buttons">
-                <a href="/expectation/paymentapprove/<%= expectation._id %>" class="btn">Approve</a>
-                <a href="/expectation/paymentreject/<%= expectation._id %>" class="btndanger">Reject</a>
+                <a href="/expectation/paymentapprove/<%= expectation.Id %>" class="btn">Approve</a>
+                <a href="/expectation/paymentreject/<%= expectation.Id %>" class="btndanger">Reject</a>
                 <a href="/expectation" class="btncancel">Cancel</a>
             </div>
         </form>

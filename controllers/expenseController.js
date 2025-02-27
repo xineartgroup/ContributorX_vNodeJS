@@ -1,22 +1,32 @@
-const multer = require('multer');
-const path = require('path');
-const Expense = require('../models/expense');
-const Community = require('../models/community');
+const getPool = require('../middleware/sqlconnection');
 
 const expenseIndex = async (req, res) => {
     try {
         const sessionData = req.session;
-
         if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+            return res.redirect('/login');
         }
 
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalExpenses = await Expense.countDocuments();
-        const expenses = await Expense.find().populate('Community').sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const pool = await getPool();
+        const totalExpensesResult = await pool.request().query('SELECT COUNT(*) AS total FROM Expenses');
+        const totalExpenses = totalExpensesResult.recordset[0].total;
+
+        const expensesResult = await pool.request()
+            .query(`SELECT e.*, c.Name AS CommunityName FROM Expenses e 
+                    LEFT JOIN Communities c ON e.CommunityId = c.Id 
+                    ORDER BY e.DateCreated DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
+        const expenses = expensesResult.recordset;
+
+        for (var i = 0; i < expenses.length; i++){
+            const result1 = await pool.request()
+            .input('Id', expenses[i].CommunityId)
+            .query("SELECT * FROM communities WHERE Id = @Id");
+            expenses[i].Community = result1.recordset[0];
+        }
 
         res.render('expense/index', {
             title: 'Expense List',
@@ -32,13 +42,14 @@ const expenseIndex = async (req, res) => {
 
 const expenseCreateGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        const communities = await Community.find();
+        const pool = await getPool();
+        const communitiesResult = await pool.request().query('SELECT Id, Name FROM Communities');
+        const communities = communitiesResult.recordset;
+
         res.render('expense/create', { title: 'New Expense', communities });
     } catch (err) {
         console.error(err);
@@ -48,10 +59,8 @@ const expenseCreateGet = async (req, res) => {
 
 const expenseCreatePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
         const { Name, Description, AmountPaid, Community } = req.body;
@@ -59,15 +68,15 @@ const expenseCreatePost = async (req, res) => {
             return res.status(400).send("Payment Receipt file is required.");
         }
 
-        const expense = new Expense({
-            Name,
-            Description,
-            AmountPaid,
-            Community,
-            PaymentReciept: req.file.filename
-        });
+        const pool = await getPool();
+        await pool.request()
+            .input('Name', Name)
+            .input('Description', Description)
+            .input('AmountPaid', AmountPaid)
+            .input('CommunityId', Community)
+            .input('PaymentReciept', req.file.filename)
+            .query('INSERT INTO Expenses (Name, Description, AmountPaid, CommunityId, PaymentReciept) VALUES (@Name, @Description, @AmountPaid, @CommunityId, @PaymentReciept)');
 
-        await expense.save();
         res.redirect('/expense');
     } catch (err) {
         console.error("Error saving expense:", err);
@@ -77,15 +86,25 @@ const expenseCreatePost = async (req, res) => {
 
 const expenseUpdateGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        const expense = await Expense.findById(req.params.id);
-        const communities = await Community.find();
+        const pool = await getPool();
+        const expenseResult = await pool.request()
+            .input('id', req.params.id)
+            .query('SELECT * FROM Expenses WHERE Id = @id');
+        const expense = expenseResult.recordset[0];
+
+        const communitiesResult = await pool.request().query('SELECT Id, Name FROM Communities');
+        const communities = communitiesResult.recordset;
+
         if (!expense) return res.status(404).send('Expense not found');
+
+        const result1 = await pool.request()
+        .input('Id', expense.CommunityId)
+        .query("SELECT * FROM communities WHERE Id = @Id");
+        expense.Community = result1.recordset[0];
 
         res.render('expense/update', { title: 'Update Expense', expense, communities });
     } catch (err) {
@@ -96,23 +115,20 @@ const expenseUpdateGet = async (req, res) => {
 
 const expenseUpdatePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        console.log("req.body: ", req.body);
-
-        const updatedData = {
-            Name: req.body.Name,
-            Description: req.body.Description,
-            AmountPaid: req.body.AmountPaid,
-            Community: req.body.Community,
-            PaymentReciept: req.file ? req.file.filename : req.body.PaymentReciept
-        };
-
-        await Expense.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+        const pool = await getPool();
+        await pool.request()
+            .input('id', req.params.id)
+            .input('Name', req.body.Name)
+            .input('Description', req.body.Description)
+            .input('AmountPaid', req.body.AmountPaid)
+            .input('CommunityId', req.body.Community)
+            .input('PaymentReciept', req.file ? req.file.filename : req.body.PaymentReciept ? req.body.PaymentReciept : '')
+            .query('UPDATE Expenses SET Name = @Name, Description = @Description, AmountPaid = @AmountPaid, CommunityId = @CommunityId, PaymentReciept = @PaymentReciept WHERE Id = @id');
+        
         res.redirect('/expense');
     } catch (err) {
         console.error(err);
@@ -122,13 +138,16 @@ const expenseUpdatePost = async (req, res) => {
 
 const expenseDeleteGet = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        const expense = await Expense.findById(req.params.id).populate('Community');
+        const pool = await getPool();
+        const expenseResult = await pool.request()
+            .input('id', req.params.id)
+            .query('SELECT e.*, c.Name AS CommunityName FROM Expenses e LEFT JOIN Communities c ON e.CommunityId = c.Id WHERE e.Id = @id');
+        const expense = expenseResult.recordset[0];
+
         if (!expense) return res.status(404).send('Expense not found');
 
         res.render('expense/delete', { title: 'Delete Expense', expense });
@@ -140,13 +159,15 @@ const expenseDeleteGet = async (req, res) => {
 
 const expenseDeletePost = async (req, res) => {
     try {
-        const sessionData = req.session;
-
-        if (!sessionData || !req.session.isLoggedIn) {
-            res.redirect('/login');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
         }
 
-        await Expense.findByIdAndDelete(req.params.id);
+        const pool = await getPool();
+        await pool.request()
+            .input('id', req.params.id)
+            .query('DELETE FROM Expenses WHERE Id = @id');
+        
         res.redirect('/expense');
     } catch (err) {
         console.error(err);

@@ -5,9 +5,9 @@
 
     <div class="detail-ui content">
         <h2>Make Payment</h2>
-        <form action="/expectation/payment/<%= expectation._id %>" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="ContributionId" value="<%= expectation.Contribution._id %>">
-            <input type="hidden" name="ContributorId" value="<%= expectation.Contributor._id %>">
+        <form action="/expectation/payment/<%= expectation.Id %>" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="ContributionId" value="<%= expectation.Contribution.Id %>">
+            <input type="hidden" name="ContributorId" value="<%= expectation.Contributor.Id %>">
 
             <div class="form-group">
                 <label>Contribution:</label>

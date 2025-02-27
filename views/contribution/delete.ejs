@@ -3,7 +3,7 @@
     <%- include('../partials/nav.ejs') %>
 
     <div class="detail-ui content">
-        <form action="/contribution/delete/<%= contribution._id %>" method="POST">
+        <form action="/contribution/delete/<%= contribution.Id %>" method="POST">
             <h2>Delete Contribution</h2>
             <p>Are you sure you want to delete the contribution "<strong><%= contribution.Name %></strong>"?</p>
             <p>This action cannot be undone.</p>

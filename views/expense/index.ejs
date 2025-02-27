@@ -19,13 +19,13 @@
                     <tbody>
                         <% expenses.forEach(expense => { %>
                             <tr>
-                                <td><a href="/expense/update/<%= expense._id %>"><%= expense.Name %></a></td>
+                                <td><a href="/expense/update/<%= expense.Id %>"><%= expense.Name %></a></td>
                                 <td><%= expense.Description %></td>
                                 <!--<td><%= expense.Community.Name %></td>-->
                                 <td><%= expense.DateCreated.toLocaleDateString() %></td>
                                 <td>$<%= expense.AmountPaid.toFixed(2) %></td>
                                 <td>
-                                    <a class="delete" href="/expense/delete/<%= expense._id %>">
+                                    <a class="delete" href="/expense/delete/<%= expense.Id %>">
                                         <img src="/images/delete-icon.png" alt="Delete" width="20">
                                     </a>
                                 </td>

@@ -18,7 +18,7 @@
                 <label for="Group">Group:</label>
                 <select id="Group" name="Group" required>
                     <% groups.forEach(group => { %>
-                        <option value="<%= group._id %>"><%= group.Name %></option>
+                        <option value="<%= group.Id %>"><%= group.Name %></option>
                     <% }) %>
                 </select>
             </div>
