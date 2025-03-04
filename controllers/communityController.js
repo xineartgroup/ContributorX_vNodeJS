@@ -1,6 +1,69 @@
 const express = require("express");
 const http = require('http');
-const getPool = require('../middleware/sqlconnection');
+
+const router = express.Router();
+
+async function fetchTotalCommunities() {
+    return new Promise((resolve, reject) => {
+        const optionsCount = {
+            hostname: 'localhost',
+            port: 3000,
+            path: `/community/api/count`,
+            method: 'GET'
+        };
+
+        const request = http.request(optionsCount, (response) => {
+            let data = '';
+
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            response.on('end', () => {
+                try {
+                    const result = JSON.parse(data);
+                    resolve(result.totalCommunities);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        });
+
+        request.on('error', (error) => reject(error));
+        request.end();
+    });
+}
+
+async function fetchCommunities(skip, limit) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: 'localhost',
+            port: 3000,
+            path: `/community/api?skip=${skip}&limit=${limit}`,
+            method: 'GET'
+        };
+
+        const request = http.request(options, (response) => {
+            let data = '';
+
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            response.on('end', () => {
+                try {
+                    const result = JSON.parse(data);
+                    resolve(result.communities);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        });
+
+        request.on('error', (error) => reject(error));
+        request.end();
+    });
+}
 
 const communityIndex = async (req, res) => {
     try {
@@ -13,61 +76,24 @@ const communityIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const pool = await getPool();
-        const totalCommunitiesResult = await pool.request().query('SELECT COUNT(*) AS total FROM Communities');
-        const totalCommunities = totalCommunitiesResult.recordset[0].total;
-        
-        try {
-            const options = {
-                hostname: 'localhost',
-                port: 3000,
-                path: `/community/api?skip=${skip}&limit=${limit}`,
-                method: 'GET'
-            };
-    
-            const request = http.request(options, (response) => {
-                let data = '';
-            
-                response.on('data', (chunk) => {
-                    data += chunk;
-                });
-            
-                response.on('end', () => {
-                    const result = JSON.parse(data);
-                    
-                    res.render('community/index', {
-                        title: 'Community List', sessionData,
-                        communities: result.communities,
-                        currentPage: page,
-                        totalPages: Math.ceil(totalCommunities / limit)
-                    });
-                });
-            });
-            
-            request.on('error', (error) => {
-                res.render("community/index", {
-                    title: 'Community List', sessionData,
-                    communities: null,
-                    currentPage: 0,
-                    totalPages: 0,
-                    error: "Request error: " + error
-                });
-            });
-            
-            request.end();
-        } catch (error) {
-            console.error("Error:", error);
-            res.render("community/index", {
-                title: 'Community List', sessionData,
-                communities: null,
-                currentPage: 0,
-                totalPages: 0,
-                error: "Error: " + error
-            });
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        const totalCommunities = await fetchTotalCommunities();
+        const communities = await fetchCommunities(skip, limit);
+
+        res.render('community/index', {
+            title: 'Community List',
+            communities,
+            currentPage: page,
+            totalPages: Math.ceil(totalCommunities / limit)
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.render("community/index", {
+            title: 'Community List',
+            communities: null,
+            currentPage: 0,
+            totalPages: 0,
+            error: "Error: " + error
+        });
     }
 };
 
@@ -79,71 +105,66 @@ const communityCreateGet = (req, res) => {
 };
 
 const communityCreatePost = async (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
-    }
-
-    const { Name, Description } = req.body;
-    const reqData = JSON.stringify({
-        Name: Name,
-        Description: Description
-    });
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
 
-        try {
-            const options = {
-                hostname: 'localhost',
-                port: 3000,
-                path: `/community/api/`,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(reqData)
-                }
-            };
-    
-            const request = http.request(options, (response) => {
-                let data = '';
-            
-                response.on('data', (chunk) => {
-                    data += chunk;
-                });
-            
-                response.on('end', () => {
-                    const result = JSON.parse(data);
+        const { Name, Description } = req.body;
+        const reqData = JSON.stringify({
+            Name: Name,
+            Description: Description
+        });
+
+        const options = {
+            hostname: 'localhost',
+            port: 3000,
+            path: `/community/api/`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(reqData)
+            }
+        };
+
+        const request = http.request(options, (response) => {
+            let data = '';
         
-                    res.redirect('/community');
-                });
+            response.on('data', (chunk) => {
+                data += chunk;
             });
-            
-            request.on('error', (error) => {
-                res.render("community/create", {
-                    title: 'New Community', sessionData,
-                    error: "Request error: " + error
-                });
+        
+            response.on('end', () => {
+                const result = JSON.parse(data);
+    
+                res.redirect('/community');
             });
-            
-            request.write(reqData);
-            request.end();
-        } catch (error) {
-            console.error("Error:", error);
+        });
+        
+        request.on('error', (error) => {
             res.render("community/create", {
-                title: 'New Community', sessionData,
+                title: 'New Community',
                 error: "Request error: " + error
             });
-        }
-    } catch (err) {
-        console.error("Error saving community: ", err);
-        res.status(500).send("Error saving community.");
+        });
+        
+        request.write(reqData);
+        request.end();
+    } catch (error) {
+        console.error("Error:", error);
+        res.render("community/create", {
+            title: 'New Community',
+            error: "Request error: " + error
+        });
     }
 };
 
 const communityUpdateGet = async (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
-    }
-
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
         const options = {
             hostname: 'localhost',
             port: 3000,
@@ -181,18 +202,51 @@ const communityUpdateGet = async (req, res) => {
 };
 
 const communityUpdatePost = async (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
-    }
-
     try {
-        const pool = await getPool();
-        await pool.request()
-            .input('id', req.params.id)
-            .input('Name', req.body.Name)
-            .input('Description', req.body.Description)
-            .query('UPDATE Communities SET Name = @Name, Description = @Description WHERE Id = @id');
-        res.redirect('/community');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const { Name, Description } = req.body;
+        const reqData = JSON.stringify({
+            Name: Name,
+            Description: Description
+        });
+
+        const options = {
+            hostname: 'localhost',
+            port: 3000,
+            path: `/community/api/update/${req.params.id}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(reqData)
+            }
+        };
+
+        const request = http.request(options, (response) => {
+            let data = '';
+        
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            response.on('end', () => {
+                const result = JSON.parse(data);
+    
+                res.redirect('/community');
+            });
+        });
+        
+        request.on('error', (error) => {
+            res.render("community/update", {
+                title: 'New Community',
+                error: "Request error: " + error
+            });
+        });
+        
+        request.write(reqData);
+        request.end();
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error: ' + err);
@@ -200,11 +254,11 @@ const communityUpdatePost = async (req, res) => {
 };
 
 const communityDeleteGet = async (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
-    }
-
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
         const options = {
             hostname: 'localhost',
             port: 3000,
@@ -242,28 +296,61 @@ const communityDeleteGet = async (req, res) => {
 };
 
 const communityDeletePost = async (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
-    }
-
     try {
-        const pool = await getPool();
-        await pool.request()
-            .input('id', req.params.id)
-            .query('DELETE FROM Communities WHERE Id = @id');
-        res.redirect('/community');
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const { Name, Description } = req.body;
+        const reqData = JSON.stringify({
+            Name: Name,
+            Description: Description
+        });
+
+        const options = {
+            hostname: 'localhost',
+            port: 3000,
+            path: `/community/api/delete/${req.params.id}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(reqData)
+            }
+        };
+
+        const request = http.request(options, (response) => {
+            let data = '';
+        
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            response.on('end', () => {
+                res.redirect('/community');
+            });
+        });
+        
+        request.on('error', (error) => {
+            res.render("community/delete", {
+                title: 'New Community',
+                error: "Request error: " + error
+            });
+        });
+        
+        request.write(reqData);
+        request.end();
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Error deleting community" });
     }
 };
 
-module.exports = {
-    communityIndex,
-    communityCreateGet,
-    communityCreatePost,
-    communityUpdateGet,
-    communityUpdatePost,
-    communityDeleteGet,
-    communityDeletePost
-};
+router.get('', communityIndex);
+router.get('/create', communityCreateGet);
+router.post('/', communityCreatePost);
+router.get('/update/:id', communityUpdateGet);
+router.post('/update/:id', communityUpdatePost);
+router.get('/delete/:id', communityDeleteGet);
+router.post('/delete/:id', communityDeletePost);
+
+module.exports = router;

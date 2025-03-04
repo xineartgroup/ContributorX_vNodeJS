@@ -5,7 +5,7 @@ const flash = require("connect-flash");
 
 /*const mongoose = require('mongoose');*/
 const authController = require('./controllers/authController');
-const communityRoutes = require('./routes/communityRoutes');
+const communityRoutes = require('./controllers/communityController');
 const groupRoutes = require('./routes/groupRoutes');
 const groupingRoutes = require('./routes/groupingRoutes');
 const contributionRoutes = require('./routes/contributionRoutes');

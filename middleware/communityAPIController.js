@@ -3,6 +3,24 @@ const getPool = require('../middleware/sqlconnection');
 
 const router = express.Router();
 
+const communityCount = async (req, res) => {
+    try {
+        const sessionData = req.session;
+    
+        if (!sessionData || !req.session.isLoggedIn) {
+            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        }
+
+        const pool = await getPool();
+        const totalCommunitiesResult = await pool.request().query('SELECT COUNT(*) AS total FROM Communities');
+        const totalCommunities = totalCommunitiesResult.recordset[0].total;
+
+        res.json({ issuccess: true, message: "", totalCommunities });
+    } catch (err) {
+        res.status(500).json({ issuccess: true, message: "Server Error: " + err, communities: null });
+    }
+};
+
 const communityList = async (req, res) => {
     try {
         const sessionData = req.session;
@@ -24,7 +42,6 @@ const communityList = async (req, res) => {
 
         res.json({ issuccess: true, message: "", communities });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ issuccess: true, message: "Server Error: " + err, communities: null });
     }
 };
@@ -55,18 +72,17 @@ const communityItem = async (req, res) => {
 };
 
 const communityCreate = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        //res.json({ issuccess: false, message: "User not authorized", communities: null });
-    }
-
-    const { Name, Description } = req.body;
     try {
-        const pool = await getPool();
+        const sessionData = req.session;
+
+        if (!sessionData || !req.session.isLoggedIn) {
+            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        }
 
         const date = new Date();
+        const { Name, Description } = req.body;
 
+        const pool = await getPool();
         newCommunityResult = await pool.request()
             .input('Name', Name)
             .input('Description', Description)
@@ -77,28 +93,30 @@ const communityCreate = async (req, res) => {
         
         res.json({ issuccess: true, message: "", communities: { Id, Name, Description, date } });
     } catch (err) {
-        console.error("Error saving community:", err);
         res.status(500).json({ issuccess: false, message: "Error saving community. " + err, communities: { Id, Name, Description, date } });
     }
 };
 
 const communityUpdate = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        //res.json({ issuccess: false, message: "User not authorized", communities: null });
-    }
-
     try {
+        const sessionData = req.session;
+
+        if (!sessionData || !req.session.isLoggedIn) {
+            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        }
+
+        const Id = req.params.id;
+        const { Name, Description, date } = req.body;
+
         const pool = await getPool();
         await pool.request()
-            .input('id', req.params.id)
-            .input('Name', req.body.Name)
-            .input('Description', req.body.Description)
+            .input('id', Id)
+            .input('Name', Name)
+            .input('Description', Description)
             .query('UPDATE Communities SET Name = @Name, Description = @Description WHERE Id = @id');
-        res.redirect('/community');
+        
+        res.json({ issuccess: true, message: "", communities: { Id, Name, Description, date } });
     } catch (err) {
-        console.error(err);
         res.status(500).send('Server Error: ' + err);
     }
 };
@@ -117,11 +135,11 @@ const communityDelete = async (req, res) => {
             .query('DELETE FROM Communities WHERE Id = @id');
         res.redirect('/community');
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: "Error deleting community" });
     }
 };
 
+router.get('/count', communityCount);
 router.get('', communityList);
 router.get('/:id', communityItem);
 router.post('/', communityCreate);
