@@ -1,15 +1,20 @@
 <html xmlns="http://xineartsolutions.com">
 <%- include('../partials/header.ejs') %>
-
 <body>
     <%- include('../partials/nav.ejs') %>
 
     <div class="detail-ui content">
         <h2><%= title %></h2>
         <form action="/contributor/delete/<%= contributor.Id %>" method="POST">
-            <p>Are you sure you want to delete "<%= contributor.UserName %>"?</p>
+            <div class="form-single">
+                <p>Are you sure you want to delete the contributor "<strong><%= contributor.UserName %></strong>"?</p>
+            </div>
+            <div class="form-single">
+                <p>This action cannot be undone.</p>
+            </div>
+
             <div class="form-buttons">
-                <button type="submit">Delete</button>
+                <button type="submit" class="btn-danger">Delete</button>
                 <a href="/contributor" class="cancel-button">Cancel</a>
             </div>
         </form>

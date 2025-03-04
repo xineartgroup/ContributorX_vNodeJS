@@ -4,7 +4,7 @@ const session = require('express-session');
 const flash = require("connect-flash");
 
 /*const mongoose = require('mongoose');*/
-const authRoutes = require('./routes/authRoutes');
+const authController = require('./controllers/authController');
 const communityRoutes = require('./routes/communityRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const groupingRoutes = require('./routes/groupingRoutes');
@@ -12,6 +12,9 @@ const contributionRoutes = require('./routes/contributionRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const expectationRoutes = require('./routes/expectationRoutes');
 const contributorRoutes = require('./routes/contributorRoutes');
+
+const authapiController = require('./middleware/authAPIController');
+const communityapiController = require('./middleware/communityAPIController');
 
 const sql = require('mssql');
 const getPool = require('./middleware/sqlconnection');
@@ -112,7 +115,7 @@ app.get('/users', (req, res) => {
     res.redirect('/contributor');
 });
 
-app.use(authRoutes);
+app.use(authController);
 app.use('/community', communityRoutes);
 app.use('/group', groupRoutes);
 app.use('/grouping', groupingRoutes);
@@ -121,9 +124,9 @@ app.use('/contributor', contributorRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/expectation', expectationRoutes);
 
+app.use('/auth/api', authapiController);
+app.use('/community/api', communityapiController);
+
 app.use((req, res) => {
     res.status(404).render('error', { title: 'Error' });
 });
-
-/*
-*/

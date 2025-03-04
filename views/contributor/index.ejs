@@ -4,7 +4,7 @@
     <%- include('../partials/nav.ejs') %>
     
     <div class="table-container">
-        <h2>All Contributors</h2>
+        <h2>Contributors</h2>
         <% if (contributors.length > 0) { %>
                 <table class="table">
                     <thead>
@@ -21,6 +21,14 @@
                     </thead>
                     <tbody>
                         <% contributors.forEach(contributor => { %>
+                            <% let totalDebit = 0; %>
+                            <% contributor.Expectations.forEach(expectation => { %>
+                                <% if (expectation.Contribution) { %>
+                                    <% if (expectation.PaymentStatus !== 3) { %>
+                                        <% totalDebit += (expectation.Contribution.Amount - expectation.AmountPaid); %>
+                                    <% } %>
+                                <% } %>
+                            <% }) %>
                             <tr>
                                 <td>
                                     <a href="/contributor/detail/<%= contributor.Id %>"</a>
@@ -32,7 +40,7 @@
                                 <td><%= contributor.PhoneNumber %></td>
                                 <td><%= contributor.StartDate.toLocaleString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}) %></td>
                                 <td><%= contributor.IsActive ? "Active" : "Inactive" %></td>
-                                <td></td>
+                                <td><%= totalDebit.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
                                     <a class="delete" href="/contributor/delete/<%= contributor.Id %>">
                                         <img src="/images/delete-icon.png" alt="Delete" width="20" height="20">

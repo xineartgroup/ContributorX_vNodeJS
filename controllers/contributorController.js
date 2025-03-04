@@ -20,6 +20,22 @@ const contributorIndex = async (req, res) => {
         const totalContributors = resultTotal.recordset[0].count;
         const contributors = resultContributors.recordset;
 
+        for (var i = 0; i < contributors.length; i++){
+            const resultExpectations = await pool.request()
+                .input('contributorId', contributors[i].Id)
+                .query("SELECT * FROM Expectations WHERE ContributorId = @contributorId");
+            contributors[i].Expectations = resultExpectations.recordset;
+
+            if (contributors[i].Expectations){
+                for (var j = 0; j < contributors[i].Expectations.length; j++){
+                    const result1 = await pool.request()
+                    .input('Id', contributors[i].Expectations[j].ContributionId)
+                    .query("SELECT * FROM contributions WHERE Id = @Id");
+                    contributors[i].Expectations[j].Contribution = result1.recordset[0];
+                }
+            }
+        }
+
         res.render('contributor/index', {
             title: 'Contributor List',
             contributors,
@@ -137,25 +153,20 @@ const contributorUpdateGet = async (req, res) => {
         const contributorId = req.params.id;
         const pool = await getPool();
 
-        // Fetch contributor from SQL
-        const contributorQuery = `SELECT * FROM Contributors WHERE id = @id`;
         const contributorResults = await pool.request()
             .input('id', contributorId)
-            .query(contributorQuery);
+            .query(`SELECT * FROM Contributors WHERE id = @id`);
 
         if (contributorResults.recordset.length === 0) {
             return res.status(404).send('Contributor not found');
         }
 
-        // Fetch communities from SQL
-        const communitiesQuery = `SELECT * FROM Communities`;
-        const communitiesResults = await pool.request().query(communitiesQuery);
+        const communitiesResults = await pool.request().query(`SELECT * FROM Communities`);
+        
+        let contributor = contributorResults.recordset[0];
+        let communities = communitiesResults.recordset;
 
-        res.render('contributor/update', { 
-            title: 'Update Contributor', 
-            contributor: contributorResults.recordset[0], 
-            communities: communitiesResults.recordset 
-        });
+        res.render('contributor/update', {title: 'Update Contributor', contributor, communities });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -171,13 +182,6 @@ const contributorUpdatePost = async (req, res) => {
         const contributorId = req.params.id;
         const pool = await getPool();
 
-        const updateQuery = `
-            UPDATE Contributors 
-            SET UserName = @UserName, Password = @Password, FirstName = @FirstName, LastName = @LastName, 
-                Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive 
-            WHERE id = @id
-        `;
-
         await pool.request()
             .input('UserName', req.body.UserName)
             .input('Password', req.body.Password)
@@ -190,7 +194,12 @@ const contributorUpdatePost = async (req, res) => {
             .input('CommunityId', req.body.CommunityId)
             .input('IsActive', req.body.IsActive === 'true' ? 1 : 0)
             .input('id', contributorId)
-            .query(updateQuery);
+            .query(`
+            UPDATE Contributors 
+            SET UserName = @UserName, Password = @Password, FirstName = @FirstName, LastName = @LastName, 
+                Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive 
+            WHERE id = @id
+        `);
 
         res.redirect('/contributor');
     } catch (err) {
@@ -257,8 +266,9 @@ const contributorCreateGet = async (req, res) => {
         }
 
         const pool = await getPool();
-        const communities = await pool.request().query("SELECT * FROM Communities");
-        res.render('contributor/create', { title: 'New Contributor', communities: communities.recordset });
+        const communitiesResult = await pool.request().query("SELECT * FROM Communities");
+        let communities = communitiesResult.recordset;
+        res.render('contributor/create', { title: 'New Contributor', communities });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -270,10 +280,13 @@ const contributorCreatePost = async (req, res) => {
         if (!req.session || !req.session.isLoggedIn) {
             return res.redirect('/login');
         }
-        
-        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community } = req.body;
+
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
+        let Picture = req.file ? req.file.filename : '';
+
         const pool = await getPool();
         await pool.request()
+            .input('UserID', UserName)
             .input('UserName', UserName)
             .input('Password', Password)
             .input('FirstName', FirstName)
@@ -283,7 +296,9 @@ const contributorCreatePost = async (req, res) => {
             .input('PhoneNumber', PhoneNumber)
             .input('Picture', Picture)
             .input('CommunityId', Community)
-            .query("INSERT INTO Contributors (UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId) VALUES (@UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId)");
+            .input('IsActive', IsActive)
+            .input('StartDate', new Date())
+            .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
         
         res.redirect('/contributor');
     } catch (err) {
@@ -299,13 +314,15 @@ const contributorDeleteGet = async (req, res) => {
         }
 
         const pool = await getPool();
-        const result = await pool.request()
+        const contributorResult = await pool.request()
             .input('ID', req.params.id)
             .query("SELECT * FROM Contributors WHERE ID = @ID");
 
-        if (result.recordset.length === 0) return res.status(404).send('Contributor not found');
+        if (contributorResult.recordset.length === 0) return res.status(404).send('Contributor not found');
+
+        let contributor = contributorResult.recordset[0];
         
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.recordset[0] });
+        res.render('contributor/delete', { title: 'Delete Contributor', contributor });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

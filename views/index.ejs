@@ -35,10 +35,10 @@
                                             <label class="control-label pt-2" style="font-size:18px;">
                                                 Awaiting Approval of <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                             </label>
-                                        <% } else if (item.PaymentStatus !== 2) { %>
+                                        <% } else if (item.PaymentStatus !== 3) { %>
                                             <% totalPaid += item.AmountPaid; %>
                                             <% totalOutstanding += (item.Contribution.Amount - item.AmountPaid); %>
-                                            <a class="btn btn-success form-control" href="/expectation/payment/<%= item.Id %>">
+                                            <a class="table-button" href="/expectation/payment/<%= item.Id %>">
                                                 Pay
                                             </a>
                                         <% } %>
@@ -60,7 +60,7 @@
                                 <td><b><%= totalPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
                                 <td><b><%= totalOutstanding.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></b></td>
                                 <td>
-                                    <a class="btn btn-success form-control" href="/expectation/payment/<%= contributorId %>">
+                                    <a class="table-button success" href="/expectation/payment/<%= contributorId %>">
                                         Pay All
                                     </a>
                                 </td>

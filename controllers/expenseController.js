@@ -72,10 +72,11 @@ const expenseCreatePost = async (req, res) => {
         await pool.request()
             .input('Name', Name)
             .input('Description', Description)
+            .input('DateCreated', new Date())
             .input('AmountPaid', AmountPaid)
             .input('CommunityId', Community)
             .input('PaymentReciept', req.file.filename)
-            .query('INSERT INTO Expenses (Name, Description, AmountPaid, CommunityId, PaymentReciept) VALUES (@Name, @Description, @AmountPaid, @CommunityId, @PaymentReciept)');
+            .query('INSERT INTO Expenses (Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReciept) VALUES (@Name, @Description, @DateCreated, @AmountPaid, @CommunityId, @PaymentReciept)');
 
         res.redirect('/expense');
     } catch (err) {

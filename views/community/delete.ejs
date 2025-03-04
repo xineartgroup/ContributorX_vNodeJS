@@ -6,9 +6,15 @@
     <div class="detail-ui content">
         <h2><%= title %></h2>
         <form action="/community/delete/<%= community.Id %>" method="POST">
-            <p>Are you sure you want to delete "<%= community.Name %>"?</p>
+            <div class="form-single">
+                <p>Are you sure you want to delete the community "<strong><%= community.Name %></strong>"?</p>
+            </div>
+            <div class="form-single">
+                <p>This action cannot be undone.</p>
+            </div>
+
             <div class="form-buttons">
-                <button type="submit">Delete</button>
+                <button type="submit" class="btn-danger">Delete</button>
                 <a href="/community" class="cancel-button">Cancel</a>
             </div>
         </form>

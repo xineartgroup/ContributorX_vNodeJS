@@ -24,7 +24,7 @@
                                 <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
-                                        <a href="/expectation/rollback/<%= item.Id %>" class="btncancel">
+                                        <a href="/expectation/rollback/<%= item.Id %>" class="table-button danger">
                                             Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
@@ -35,11 +35,11 @@
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
                                         <label><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
                                     <% } else if (item.PaymentStatus === 1) { %>
-                                        <a href="/expectation/paymentApproval/<%= item.Id %>" class="btn">
+                                        <a href="/expectation/paymentApproval/<%= item.Id %>" class="table-button">
                                             Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
-                                        <a href="/expectation/paymentWriteOff/<%= item.Id %>" class="btn">
+                                        <a href="/expectation/paymentWriteOff/<%= item.Id %>" class="table-button">
                                             Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } %>
@@ -61,6 +61,19 @@
                     </tr>
                 </thead>
             </table>
+        <% } %>
+    </div>
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+        <% } %>
+    
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+    
+        <% if (currentPage < totalPages) { %>
+            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
         <% } %>
     </div>
 </body>
