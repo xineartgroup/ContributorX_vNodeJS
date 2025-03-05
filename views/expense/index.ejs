@@ -22,7 +22,7 @@
                                 <td><a href="/expense/update/<%= expense.Id %>"><%= expense.Name %></a></td>
                                 <td><%= expense.Description %></td>
                                 <!--<td><%= expense.Community.Name %></td>-->
-                                <td><%= expense.DateCreated.toLocaleDateString() %></td>
+                                <td><%= expense.DateCreated.split('T')[0] %></td>
                                 <td>$<%= expense.AmountPaid.toFixed(2) %></td>
                                 <td>
                                     <a class="delete" href="/expense/delete/<%= expense.Id %>">

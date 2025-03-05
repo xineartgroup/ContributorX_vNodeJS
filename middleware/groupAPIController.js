@@ -18,7 +18,7 @@ const fetchGroups = async (req, res) => {
 
         res.json({ issuccess: true, message: "", groups });
     } catch (err) {
-        res.json({ issuccess: true, message: "Server Error: " + err, groups: [] });
+        res.json({ issuccess: false, message: "Server Error: " + err, groups: [] });
     }
 };
 
@@ -56,7 +56,7 @@ const groupList = async (req, res) => {
 
         res.json({ issuccess: true, message: "", groups });
     } catch (err) {
-        res.json({ issuccess: false, message: "Server Error: " + err, groups: null });
+        res.json({ issuccess: false, message: "Server Error: " + err, groups: [] });
     }
 };
 

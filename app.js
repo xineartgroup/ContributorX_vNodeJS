@@ -9,8 +9,8 @@ const authController = require('./controllers/authController');
 const communityController = require('./controllers/communityController');
 const contributionController = require('./controllers/contributionController');
 const groupController = require('./controllers/groupController');
+const expenseController = require('./controllers/expenseController');
 const groupingRoutes = require('./routes/groupingRoutes');
-const expenseRoutes = require('./routes/expenseRoutes');
 const expectationRoutes = require('./routes/expectationRoutes');
 const contributorRoutes = require('./routes/contributorRoutes');
 
@@ -18,6 +18,7 @@ const authapiController = require('./middleware/authAPIController');
 const communityapiController = require('./middleware/communityAPIController');
 const contributionapiController = require('./middleware/contributionAPIController');
 const groupapiController = require('./middleware/groupAPIController');
+const expenseapiController = require('./middleware/expenseAPIController');
 
 const sql = require('mssql');
 const getPool = require('./middleware/sqlconnection');
@@ -125,13 +126,14 @@ app.use('/contribution', contributionController);
 app.use('/group', groupController);
 app.use('/grouping', groupingRoutes);
 app.use('/contributor', contributorRoutes);
-app.use('/expense', expenseRoutes);
+app.use('/expense', expenseController);
 app.use('/expectation', expectationRoutes);
 
 app.use('/auth/api', authapiController);
 app.use('/community/api', communityapiController);
 app.use('/contribution/api', contributionapiController);
 app.use('/group/api', groupapiController);
+app.use('/expense/api', expenseapiController);
 
 app.use((req, res) => {
     res.status(404).render('error', { title: 'Error' });
