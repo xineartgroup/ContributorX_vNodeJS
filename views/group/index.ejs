@@ -21,7 +21,7 @@
                             <td><a href="/group/update/<%= group.Id %>"><%= group.Name %></a></td>
                             <td><%= group.Description %></td>
                             <td><%= group.Community.Name %></td>
-                            <td><%= group.DateCreated.toLocaleDateString() %></td>
+                            <td><%= group.DateCreated.split('T')[0] %></td>
                             <td>
                                 <a class="delete" href="/group/delete/<%= group.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">

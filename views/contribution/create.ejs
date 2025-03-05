@@ -3,6 +3,11 @@
     <%- include('../partials/nav.ejs') %>
     <div class="detail-ui content">
         <h2>New Contribution</h2>
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
         <form action="/contribution" method="POST">
             <div class="form-group">
                 <label for="Name">Name:</label>

@@ -2,19 +2,22 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const flash = require("connect-flash");
+const cookieParser = require('cookie-parser');
 
 /*const mongoose = require('mongoose');*/
 const authController = require('./controllers/authController');
-const communityRoutes = require('./controllers/communityController');
-const groupRoutes = require('./routes/groupRoutes');
+const communityController = require('./controllers/communityController');
+const contributionController = require('./controllers/contributionController');
+const groupController = require('./controllers/groupController');
 const groupingRoutes = require('./routes/groupingRoutes');
-const contributionRoutes = require('./routes/contributionRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const expectationRoutes = require('./routes/expectationRoutes');
 const contributorRoutes = require('./routes/contributorRoutes');
 
 const authapiController = require('./middleware/authAPIController');
 const communityapiController = require('./middleware/communityAPIController');
+const contributionapiController = require('./middleware/contributionAPIController');
+const groupapiController = require('./middleware/groupAPIController');
 
 const sql = require('mssql');
 const getPool = require('./middleware/sqlconnection');
@@ -52,6 +55,7 @@ app.use(express.json());
 app.use(express.static('public')); //all static files in 'public' folder will be accessible to the app
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploads directory
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use(session({
     secret: '67b8621fc96406bd6cd2fc10',
@@ -116,16 +120,18 @@ app.get('/users', (req, res) => {
 });
 
 app.use(authController);
-app.use('/community', communityRoutes);
-app.use('/group', groupRoutes);
+app.use('/community', communityController);
+app.use('/contribution', contributionController);
+app.use('/group', groupController);
 app.use('/grouping', groupingRoutes);
-app.use('/contribution', contributionRoutes);
 app.use('/contributor', contributorRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/expectation', expectationRoutes);
 
 app.use('/auth/api', authapiController);
 app.use('/community/api', communityapiController);
+app.use('/contribution/api', contributionapiController);
+app.use('/group/api', groupapiController);
 
 app.use((req, res) => {
     res.status(404).render('error', { title: 'Error' });

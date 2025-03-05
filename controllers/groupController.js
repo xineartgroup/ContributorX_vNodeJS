@@ -1,173 +1,177 @@
-const getPool = require('../middleware/sqlconnection');
-const sql = require('mssql');
+const express = require("express");
+const { makeApiRequest } = require("./_baseController");
+const router = express.Router();
+
+const getCommunities = async (sessionCookie) => {
+    try {
+        const result = await makeApiRequest('GET', '/community/api', sessionCookie);
+        if (!result.issuccess) {
+            throw new Error("Unable to retrieve communities");
+        }
+        return result.communities;
+    } catch (error) {
+        throw new Error("Error fetching communities: " + error);
+    }
+};
+
+const fetchTotalGroups = async (sessionCookie) => {
+    try {
+        const result = await makeApiRequest('GET', '/group/api/count', sessionCookie);
+        return result.totalGroups;
+    } catch (error) {
+        throw new Error("Error fetching total groups: " + error);
+    }
+};
+
+const fetchGroups = async (skip, limit, sessionCookie) => {
+    try {
+        const result = await makeApiRequest('GET', `/group/api?skip=${skip}&limit=${limit}`, sessionCookie);
+        return result.groups;
+    } catch (error) {
+        throw new Error("Error fetching groups: " + error);
+    }
+};
 
 const groupIndex = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
+        const sessionCookie = req.headers.cookie;
 
-        const pool = await getPool();
-        const resultCountGroups = await pool.request().query('SELECT COUNT(*) AS total FROM Groups');
-        const totalGroups = resultCountGroups.recordset[0].total;
+        const totalGroups = await fetchTotalGroups(sessionCookie);
+        const groups = await fetchGroups(skip, limit, sessionCookie);
 
-        const resultGetGroups = await pool.request().query(`
-            SELECT * FROM Groups 
-            ORDER BY DateCreated DESC 
-            OFFSET ${skip} ROWS 
-            FETCH NEXT ${limit} ROWS ONLY
-        `);
-        const groups = resultGetGroups.recordset;
-        for (var i = 0; i < groups.length; i++){
-            const result1 = await pool.request()
-            .input('Id', sql.Int, groups[i].CommunityId)
-            .query("SELECT * FROM communities WHERE Id = @Id");
-            groups[i].Community = result1.recordset[0];
-        }
-
-        res.render('group/index', { 
-            title: 'Group List', 
-            groups, 
+        res.render('group/index', {
+            title: 'Group List',
+            groups,
             currentPage: page,
             totalPages: Math.ceil(totalGroups / limit)
         });
-    } catch (err) {
-        console.error("Database error:", err);
-        res.status(500).send('Server Error');
+    } catch (error) {
+        res.render("group/index", {
+            title: 'Group List',
+            groups: null,
+            currentPage: 0,
+            totalPages: 0,
+            error: "Error: " + error
+        });
     }
 };
 
 const groupCreateGet = async (req, res) => {
-    try {
-        if (!req.session || !req.session.isLoggedIn) {
-            return res.redirect('/login');
-        }
-
-        const pool = await getPool();
-        const result = await pool.request().query('SELECT * FROM Community');
-        const communities = result.recordset;
-
-        res.render('group/create', { title: 'New Group', communities });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    if (!req.session?.isLoggedIn) {
+        return res.redirect('/login');
     }
+    const communities = await getCommunities();
+    res.render('group/create', { title: 'New Group', error: null, communities });
 };
 
 const groupCreatePost = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
+        const sessionCookie = req.headers.cookie;
         const { Name, Description, Community } = req.body;
-        const pool = await getPool();
 
-        await pool.request()
-            .input('Name', Name)
-            .input('Description', Description)
-            .input('Community', Community)
-            .query('INSERT INTO Groups (Name, Description, Community) VALUES (@Name, @Description, @Community)');
-        
-        res.redirect('/group');
-    } catch (err) {
-        console.error("Error saving group:", err);
-        res.status(500).send("Error saving group.");
+        const result = await makeApiRequest('POST', `/group/api/`, sessionCookie, { Name, Description, Community });
+        const communities = await getCommunities();
+
+        if (result.issuccess) {
+            res.redirect('/group');
+        }else{
+            return res.render('group/create', { title: 'Create Group', error: result.message, communities });
+        }
+    } catch (error) {
+        const communities = await getCommunities();
+        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error, communities });
     }
 };
 
 const groupUpdateGet = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
-        const groupResult = await pool.request().input('id', req.params.id).query('SELECT * FROM Groups WHERE id = @id');
-        const communitiesResult = await pool.request().query('SELECT * FROM Communities');
-        
-        const group = groupResult.recordset[0];
-        const communities = communitiesResult.recordset;
-        if (!group) return res.status(404).send('Group not found');
-        
-        const result1 = await pool.request()
-        .input('Id', sql.Int, group.CommunityId)
-        .query("SELECT * FROM communities WHERE Id = @Id");
-        group.Community = result1.recordset[0];
+        const sessionCookie = req.headers.cookie;
+        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, sessionCookie);
+        const communities = await getCommunities();
 
-        res.render('group/update', { title: 'Update Group', group, communities });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        if (result.group) {
+            res.render('group/update', { title: 'Update Group', group: result.group, communities });
+        } else {
+            res.render('group/update', { title: 'Update Group', group: null, error: "Group not found", communities });
+        }
+    } catch (error) {
+        const communities = await getCommunities();
+        res.render('group/update', { title: 'Update Group', group: null, error: "Error fetching group: " + error, communities });
     }
 };
 
 const groupUpdatePost = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
+        const sessionCookie = req.headers.cookie;
         const { Name, Description, Community } = req.body;
-        const pool = await getPool();
 
-        await pool.request()
-            .input('id', req.params.id)
-            .input('Name', Name)
-            .input('Description', Description)
-            .input('CommunityId', Community)
-            .query('UPDATE Groups SET Name = @Name, Description = @Description, CommunityId = @CommunityId WHERE id = @id');
-        
+        await makeApiRequest('POST', `/group/api/update/${req.params.id}`, sessionCookie, { Name, Description, Community });
+
         res.redirect('/group');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    } catch (error) {
+        res.render("group/update", { title: 'Update Group', error: "Error updating group: " + error });
     }
 };
 
 const groupDeleteGet = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
-        const result = await pool.request().input('id', req.params.id).query('SELECT * FROM Groups WHERE id = @id');
-        const group = result.recordset[0];
-        if (!group) return res.status(404).send('Group not found');
+        const sessionCookie = req.headers.cookie;
+        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, sessionCookie);
 
-        res.render('group/delete', { title: 'Delete Group', group });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        if (result.group) {
+            res.render('group/delete', { title: 'Delete Group', group: result.group });
+        } else {
+            res.render('group/delete', { title: 'Delete Group', group: null, error: "Group not found" });
+        }
+    } catch (error) {
+        res.render('group/delete', { title: 'Delete Group', group: null, error: "Error fetching group: " + error });
     }
 };
 
 const groupDeletePost = async (req, res) => {
     try {
-        if (!req.session || !req.session.isLoggedIn) {
+        if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
-        await pool.request().input('id', req.params.id).query('DELETE FROM Groups WHERE id = @id');
+        const sessionCookie = req.headers.cookie;
+        await makeApiRequest('POST', `/group/api/delete/${req.params.id}`, sessionCookie);
+
         res.redirect('/group');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send({ error: "Error deleting group" });
+    } catch (error) {
+        res.render("group/delete", { title: 'Delete Group', error: "Error deleting group: " + error });
     }
 };
 
-module.exports = {
-    groupIndex,
-    groupCreateGet,
-    groupCreatePost,
-    groupUpdateGet,
-    groupUpdatePost,
-    groupDeleteGet,
-    groupDeletePost
-};
+router.get('', groupIndex);
+router.get('/create', groupCreateGet);
+router.post('/', groupCreatePost);
+router.get('/update/:id', groupUpdateGet);
+router.post('/update/:id', groupUpdatePost);
+router.get('/delete/:id', groupDeleteGet);
+router.post('/delete/:id', groupDeletePost);
+
+module.exports = router;

@@ -4,6 +4,11 @@
 
     <div class="detail-ui content">
         <h2>New Group</h2>
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
         <form action="/group" method="POST">
             <div class="form-group">
                 <label for="Name">Group Name:</label>

@@ -5,6 +5,11 @@
 
     <div class="detail-ui content">
         <h2>Delete Contribution</h2>
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
         <form action="/contribution/delete/<%= contribution.Id %>" method="POST">
             <div class="form-single">
                 <p>Are you sure you want to delete the contribution "<strong><%= contribution.Name %></strong>"?</p>

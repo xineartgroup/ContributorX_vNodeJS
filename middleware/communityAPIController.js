@@ -5,10 +5,10 @@ const router = express.Router();
 
 const communityCount = async (req, res) => {
     try {
-        const sessionData = req.session;
+        const sessionData = req.cookies['connect.sid'];
     
-        if (!sessionData || !req.session.isLoggedIn) {
-            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
         }
 
         const pool = await getPool();
@@ -17,16 +17,16 @@ const communityCount = async (req, res) => {
 
         res.json({ issuccess: true, message: "", totalCommunities });
     } catch (err) {
-        res.status(500).json({ issuccess: true, message: "Server Error: " + err, communities: null });
+        res.json({ issuccess: true, message: "Server Error: " + err, totalCommunities: 0 });
     }
 };
 
 const communityList = async (req, res) => {
     try {
-        const sessionData = req.session;
+        const sessionData = req.cookies['connect.sid'];
     
-        if (!sessionData || !req.session.isLoggedIn) {
-            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
         }
 
         const skip = req.query.skip;
@@ -42,16 +42,16 @@ const communityList = async (req, res) => {
 
         res.json({ issuccess: true, message: "", communities });
     } catch (err) {
-        res.status(500).json({ issuccess: true, message: "Server Error: " + err, communities: null });
+        res.json({ issuccess: false, message: "Server Error: " + err, communities: null });
     }
 };
 
 const communityItem = async (req, res) => {
     try {
-        const sessionData = req.session;
+        const sessionData = req.cookies['connect.sid'];
     
-        if (!sessionData || !req.session.isLoggedIn) {
-            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
         }
 
         const pool = await getPool();
@@ -67,42 +67,42 @@ const communityItem = async (req, res) => {
             res.json({ issuccess: false, message: "No community with id found", community });
         }
     } catch (err) {
-        res.status(500).json({ issuccess: true, message: "Server Error: " + err, communities: null });
+        res.json({ issuccess: false, message: "Server Error: " + err, community: null });
     }
 };
 
 const communityCreate = async (req, res) => {
     try {
-        const sessionData = req.session;
+        const sessionData = req.cookies['connect.sid'];
 
-        if (!sessionData || !req.session.isLoggedIn) {
-            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
         }
 
         const date = new Date();
         const { Name, Description } = req.body;
 
         const pool = await getPool();
-        newCommunityResult = await pool.request()
+        const newCommunityResult = await pool.request()
             .input('Name', Name)
             .input('Description', Description)
             .input('DateCreated', date)
             .query('INSERT INTO Communities (Name, Description, DateCreated) OUTPUT INSERTED.ID VALUES (@Name, @Description, @DateCreated)');
         
-        Id = newCommunityResult.recordset[0].ID;
+        const Id = newCommunityResult.recordset[0].ID;
         
-        res.json({ issuccess: true, message: "", communities: { Id, Name, Description, date } });
+        res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: "Error saving community. " + err, communities: { Id, Name, Description, date } });
+        res.json({ issuccess: false, message: "Error saving community. " + err, community: { Id: 0, Name, Description, date } });
     }
 };
 
 const communityUpdate = async (req, res) => {
     try {
-        const sessionData = req.session;
+        const sessionData = req.cookies['connect.sid'];
 
-        if (!sessionData || !req.session.isLoggedIn) {
-            //res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
         }
 
         const Id = req.params.id;
@@ -115,27 +115,28 @@ const communityUpdate = async (req, res) => {
             .input('Description', Description)
             .query('UPDATE Communities SET Name = @Name, Description = @Description WHERE Id = @id');
         
-        res.json({ issuccess: true, message: "", communities: { Id, Name, Description, date } });
+        res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
     } catch (err) {
-        res.status(500).send('Server Error: ' + err);
+        res.json({ issuccess: false, message: "Server Error: " + err, community: { Id: 0, Name, Description, date } });
     }
 };
 
 const communityDelete = async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        //res.json({ issuccess: false, message: "User not authorized", communities: null });
-    }
-
     try {
+        const sessionData = req.cookies['connect.sid'];
+
+        if (!sessionData) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        }
+
         const pool = await getPool();
         await pool.request()
             .input('id', req.params.id)
             .query('DELETE FROM Communities WHERE Id = @id');
-        res.redirect('/community');
+            
+        res.json({ issuccess: true, message: "", community: null });
     } catch (err) {
-        res.status(500).json({ error: "Error deleting community" });
+        res.json({ issuccess: false, message: "Error deleting community" + err, community: null });
     }
 };
 

@@ -5,6 +5,11 @@
     
     <div class="detail-ui content">
         <h2><%= title %></h2>
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
         <form action="/contributor" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="UserName">Username:</label>

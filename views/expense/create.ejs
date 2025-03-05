@@ -4,6 +4,11 @@
 
     <div class="detail-ui content">
         <h2>New Expense</h2>
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
         <form action="/expense" method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="Name">Expense Name:</label>

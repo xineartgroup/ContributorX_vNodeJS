@@ -1,3 +1,4 @@
+const { makeApiRequest } = require('./_baseController');
 const express = require("express");
 const upload = require('../middleware/upload');
 const http = require('http');
@@ -8,91 +9,34 @@ const showLoginPage = (req, res) => {
     res.render("login", { error: null });
 };
 
-const getCommunities = async () => {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'localhost',
-            port: 3000,
-            path: '/community/api',
-            method: 'GET'
-        };
-
-        const request = http.request(options, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    if (!result.issuccess) {
-                        return reject("Unable to retrieve communities");
-                    }
-                    resolve(result.communities);
-                } catch (error) {
-                    reject("Invalid API response");
-                }
-            });
-        });
-
-        request.on('error', (error) => {
-            reject(error);
-        });
-
-        request.end();
-    });
+const getCommunities = async (sessionCookie) => {
+    try {
+        const result = await makeApiRequest('GET', '/community/api', sessionCookie);
+        if (!result.issuccess) {
+            throw new Error("Unable to retrieve communities");
+        }
+        return result.communities;
+    } catch (error) {
+        throw new Error("Error fetching communities: " + error);
+    }
 };
 
 const login = async (req, res) => {
     try {
         const { UserName, Password } = req.body;
-        const loginData = JSON.stringify({
-            UserName: UserName,
-            Password: Password
-        });
-        
-        const loginOptions = {
-            hostname: 'localhost',
-            port: 3000,
-            path: '/auth/api/login',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(loginData)
-            }
-        };
+        const sessionCookie = req.headers.cookie; // Pass the user's session cookie
 
-        const request = http.request(loginOptions, (response) => {
-            let data = '';
-        
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-        
-            response.on('end', () => {
-                const result = JSON.parse(data);      
+        const result = await makeApiRequest('POST', '/auth/api/login', sessionCookie, { UserName, Password });
 
-                if (result.contributor && result.contributor.Password === Password) {
-                    req.session.isLoggedIn = true;
-                    req.session.contributor = result.contributor;
-                    res.redirect("/");
-                }
-                else{
-                    return res.render("login", { error: "Invalid username or password" });
-                }
-            });
-        });
-        
-        request.on('error', (error) => {
-            res.render("login", { error: "Request error:" + error });
-        });
-        
-        request.write(loginData);
-        request.end();
+        if (result.contributor && result.contributor.Password === Password) {
+            req.session.isLoggedIn = true;
+            req.session.contributor = result.contributor;
+            res.redirect("/");
+        } else {
+            res.render("login", { error: "Invalid username or password" });
+        }
     } catch (error) {
-        res.render("login", { error: "Login error:" + error });
+        res.render("login", { error: "Login error: " + error });
     }
 };
 
@@ -106,64 +50,24 @@ const showRegisterPage = async (req, res) => {
 };
 
 const register = async (req, res) => {
-    const communities = await getCommunities(); // await pool.request().query('SELECT * FROM Communities');
-
     try {
+        const sessionCookie = req.headers.cookie;
+        const communities = await getCommunities();
+
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
-        const registerData = JSON.stringify({
-            UserName: UserName,
-            Password: Password,
-            FirstName: FirstName,
-            LastName: LastName,
-            Email: Email,
-            Role: Role,
-            PhoneNumber: PhoneNumber,
-            Community: Community,
-            Picture: Picture,
-            IsActive: IsActive
+        const result = await makeApiRequest('POST', '/auth/api/register', sessionCookie, {
+            UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, Picture, IsActive
         });
-        
-        const loginOptions = {
-            hostname: 'localhost',
-            port: 3000,
-            path: '/auth/api/register',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(registerData)
-            }
-        };
-        
-        const request = http.request(loginOptions, (response) => {
-            let data = '';
-        
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-        
-            response.on('end', () => {
-                const result = JSON.parse(data);       
 
-                if (result.issuccess) {
-                    res.redirect("/login");
-                }
-                else{
-                    return res.render("register", { error: "Registration Failed!!! " + result.message, communities });
-                }
-
-            });
-        });
-        
-        request.on('error', (error) => {
-            res.render("register", { error: "Request error:" + error, communities });
-        });
-        
-        request.write(registerData);
-        request.end();
+        if (result.issuccess) {
+            res.redirect("/login");
+        } else {
+            res.render("register", { error: "Registration Failed!!! " + result.message, communities });
+        }
     } catch (error) {
-        res.render("register", { error: "Registration error:" + error, communities });
+        res.render("register", { error: "Registration error: " + error, communities });
     }
 };
 
