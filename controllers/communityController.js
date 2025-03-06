@@ -4,20 +4,20 @@ const { makeApiRequest } = require("./_baseController");
 const router = express.Router();
 
 const fetchTotalCommunities = async (sessionCookie) => {
-    try {
-        const result = await makeApiRequest('GET', '/community/api/count', sessionCookie);
+    const result = await makeApiRequest('GET', '/community/api/count', sessionCookie);
+    if (result.issuccess) {
         return result.totalCommunities;
-    } catch (error) {
-        throw new Error("Error fetching total communities: " + error);
+    } else {
+        throw new Error(result.message);
     }
 };
 
 const fetchCommunities = async (skip, limit, sessionCookie) => {
-    try {
-        const result = await makeApiRequest('GET', `/community/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/community/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    if (result.issuccess) {
         return result.communities;
-    } catch (error) {
-        throw new Error("Error fetching communities: " + error);
+    } else {
+        throw new Error(result.message);
     }
 };
 
@@ -55,10 +55,14 @@ const communityIndex = async (req, res) => {
 
 // Community Create (GET)
 const communityCreateGet = (req, res) => {
-    if (!req.session?.isLoggedIn) {
-        return res.redirect('/login');
+    try{
+        if (!req.session?.isLoggedIn) {
+            return res.redirect('/login');
+        }
+        res.render('community/create', { title: 'New Community' });
+    } catch (error) {
+        res.render("community/create", { title: 'New Community', error: "Error creating community: " + error, communities: [] });
     }
-    res.render('community/create', { title: 'New Community' });
 };
 
 // Community Create (POST)

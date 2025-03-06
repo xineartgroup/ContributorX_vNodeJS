@@ -10,14 +10,11 @@ const showLoginPage = (req, res) => {
 };
 
 const getCommunities = async (sessionCookie) => {
-    try {
-        const result = await makeApiRequest('GET', '/community/api', sessionCookie);
-        if (!result.issuccess) {
-            throw new Error("Unable to retrieve communities");
-        }
+    const result = await makeApiRequest('GET', '/community/api', sessionCookie);
+    if (result.issuccess) {
         return result.communities;
-    } catch (error) {
-        throw new Error("Error fetching communities: " + error);
+    }else{
+        throw new Error("Unable to retrieve communities");
     }
 };
 

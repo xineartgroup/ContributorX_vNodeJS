@@ -52,7 +52,7 @@ const expenseIndex = async (req, res) => {
     } catch (error) {
         res.render("expense/index", {
             title: 'Expense List',
-            expenses: null,
+            expenses: [],
             currentPage: 0,
             totalPages: 0,
             error: "Error: " + error

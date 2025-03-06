@@ -16,7 +16,7 @@ router.get("/count", async (req, res) => {
 });
 
 // Get all expenses
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -26,6 +26,38 @@ router.get("/", async (req, res) => {
 
         const pool = await getPool();
         const result = await pool.request().query("SELECT * FROM Expenses");
+        const expenses = result.recordset;
+        
+        for (var i = 0; i < expenses.length; i++){
+            const result1 = await pool.request()
+            .input('Id', expenses[i].CommunityId)
+            .query("SELECT * FROM Communities WHERE Id = @Id");
+            expenses[i].Community = result1.recordset[0];
+        }
+
+        res.json({ issuccess: true, message: "", expenses });
+    } catch (error) {
+        res.json({ issuccess: false, message: "Server error: " + error, expenses: [] });
+    }
+});
+
+// Get list of expenses
+router.get("/", async (req, res) => {
+    try {
+        const skip = req.query.skip;
+        const limit = req.query.limit;
+        const sessionData = req.cookies['connect.sid'];
+    
+        if (!sessionData) {
+            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        }
+
+        const query = !skip || !limit || skip == 0 || limit == 0 
+            ? `SELECT * FROM Expenses ORDER BY Id DESC` 
+            : `SELECT * FROM Expenses ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+
+        const pool = await getPool();
+        const result = await pool.request().query(query);
         const expenses = result.recordset;
         
         for (var i = 0; i < expenses.length; i++){
