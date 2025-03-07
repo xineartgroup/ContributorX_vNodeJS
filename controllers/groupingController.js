@@ -1,4 +1,43 @@
-const getPool = require('../middleware/sqlconnection');
+const express = require("express");
+const { makeApiRequest } = require("./_baseController");
+const upload = require('../middleware/upload');
+const router = express.Router();
+
+const getContributors = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/contributor/api/all', sessionCookie);
+    if (result.issuccess) {
+        return result.contributors;
+    } else {
+        throw new Error(result.message);
+    }
+};
+
+const getGroups = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/group/api/all', sessionCookie);
+    if (result.issuccess) {
+        return result.groups;
+    } else {
+        throw new Error(result.message);
+    }
+};
+
+const fetchTotalGroups = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/group/api/count', sessionCookie);
+    if (result.issuccess) {
+        return result.totalGroups;
+    } else {
+        throw new Error(result.message);
+    }
+};
+
+const fetchGroups = async (skip, limit, sessionCookie) => {
+    const result = await makeApiRequest('GET', `/group/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    if (result.issuccess) {
+        return result.groups;
+    } else {
+        throw new Error(result.message);
+    }
+};
 
 const groupingIndex = async (req, res) => {
     try {
@@ -6,20 +45,10 @@ const groupingIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const pool = await getPool();
-        const totalGroupingsResult = await pool.request().query('SELECT COUNT(*) AS total FROM Grouping');
-        const totalGroupings = totalGroupingsResult.recordset[0].total;
+        const totalGroupings = await fetchTotalGroups(req.headers.cookie);
+        const groupings = await fetchGroups(skip, limit, req.headers.cookie);
 
-        const groupingsResult = await pool.request().query(
-            `SELECT g.Id, g.ContributorId, g.GroupId, c.Name AS ContributorName, grp.Name AS GroupName 
-             FROM Grouping g 
-             JOIN Contributor c ON g.ContributorId = c.Id 
-             JOIN GroupTable grp ON g.GroupId = grp.Id 
-             ORDER BY g.Id OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`
-        );
-        const groupings = groupingsResult.recordset;
-
-        res.render('grouping/index', {
+        return res.render('grouping/index', {
             title: 'Grouping List',
             groupings,
             currentPage: page,
@@ -27,126 +56,138 @@ const groupingIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        return res.status(500).render("grouping/index", {
+            title: 'Expense List',
+            groupings: [],
+            currentPage: 0,
+            totalPages: 0,
+            error: err
+        });
     }
 };
 
 const groupingCreateGet = async (req, res) => {
     try {
-        const pool = await getPool();
-        const contributorsResult = await pool.request().query('SELECT * FROM Contributor');
-        const groupsResult = await pool.request().query('SELECT * FROM GroupTable');
+        const contributors = await getContributors(req.headers.cookie);
+        const groups = await getGroups(req.headers.cookie);
 
-        res.render('grouping/create', {
+        return res.render('grouping/create', {
             title: 'New Grouping',
-            contributors: contributorsResult.recordset,
-            groups: groupsResult.recordset
+            contributors,
+            groups
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        return res.status(500).res.render('grouping/create', {
+            title: 'New Grouping',
+            contributors: [],
+            groups: [],
+            error: err
+        });
     }
 };
 
 const groupingCreatePost = async (req, res) => {
     try {
         const { Contributor, Group } = req.body;
-        const pool = await getPool();
-        await pool.request()
-            .input('ContributorId', Contributor)
-            .input('GroupId', Group)
-            .query('INSERT INTO Grouping (ContributorId, GroupId) VALUES (@ContributorId, @GroupId)');
 
-        res.redirect('/grouping');
+        const result = await makeApiRequest('POST', `/grouping/api/`, req.headers.cookie, { Contributor, Group });
+
+        if (result.issuccess) {
+            return res.redirect('/grouping');
+        } else {
+            return res.render('grouping/create', { title: 'Create Grouping', error: result.message });
+        }
     } catch (err) {
         console.error('Error saving grouping:', err);
-        res.status(500).send('Error saving grouping.');
+        return res.status(500).render('grouping/create', { title: 'Create Grouping', error: err });
     }
 };
 
 const groupingUpdateGet = async (req, res) => {
     try {
-        const pool = await getPool();
-        const groupingResult = await pool.request()
-            .input('id', req.params.id)
-            .query('SELECT * FROM Grouping WHERE Id = @id');
-        const grouping = groupingResult.recordset[0];
+        const result = await makeApiRequest('GET', `/grouping/api/${req.params.id}`, req.headers.cookie);
 
-        const contributorsResult = await pool.request().query('SELECT * FROM Contributor');
-        const groupsResult = await pool.request().query('SELECT * FROM GroupTable');
+        const contributors = await getContributors(req.headers.cookie);
+        const groups = await getGroups(req.headers.cookie);
 
-        if (!grouping) return res.status(404).send('Grouping not found');
-
-        res.render('grouping/update', {
-            title: 'Update Grouping',
-            grouping,
-            contributors: contributorsResult.recordset,
-            groups: groupsResult.recordset
-        });
+        if (result.issuccess){
+            return res.render('grouping/update', {
+                title: 'Update Grouping',
+                grouping,
+                contributors,
+                groups
+            });
+        }else{
+            return res.render('grouping/update', {
+                title: 'Update Grouping',
+                grouping,
+                contributors,
+                groups,
+                error: result.message
+            });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        return res.status(500).send('Server Error');
     }
 };
 
 const groupingUpdatePost = async (req, res) => {
     try {
-        const pool = await getPool();
-        await pool.request()
-            .input('id', req.params.id)
-            .input('ContributorId', req.body.Contributor)
-            .input('GroupId', req.body.Group)
-            .query('UPDATE Grouping SET ContributorId = @ContributorId, GroupId = @GroupId WHERE Id = @id');
+        const { Contributor, Group } = req.body;
 
-        res.redirect('/grouping');
+        const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
+            Contributor, Group
+        });
+        
+        if (result.issuccess) {
+            return res.redirect('/grouping');
+        } else {
+            return res.render('grouping/create', { title: 'Create Grouping', error: result.message, communities });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        return res.status(500).render('grouping/create', { title: 'Create Grouping', error: err, communities });
     }
 };
 
 const groupingDeleteGet = async (req, res) => {
     try {
-        const pool = await getPool();
-        const groupingResult = await pool.request()
-            .input('id', req.params.id)
-            .query(
-                `SELECT g.Id, g.ContributorId, g.GroupId, c.Name AS ContributorName, grp.Name AS GroupName 
-                 FROM Grouping g 
-                 JOIN Contributor c ON g.ContributorId = c.Id 
-                 JOIN GroupTable grp ON g.GroupId = grp.Id 
-                 WHERE g.Id = @id`
-            );
-        const grouping = groupingResult.recordset[0];
+        const result = await makeApiRequest('GET', `/grouping/api/${req.params.id}`, req.headers.cookie);
 
-        if (!grouping) return res.status(404).send('Grouping not found');
-
-        res.render('grouping/delete', { title: 'Delete Grouping', grouping });
+        if (result.expense) {
+            return res.render('grouping/delete', { title: 'Delete Grouping', grouping });
+        } else {
+            return res.render('grouping/delete', { title: 'Delete Grouping', grouping: null, error: "Grouping not found" });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        return res.status(500).render('grouping/delete', { title: 'Delete Grouping', grouping: null, error: err });
     }
 };
 
 const groupingDeletePost = async (req, res) => {
     try {
-        const pool = await getPool();
-        await pool.request()
-            .input('id', req.params.id)
-            .query('DELETE FROM Grouping WHERE Id = @id');
-        res.redirect('/grouping');
+        const result = await makeApiRequest('POST', `/grouping/api/delete/${req.params.id}`, req.headers.cookie);
+
+        if (result.issuccess) {
+            res.redirect('/grouping');
+        } else {
+            return res.render('grouping/delete', { title: 'Delete Grouping', expense: null, error: "Grouping not found" });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send({ error: 'Error deleting grouping' });
+        return res.status(500).render('grouping/delete', { title: 'Delete Grouping', expense: null, error: err });
     }
 };
 
-module.exports = {
-    groupingIndex,
-    groupingCreateGet,
-    groupingCreatePost,
-    groupingUpdateGet,
-    groupingUpdatePost,
-    groupingDeleteGet,
-    groupingDeletePost
-};
+router.get('', groupingIndex);
+router.get('/create', groupingCreateGet);
+router.post('/', groupingCreatePost);
+router.get('/update/:id', groupingUpdateGet);
+router.post('/update/:id', groupingUpdatePost);
+router.get('/delete/:id', groupingDeleteGet);
+router.post('/delete/:id', groupingDeletePost);
+
+module.exports = router;

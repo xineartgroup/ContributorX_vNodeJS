@@ -1,4 +1,43 @@
-const getPool = require('../middleware/sqlconnection');
+const express = require("express");
+const { makeApiRequest } = require("./_baseController");
+const upload = require('../middleware/upload');
+const router = express.Router();
+
+const getContributors = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/contributor/api', sessionCookie);
+    if (result.issuccess) {
+        return result.contributors;
+    }else{
+        throw new Error(result.message);
+    }
+};
+
+const getContributions = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/contribution/api', sessionCookie);
+    if (result.issuccess) {
+        return result.contributions;
+    }else{
+        throw new Error(result.message);
+    }
+};
+
+const fetchTotalExpectations = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/expectation/api/count', sessionCookie);
+    if (result.issuccess) {
+        return result.totalExpectations;
+    }else{
+        throw new Error(result.message);
+    }
+};
+
+const fetchExpectations = async (skip, limit, sessionCookie) => {
+    const result = await makeApiRequest('GET', `/expectation/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    if (result.issuccess) {
+        return result.expectations;
+    }else{
+        throw new Error(result.message);
+    }
+};
 
 const expectationIndex = async (req, res) => {
     try {
@@ -6,29 +45,10 @@ const expectationIndex = async (req, res) => {
         
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
-        const offset = (page - 1) * limit;
+        const skip = (page - 1) * limit;
         
-        const pool = await getPool();
-
-        const totalExpectationsResult = await pool.request().query("SELECT COUNT(*) AS count FROM expectations");
-        const expectationsResult = await pool.request().query("SELECT * FROM expectations ORDER BY Id DESC");
-        
-        const totalExpectations = totalExpectationsResult.recordset[0].count;
-        let expectations = expectationsResult.recordset;
-        
-        for (var i = 0; i < expectations.length; i++){
-            const result1 = await pool.request()
-            .input('Id', expectations[i].ContributorId)
-            .query("SELECT * FROM contributors WHERE Id = @Id");
-            expectations[i].Contributor = result1.recordset[0];
-        }
-
-        for (var i = 0; i < expectations.length; i++){
-            const result1 = await pool.request()
-            .input('Id', expectations[i].ContributionId)
-            .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectations[i].Contribution = result1.recordset[0];
-        }
+        const totalExpectations = await fetchTotalExpectations(req.headers.cookie);
+        const expectations = await fetchExpectations(skip, limit, req.headers.cookie);
 
         res.render('expectation/index', {
             title: 'Expectation List',
@@ -38,7 +58,12 @@ const expectationIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).render('expectation/index', {
+            title: 'Expectation List',
+            expectations: [],
+            currentPage: 0,
+            totalPages: 0
+        });
     }
 };
 
@@ -46,18 +71,13 @@ const expectationCreateGet = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const pool = await getPool();
-
-        const contributorsResult = await pool.request().query("SELECT * FROM contributors");
-        const contributionsResult = await pool.request().query("SELECT * FROM contributions");
-        
-        const contributors = contributorsResult.recordset;
-        const contributions = contributionsResult.recordset;
+        const contributors = await getContributors(req.headers.cookie);
+        const contributions = await getContributions(req.headers.cookie);
         
         res.render('expectation/create', { title: 'New Expectation', contributors, contributions });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).render('expectation/create', { title: 'New Expectation', contributors: [], contributions: [] });
     }
 };
 
@@ -68,17 +88,18 @@ const expectationCreatePost = async (req, res) => {
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReciept = req.file ? req.file.filename : null;
         
-        const pool = await getPool();
+        const result = await makeApiRequest('POST', `/expectation/api/`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept });
+        const contributors = await getContributors(req.headers.cookie);
+        const contributions = await getContributions(req.headers.cookie);
 
-        await pool.request().query(`
-            INSERT INTO expectations (Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept]);
-        
-        res.redirect('/expectation');
+        if (result.issuccess) {
+            res.redirect('/expectation');
+        }else{
+            return res.render('expectation/create', { title: 'Create Expectation', error: result.message, contributors, contributions });
+        }
     } catch (err) {
         console.error("Error saving expectation:", err);
-        res.status(500).send("Error saving expectation.");
+        res.status(500).render('expectation/create', { title: 'New Expectation', contributors: [], contributions: [] });
     }
 };
 
@@ -86,22 +107,18 @@ const expectationUpdateGet = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const pool = await getPool();
+        const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
+        const contributors = await getContributors(req.headers.cookie);
+        const contributions = await getContributions(req.headers.cookie);
 
-        const expectationResult = await pool.request().query("SELECT * FROM expectations WHERE ID = " + req.params.id);
-        const contributorsResult = await pool.request().query("SELECT * FROM contributors");
-        const contributionsResult = await pool.request().query("SELECT * FROM contributions");
-
-        const expectation = expectationResult.recordset[0];
-        const contributors = contributorsResult.recordset;
-        const contributions = contributionsResult.recordset;
-
-        if (!expectation) return res.status(404).send('Expectation not found');
-        
-        res.render('expectation/update', { title: 'Update Expectation', expectation, contributors, contributions });
+        if (result.expectation) {
+            res.render('expectation/update', { title: 'Update Expectation', expectation: result.expectation, contributors, contributions });
+        } else {
+            res.render('expectation/update', { title: 'Update Expectation', expectation: null, error: "Expectation not found", contributors, contributions });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).render('expectation/update', { title: 'Update Expectation', expectation: null, error: err, contributors: [], contributions: [] });
     }
 };
 
@@ -112,12 +129,7 @@ const expectationUpdatePost = async (req, res) => {
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReciept = req.file ? req.file.filename : req.body.PaymentReciept;
         
-        const pool = await getPool();
-
-        await pool.request().query(`
-            UPDATE expectations SET Contributor=?, Contribution=?, AmountPaid=?, AmountToApprove=?, PaymentStatus=?, PaymentReciept=?
-            WHERE ID=?
-        `, [Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept, req.params.id]);
+        await makeApiRequest('POST', `/expectation/api/update/${req.params.id}`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept });
         
         res.redirect('/expectation');
     } catch (err) {
@@ -130,18 +142,16 @@ const expectationDeleteGet = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const pool = await getPool();
+        const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        const expectationResult = await pool.request()
-        .input('Id', req.params.id)
-        .query("SELECT * FROM expectations WHERE Id = @Id");
-        const expectation = expectationResult.recordset[0];
-        if (!expectation) return res.status(404).send('Expectation not found');
-        
-        res.render('expectation/delete', { title: 'Delete Expectation', expectation });
+        if (result.expectation) {
+            res.render('expectation/delete', { title: 'Delete Expectation', expectation });
+        } else {
+            res.render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: "Expectation not found" });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: err });
     }
 };
 
@@ -149,13 +159,12 @@ const expectationDeletePost = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const pool = await getPool();
+        await makeApiRequest('POST', `/expectation/api/delete/${req.params.id}`, req.headers.cookie);
 
-        await pool.request().query("DELETE FROM expectations WHERE ID = ?", [req.params.id]);
         res.redirect('/expectation');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error deleting expectation' });
+        res.status(500).render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: err });
     }
 };
 
@@ -166,32 +175,16 @@ const expectationPaymentGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const expectationId = req.params.id;
+        const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        const pool = await getPool();
-
-        const expectationResult = await pool.request()
-        .input('Id', expectationId)
-        .query("SELECT * FROM expectations WHERE id = @Id");
-        const expectation = expectationResult.recordset[0];
-
-        const result1 = await pool.request()
-        .input('Id', expectation.ContributorId)
-        .query("SELECT * FROM contributors WHERE Id = @Id");
-        expectation.Contributor = result1.recordset[0];
-
-        const result2 = await pool.request()
-        .input('Id', expectation.ContributionId)
-        .query("SELECT * FROM contributions WHERE Id = @Id");
-        expectation.Contribution = result2.recordset[0];
-
-        if (!expectation) return res.status(404).send("Expectation not found");
-
-        res.render('expectation/makePayment', { title: 'Update Expectation', expectation });
-
+        if (result.expectation) {
+            return res.render('expectation/makePayment', { title: 'Make Payment', expectation });
+        } else {
+            return res.render('expectation/makePayment', { title: 'Make Payment', expectation: null, error: "Expectation not found" });
+        }
     } catch (err) {
         console.error("Error fetching expectation:", err);
-        res.status(500).send("Server error");
+        return res.status(500).render('expectation/makePayment', { title: 'Make Payment', expectation: null, error: "Expectation not found" });
     }
 };
 
@@ -202,22 +195,13 @@ const expectationPaymentPost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
+        await makeApiRequest('POST', `/expectation/api/payment/${req.params.id}`, req.headers.cookie, req.body);
 
-        const expectationId = req.params.id;
-        const { AmountToApprove, PaymentMethod } = req.body;
-        const PaymentReciept = req.file ? req.file.filename : "";
-
-        await pool.request().query(`
-            UPDATE expectations
-            SET AmountToApprove = ${AmountToApprove}, PaymentStatus = 1, PaymentReciept = '${PaymentReciept}'
-            WHERE id = ${expectationId}`); //PaymentMethod = ${PaymentMethod},
-
-        res.redirect('/');
+        return res.redirect('/');
 
     } catch (err) {
         console.error("Error processing payment:", err);
-        res.status(500).send("Server error.");
+        return res.status(500).send("Server error.");
     }
 };
 
@@ -228,24 +212,16 @@ const paymentApproval = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
+        const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        const expectationResult = await pool.request().query(`SELECT * FROM expectations WHERE id = ${req.params.id}`);
-        const expectation = expectationResult.recordset[0];
-
-        if (expectation){
-            const result1 = await pool.request()
-            .input('Id', expectation.ContributionId)
-            .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectation.Contribution = result1.recordset[0];
-            res.render("expectation/paymentApproval", { title: "Approve Payment", expectation });
-        } else{
-            return res.status(404).send("Expectation not found");
+        if (result.expectation) {
+            return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation });
+        } else {
+            return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation: null, error: "Expectation not found" });
         }
-
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).send("Server error");
+        return res.status(500).render('expectation/paymentApproval', { title: 'Approve Payment', expectation: null, error: error });
     }
 };
 
@@ -256,32 +232,13 @@ const paymentApprove = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
+        await makeApiRequest('GET', `/expectation/api/paymentapprove/${req.params.id}`, req.headers.cookie);
 
-        const expectations = await pool.request().query(`SELECT * FROM expectations WHERE id = ${req.params.id}`);
-
-        if (expectations.length === 0) return res.status(404).send("Expectation not found");
-
-        const expectation = expectations.recordset[0];
-
-        const result1 = await pool.request()
-        .input('Id', expectation.ContributionId)
-        .query("SELECT * FROM contributions WHERE Id = @Id");
-        expectation.Contribution = result1.recordset[0];
-        
-        const updatedAmountPaid = expectation.AmountPaid + expectation.AmountToApprove;
-        const paymentStatus = expectation.Contribution.Amount - updatedAmountPaid === 0 ? 3 : 2; // "Cleared" : "Approved"
-
-        await pool.request().query(`
-            UPDATE expectations
-            SET AmountPaid = ${updatedAmountPaid}, AmountToApprove = 0, PaymentStatus = ${paymentStatus}
-            WHERE id = ${expectation.Id}`);
-
-        res.redirect("/expectation");
+        return res.redirect("/expectation");
 
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).send("Server error.");
+        return res.status(500).send("Server error.");
     }
 };
 
@@ -292,18 +249,13 @@ const paymentReject = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
+        await makeApiRequest('GET', `/expectation/api/paymentreject/${req.params.id}`, req.headers.cookie);
 
-        await pool.request().query(`
-            UPDATE expectations
-            SET AmountToApprove = 0, PaymentStatus = 0
-            WHERE id = ${req.params.id}`);
-
-        res.redirect("/expectation");
+        return res.redirect("/expectation");
 
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).send("Server error.");
+        return res.status(500).send("Server error.");
     }
 };
 
@@ -314,40 +266,28 @@ const paymentWriteOff = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const pool = await getPool();
+        await makeApiRequest('GET', `/expectation/api/paymentwriteoff/${req.params.id}`, req.headers.cookie);
 
-        const expectations = await pool.request().query(`SELECT * FROM expectations WHERE id = ${req.params.id}`);
-
-        if (expectations.length === 0) return res.status(404).send("Expectation not found");
-
-        const expectation = expectations.recordset[0];
-
-        await pool.request().query(`
-            UPDATE expectations
-            SET AmountPaid = AmountToApprove, AmountToApprove = 0, PaymentStatus = 3
-            WHERE id = ${expectation.Id}`);
-
-        req.flash("message", "Success");
-        res.redirect("/expectation");
+        return res.redirect("/expectation");
 
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).send("Server error.");
+        return res.status(500).send("Server error.");
     }
 };
 
-module.exports = {
-    expectationIndex,
-    expectationCreateGet,
-    expectationCreatePost,
-    expectationUpdateGet,
-    expectationUpdatePost,
-    expectationDeleteGet,
-    expectationDeletePost,
-    expectationPaymentGet,
-    expectationPaymentPost,
-    paymentApproval,
-    paymentApprove,
-    paymentReject,
-    paymentWriteOff
-};
+router.get('', expectationIndex);
+router.get('/create', expectationCreateGet);
+router.post('/', expectationCreatePost);
+router.get('/update/:id', expectationUpdateGet);
+router.post('/update/:id', expectationUpdatePost);
+router.get('/delete/:id', expectationDeleteGet);
+router.post('/delete/:id', expectationDeletePost);
+router.get('/payment/:id', expectationPaymentGet);
+router.post('/payment/:id', upload.single("PaymentReciept"), expectationPaymentPost);
+router.get('/paymentApproval/:id', paymentApproval);
+router.get('/paymentapprove/:id', paymentApprove);
+router.get('/paymentreject/:id', paymentReject);
+router.get('/paymentwriteoff/:id', paymentWriteOff);
+
+module.exports = router;

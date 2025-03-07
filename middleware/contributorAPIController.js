@@ -70,7 +70,7 @@ router.get("/", async (req, res) => {
 
         res.json({ issuccess: true, message: "", contributors });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: [] });
+        res.status(500).json({ issuccess: false, message: err.message, contributors: [] });
     }
 });
 
@@ -157,7 +157,7 @@ router.post("/", async (req, res) => {
         .input('CommunityId', Community)
         .input('IsActive', IsActive)
         .input('StartDate', new Date())
-        .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
+        .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) OUTPUT INSERTED.ID VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
         
         const Id = result.recordset[0].ID;
         
@@ -216,7 +216,7 @@ router.post("/delete/:id", async (req, res) => {
         await pool.request().input("id", id).query("DELETE FROM Contributors WHERE id = @id");
         res.json({ issuccess: true, message: "", contributor: null });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: {} });
+        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 

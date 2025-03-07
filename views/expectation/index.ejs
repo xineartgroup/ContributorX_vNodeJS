@@ -39,7 +39,7 @@
                                             Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
-                                        <a href="/expectation/paymentWriteOff/<%= item.Id %>" class="table-button">
+                                        <a href="/expectation/paymentwriteoff/<%= item.Id %>" class="table-button">
                                             Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } %>

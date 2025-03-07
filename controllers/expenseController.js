@@ -43,14 +43,14 @@ const expenseIndex = async (req, res) => {
         const totalExpenses = await fetchTotalExpenses(req.headers.cookie);
         const expenses = await fetchExpenses(skip, limit, req.headers.cookie);
 
-        res.render('expense/index', {
+        return res.render('expense/index', {
             title: 'Expense List',
             expenses,
             currentPage: page,
             totalPages: Math.ceil(totalExpenses / limit)
         });
     } catch (error) {
-        res.render("expense/index", {
+        return res.render("expense/index", {
             title: 'Expense List',
             expenses: [],
             currentPage: 0,
@@ -67,9 +67,9 @@ const expenseCreateGet = async (req, res) => {
         }
 
         const communities = await getCommunities();
-        res.render('expense/create', { title: 'New Expense', error: null, communities });
+        return res.render('expense/create', { title: 'New Expense', error: null, communities });
     } catch (error) {
-        res.render("expense/create", { title: 'New Expense', error: "Error creating expense: " + error, communities: [] });
+        return res.render("expense/create", { title: 'New Expense', error: "Error creating expense: " + error, communities: [] });
     }
 };
 
@@ -105,13 +105,13 @@ const expenseUpdateGet = async (req, res) => {
         const result = await makeApiRequest('GET', `/expense/api/${req.params.id}`, req.headers.cookie);
         const communities = await getCommunities();
 
-        if (result.expense) {
-            res.render('expense/update', { title: 'Update Expense', expense: result.expense, communities });
+        if (result.issuccess) {
+            return res.render('expense/update', { title: 'Update Expense', expense: result.expense, communities });
         } else {
-            res.render('expense/update', { title: 'Update Expense', expense: null, error: "Expense not found", communities });
+            return res.render('expense/update', { title: 'Update Expense', expense: null, error: "Expense not found", communities });
         }
     } catch (error) {
-        res.render('expense/update', { title: 'Update Expense', expense: null, error: "Error fetching expense: " + error, communities: [] });
+        return res.render('expense/update', { title: 'Update Expense', expense: null, error: "Error fetching expense: " + error, communities: [] });
     }
 };
 
@@ -130,12 +130,12 @@ const expenseUpdatePost = async (req, res) => {
         const communities = await getCommunities();
 
         if (result.issuccess) {
-            res.redirect('/expense');
+            return res.redirect('/expense');
         } else {
             return res.render('expense/create', { title: 'Create Expense', error: result.message, communities });
         }
     } catch (error) {
-        res.render("expense/update", { title: 'Update Expense', error: "Error updating expense: " + error, communities: [] });
+        return res.render("expense/update", { title: 'Update Expense', error: "Error updating expense: " + error, communities: [] });
     }
 };
 
@@ -148,12 +148,12 @@ const expenseDeleteGet = async (req, res) => {
         const result = await makeApiRequest('GET', `/expense/api/${req.params.id}`, req.headers.cookie);
 
         if (result.expense) {
-            res.render('expense/delete', { title: 'Delete Expense', expense: result.expense });
+            return res.render('expense/delete', { title: 'Delete Expense', expense: result.expense });
         } else {
-            res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
+            return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
         }
     } catch (error) {
-        res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Error fetching expense: " + error });
+        return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Error fetching expense: " + error });
     }
 };
 
@@ -166,12 +166,12 @@ const expenseDeletePost = async (req, res) => {
         const result = await makeApiRequest('POST', `/expense/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            res.redirect('/expense');
+            return res.redirect('/expense');
         } else {
-            res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
+            return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
         }
     } catch (error) {
-        res.render("expense/delete", { title: 'Delete Expense', error: "Error deleting expense: " + error });
+        return res.render("expense/delete", { title: 'Delete Expense', error: "Error deleting expense: " + error });
     }
 };
 

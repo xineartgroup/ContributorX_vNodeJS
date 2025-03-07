@@ -38,10 +38,9 @@ const groupIndex = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
-        const sessionCookie = req.headers.cookie;
 
-        const totalGroups = await fetchTotalGroups(sessionCookie);
-        const groups = await fetchGroups(skip, limit, sessionCookie);
+        const totalGroups = await fetchTotalGroups(req.headers.cookie);
+        const groups = await fetchGroups(skip, limit, req.headers.cookie);
 
         res.render('group/index', {
             title: 'Group List',
@@ -65,7 +64,7 @@ const groupCreateGet = async (req, res) => {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-        const communities = await getCommunities();
+        const communities = await getCommunities(req.headers.cookie);
         res.render('group/create', { title: 'New Group', error: null, communities });
     } catch (error) {
         res.render("group/create", { title: 'New Group', error: "Error creating group: " + error, communities: [] });
@@ -78,11 +77,10 @@ const groupCreatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
         const { Name, Description, Community } = req.body;
 
-        const result = await makeApiRequest('POST', `/group/api/`, sessionCookie, { Name, Description, Community });
-        const communities = await getCommunities();
+        const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, Community });
+        const communities = await getCommunities(req.headers.cookie);
 
         if (result.issuccess) {
             res.redirect('/group');
@@ -100,9 +98,8 @@ const groupUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
-        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, sessionCookie);
-        const communities = await getCommunities();
+        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
+        const communities = await getCommunities(req.headers.cookie);
 
         if (result.group) {
             res.render('group/update', { title: 'Update Group', group: result.group, communities });

@@ -11,8 +11,8 @@ const contributionController = require('./controllers/contributionController');
 const groupController = require('./controllers/groupController');
 const expenseController = require('./controllers/expenseController');
 const contributorController = require('./controllers/contributorController');
-const groupingRoutes = require('./routes/groupingRoutes');
-const expectationRoutes = require('./routes/expectationRoutes');
+const groupingController = require('./controllers/groupingController');
+const expectationController = require('./controllers/expectationController');
 
 const authapiController = require('./middleware/authAPIController');
 const communityapiController = require('./middleware/communityAPIController');
@@ -20,16 +20,16 @@ const contributionapiController = require('./middleware/contributionAPIControlle
 const groupapiController = require('./middleware/groupAPIController');
 const expenseapiController = require('./middleware/expenseAPIController');
 const contributorapiController = require('./middleware/contributorAPIController');
+const groupingapiController = require('./middleware/groupingAPIController');
+const expectationapiController = require('./middleware/expectationAPIController');
 
-const sql = require('mssql');
-const getPool = require('./middleware/sqlconnection');
+const { makeApiRequest } = require("./controllers/_baseController");
 
 const app = express();
 
 app.listen(3000);
 
-/*const Expectation = require('./models/expectation');
-
+/*
 const dbURI = 'mongodb://localhost:27017/cbtr-mgr';
 
 mongoose.set('strictQuery', false);
@@ -37,17 +37,6 @@ mongoose.set('strictQuery', false);
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result) => app.listen(3000))
     .catch((err) => console.log(err));
-
-const getGroups = require('./controllers/testconnection');
-
-app.get('/', async (req, res) => {
-    try {
-        const groups = await getGroups();
-        res.json(groups);
-    } catch (error) {
-        console.error("Error fetching groups:", error);
-    }
-});
 */
 
 app.set('view engine', 'ejs');
@@ -93,20 +82,9 @@ app.get('/', async (req, res) => {
             return res.render('index', { title: "Home", sessionData, expectations: [] });
         }
 
-        const pool = await getPool();
-        const result = await pool.request()
-                    .input('ContributorId', sql.Int, contributor.Id)
-                    .query("SELECT * FROM expectations WHERE ContributorId = @ContributorId");
-        const expectations = result.recordset; // await Expectation.find({ Contributor: contributor }).populate('Contributor Contribution');
-        for (var i = 0; i < expectations.length; i++){
-            const result1 = await pool.request()
-            .input('Id', sql.Int, expectations[i].ContributionId)
-            .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectations[i].Contribution = result1.recordset[0];
-        }
-        //console.log("expectations: ", expectations);
+        const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}`, req.headers.cookie);
 
-        res.render('index', { title: "Home", sessionData, expectations });
+        res.render('index', { title: "Home", sessionData, expectations: result.expectations });
     } catch (err) {
         console.error("Error fetching expectations:", err);
         res.status(500).send("Server error");
@@ -125,10 +103,10 @@ app.use(authController);
 app.use('/community', communityController);
 app.use('/contribution', contributionController);
 app.use('/group', groupController);
-app.use('/contributor', contributorController);
-app.use('/grouping', groupingRoutes);
 app.use('/expense', expenseController);
-app.use('/expectation', expectationRoutes);
+app.use('/contributor', contributorController);
+app.use('/grouping', groupingController);
+app.use('/expectation', expectationController);
 
 app.use('/auth/api', authapiController);
 app.use('/community/api', communityapiController);
@@ -136,6 +114,8 @@ app.use('/contribution/api', contributionapiController);
 app.use('/group/api', groupapiController);
 app.use('/expense/api', expenseapiController);
 app.use('/contributor/api', contributorapiController);
+app.use('/grouping/api', groupingapiController);
+app.use('/expectation/api', expectationapiController);
 
 app.use((req, res) => {
     res.status(404).render('error', { title: 'Error' });
