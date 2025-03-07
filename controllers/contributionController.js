@@ -1,147 +1,42 @@
-const { makeApiRequest } = require('./_baseController');
 const express = require("express");
-const http = require('http');
+const { makeApiRequest } = require('./_baseController');
 
 const router = express.Router();
 
-const fetchGroups = (sessionCookie) => {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'localhost',
-            port: 3000,
-            path: `/group/api/all`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': sessionCookie
-            }
-        };
-
-        const request = http.request(options, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    resolve(result.groups || []);
-                } catch (error) {
-                    reject("Invalid JSON response");
-                }
-            });
-        });
-
-        request.on('error', (error) => reject("Request error: " + error));
-        request.end();
-    });
+const getGroups = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/group/api/all', sessionCookie);
+    if (result.issuccess) {
+        return result.groups;
+    } else {
+        throw new Error(result.message);
+    }
 };
 
-async function fetchTotalContributions(sessionCookie) {
-    return new Promise((resolve, reject) => {
-        const optionsCount = {
-            hostname: 'localhost',
-            port: 3000,
-            path: `/contribution/api/count`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': sessionCookie
-            }
-        };
-
-        const request = http.request(optionsCount, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    resolve(result.totalContributions);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-        });
-
-        request.on('error', (error) => reject(error));
-        request.end();
-    });
+const fetchTotalContributions = async (sessionCookie) => {
+    const result = await makeApiRequest('GET', '/contribution/api/count', sessionCookie);
+    if (result.issuccess) {
+        return result.totalContributions;
+    }else{
+        throw new Error(result.message);
+    }
 }
 
-async function fetchContributions(skip, limit, sessionCookie) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'localhost',
-            port: 3000,
-            path: `/contribution/api?skip=${skip}&limit=${limit}`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': sessionCookie
-            }
-        };
-
-        const request = http.request(options, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    resolve(result.contributions);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-        });
-
-        request.on('error', (error) => reject(error));
-        request.end();
-    });
+const fetchContributions = async (skip, limit, sessionCookie) => {
+    const result = await makeApiRequest('GET', `/contribution/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    if (result.issuccess) {
+        return result.contributions;
+    }else{
+        throw new Error(result.message);
+    }
 }
 
-const fetchContribution = (id, sessionCookie) => {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'localhost',
-            port: 3000,
-            path: `/contribution/api/${id}`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': sessionCookie
-            }
-        };
-
-        const request = http.request(options, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    resolve(result.contribution || null);
-                } catch (error) {
-                    reject("Invalid JSON response");
-                }
-            });
-        });
-
-        request.on('error', (error) => reject("Request error: " + error));
-        request.end();
-    });
+const fetchContribution = async (id, sessionCookie) => {
+    const result = await makeApiRequest('GET', `/contribution/api/${id}`, sessionCookie);
+    if (result.issuccess) {
+        return result.contribution;
+    }else{
+        throw new Error(result.message);
+    }
 };
 
 const contributionIndex = async (req, res) => {
@@ -174,7 +69,7 @@ const contributionCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
     
-        const groups = await fetchGroups(req.headers.cookie);
+        const groups = await getGroups(req.headers.cookie);
         res.render('contribution/create', { title: 'New Contribution', groups });
     } catch (err) {
         res.render('contribution/create', { title: 'New Contribution', contribution: null, groups: [], error: "Server Error" + err });
@@ -188,7 +83,7 @@ const contributionCreatePost = async (req, res) => {
     try{
         const { Name, Amount, Group, DueDate } = req.body;
         contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await fetchGroups(req.headers.cookie);
+        groups = await getGroups(req.headers.cookie);
     }catch{}
 
     try {
@@ -216,7 +111,7 @@ const contributionUpdateGet = async (req, res) => {
         }
     
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
-        let groups = await fetchGroups(req.headers.cookie);
+        let groups = await getGroups(req.headers.cookie);
 
         if (contribution) {
             res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
@@ -235,7 +130,7 @@ const contributionUpdatePost = async (req, res) => {
     try{
         const { Name, Amount, Group, DueDate } = req.body;
         contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await fetchGroups(req.headers.cookie);
+        groups = await getGroups(req.headers.cookie);
     }catch{}
 
     try {
@@ -262,7 +157,7 @@ const contributionDeleteGet = async (req, res) => {
         }
     
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
-        let groups = await fetchGroups(req.headers.cookie);
+        let groups = await getGroups(req.headers.cookie);
 
         if (contribution) {
             res.render('contribution/delete', { title: 'Delete Contribution', contribution, groups });
@@ -281,7 +176,7 @@ const contributionDeletePost = async (req, res) => {
     try{
         const { Name, Amount, Group, DueDate } = req.body;
         contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await fetchGroups(req.headers.cookie);
+        groups = await getGroups(req.headers.cookie);
     }catch{}
 
     try {

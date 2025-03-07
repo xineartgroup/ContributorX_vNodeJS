@@ -1,6 +1,6 @@
 const express = require("express");
 const { makeApiRequest } = require("./_baseController");
-const upload = require('../middleware/upload');
+const upload = require('./upload');
 const router = express.Router();
 
 const getCommunities = async (sessionCookie) => {

@@ -23,7 +23,7 @@ router.get("/all", async (req, res) => {
         const groupings = result.recordset;
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: [] });
+        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
     }
 });
 

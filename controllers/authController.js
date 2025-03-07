@@ -1,6 +1,6 @@
 const { makeApiRequest } = require('./_baseController');
 const express = require("express");
-const upload = require('../middleware/upload');
+const upload = require('./upload');
 const http = require('http');
 
 const router = express.Router();

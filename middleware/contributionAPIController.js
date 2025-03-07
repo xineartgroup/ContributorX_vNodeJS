@@ -4,7 +4,7 @@ const getPool = require('../middleware/sqlconnection');
 
 const router = express.Router();
 
-const contributionCount = async (req, res) => {
+router.get('/count', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -20,9 +20,27 @@ const contributionCount = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, totalContributions: 0 });
     }
-};
+});
 
-const contributionList = async (req, res) => {
+// Get all contributions
+router.get("/all", async (req, res) => {
+    try {
+        const sessionData = req.cookies['connect.sid'];
+    
+        if (!sessionData) {
+            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        }
+
+        const pool = await getPool();
+        const result = await pool.request().query("SELECT * FROM Contributions");
+        const contributions = result.recordset;
+        res.json({ issuccess: true, message: "", contributions });
+    } catch (err) {
+        res.status(500).json({ issuccess: false, message: err.message, contributions: [] });
+    }
+});
+
+router.get('', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -50,9 +68,9 @@ const contributionList = async (req, res) => {
     } catch (err) {
         res.json({issuccess: false, message: "Server Error: " + err, contributions: null });
     }
-};
+});
 
-const contributionItem = async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -79,9 +97,9 @@ const contributionItem = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, contribution: null });
     }
-};
+});
 
-const contributionCreate = async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -107,9 +125,9 @@ const contributionCreate = async (req, res) => {
         const { Name, Amount, Group, DueDate } = req.body;
         res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: 0, Name, Amount, Group, DueDate } });
     }
-};
+});
 
-const contributionUpdate = async (req, res) => {
+router.post('/update/:id', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -133,9 +151,9 @@ const contributionUpdate = async (req, res) => {
         const { Name, Amount, Group, DueDate } = req.body;
         res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: req.params.id, Name, Amount, Group, DueDate } });
     }
-};
+});
 
-const contributionDelete = async (req, res) => {
+router.post('/delete/:id', async (req, res) => {
     try {
         const sessionData = req.cookies['connect.sid'];
     
@@ -153,13 +171,6 @@ const contributionDelete = async (req, res) => {
         const { Name, Amount, Group, DueDate } = req.body;
         res.json({ issuccess: false, message: "Error deleting contribution: " + err, contribution: { Id: req.params.id, Name, Amount, Group, DueDate } });
     }
-};
-
-router.get('/count', contributionCount);
-router.get('', contributionList);
-router.get('/:id', contributionItem);
-router.post('/create', contributionCreate);
-router.post('/update/:id', contributionUpdate);
-router.post('/delete/:id', contributionDelete);
+});
 
 module.exports = router;

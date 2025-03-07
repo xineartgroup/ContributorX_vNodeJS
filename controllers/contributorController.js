@@ -1,6 +1,6 @@
 const express = require("express");
 const { makeApiRequest } = require("./_baseController");
-const upload = require('../middleware/upload');
+const upload = require('./upload');
 const router = express.Router();
 
 const getCommunities = async (sessionCookie) => {
@@ -68,7 +68,7 @@ const contributorDetailGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
 
-        res.render('contributor/detail', { title: 'Contributor Detail', contributor: result.result.contributor, groups: result.result.groups, groupings: result.result.groupings, expectations: result.result.expectations });
+        res.render('contributor/detail', { title: 'Contributor Detail', contributor: result.contributor, groups: result.groups, groupings: result.groupings, expectations: result.expectations });
     } catch (err) {
         res.status(500).render('contributor/detail', { title: 'Contributor Detail', contributor: [], error: 'Server Error ' + err });
     }
@@ -121,7 +121,7 @@ const contributorUpdateGet = async (req, res) => {
         }
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
-        res.render('contributor/update', { title: 'Update Contributor', contributor: result.result.contributor });
+        res.render('contributor/update', { title: 'Update Contributor', contributor: result.contributor });
     } catch (err) {
         res.status(500).render('contributor/update', { title: 'Update Contributor', contributor: null, error: 'Server Error ' + err });
     }
@@ -148,7 +148,7 @@ const contributorDeleteGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
         
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.result.contributor });
+        res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.contributor });
     } catch (err) {
         res.render('contributor/delete', { title: 'Delete Contributor', contributor: null, error: 'Server Error ' + err });
     }

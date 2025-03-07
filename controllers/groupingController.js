@@ -1,6 +1,6 @@
 const express = require("express");
 const { makeApiRequest } = require("./_baseController");
-const upload = require('../middleware/upload');
+const upload = require('./upload');
 const router = express.Router();
 
 const getContributors = async (sessionCookie) => {
@@ -22,7 +22,7 @@ const getGroups = async (sessionCookie) => {
 };
 
 const fetchTotalGroups = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/group/api/count', sessionCookie);
+    const result = await makeApiRequest('GET', '/group/api/count/0', sessionCookie);
     if (result.issuccess) {
         return result.totalGroups;
     } else {

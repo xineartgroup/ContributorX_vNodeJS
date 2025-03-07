@@ -29,7 +29,7 @@ router.get("/all", async (req, res) => {
         const contributors = result.recordset;
         res.json({ issuccess: true, message: "", contributors });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: [] });
+        res.status(500).json({ issuccess: false, message: err.message, contributors: [] });
     }
 });
 
@@ -124,10 +124,10 @@ router.get("/:id", async (req, res) => {
     
             const groupHtml = await AddGroup();
     
-            res.json({ issuccess: true, message: "", result: {contributor, groups, groupings, expectations } });
+            res.json({ issuccess: true, message: "", contributor, groups, groupings, expectations });
         }
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, result: [] });
+        res.status(500).json({ issuccess: false, message: err.message, contributor: null, groups: [], groupings: [], expectations: [] });
     }
 });
 
@@ -163,7 +163,7 @@ router.post("/", async (req, res) => {
         
         res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: {} });
+        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 
@@ -196,9 +196,9 @@ router.post("/update/:id", async (req, res) => {
                     LastName = @LastName, Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, 
                     Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive WHERE ID = @id`);
 
-        res.json({ issuccess: true, message: "", return: { id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
+        res.json({ issuccess: true, message: "", contributor: { id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, return: {} });
+        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 

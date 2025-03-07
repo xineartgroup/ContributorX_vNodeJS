@@ -1,10 +1,11 @@
 const express = require("express");
 const { makeApiRequest } = require("./_baseController");
-const upload = require('../middleware/upload');
+const upload = require('./upload');
+
 const router = express.Router();
 
 const getContributors = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contributor/api', sessionCookie);
+    const result = await makeApiRequest('GET', '/contributor/api/all', sessionCookie);
     if (result.issuccess) {
         return result.contributors;
     }else{
@@ -13,7 +14,7 @@ const getContributors = async (sessionCookie) => {
 };
 
 const getContributions = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contribution/api', sessionCookie);
+    const result = await makeApiRequest('GET', '/contribution/api/all', sessionCookie);
     if (result.issuccess) {
         return result.contributions;
     }else{

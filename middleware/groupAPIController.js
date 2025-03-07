@@ -22,10 +22,13 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.get('/count', async (req, res) => {
+router.get('/count/:communityid', async (req, res) => {
     try {
         const pool = await getPool();
-        const totalGroupsResult = await pool.request().query('SELECT COUNT(*) AS total FROM Groups');
+        const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Groups' :
+        `SELECT COUNT(*) AS total FROM Groups WHERE communityid = ${req.params.communityid}`;
+
+        const totalGroupsResult = await pool.request().query(query);
         const totalGroups = totalGroupsResult.recordset[0].total;
 
         return res.json({ issuccess: true, message: "", totalGroups });
@@ -38,11 +41,12 @@ router.get('', async (req, res) => {
     try {
         const skip = req.query.skip;
         const limit = req.query.limit;
+        const communityid = req.query.communityid;
         const pool = await getPool();
 
         const query = !skip || !limit || skip == 0 || limit == 0 
-            ? `SELECT * FROM Groups ORDER BY Id DESC` 
-            : `SELECT * FROM Groups ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+            ? (communityid == 0 ? `SELECT * FROM Groups ORDER BY Id DESC` : `SELECT * FROM Groups WHERE communityid = ${communityid} ORDER BY Id DESC`)
+            : (communityid == 0 ? `SELECT * FROM Groups ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT * FROM Groups WHERE communityid = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
 
         const groupsResult = await pool.request().query(query);
         const groups = groupsResult.recordset;

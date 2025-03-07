@@ -2,17 +2,8 @@ const express = require("express");
 const { makeApiRequest } = require("./_baseController");
 const router = express.Router();
 
-const getCommunities = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/community/api', sessionCookie);
-    if (result.issuccess) {
-        return result.communities;
-    }else{
-        throw new Error(result.message);
-    }
-};
-
-const fetchTotalGroups = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/group/api/count', sessionCookie);
+const fetchTotalGroups = async (sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/group/api/count/${session.contributor.CommunityId}`, sessionCookie);
     if (result.issuccess) {
         return result.totalGroups;
     }else{
@@ -20,8 +11,8 @@ const fetchTotalGroups = async (sessionCookie) => {
     }
 };
 
-const fetchGroups = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/group/api?skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchGroups = async (skip, limit, sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     }else{
@@ -39,8 +30,8 @@ const groupIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalGroups = await fetchTotalGroups(req.headers.cookie);
-        const groups = await fetchGroups(skip, limit, req.headers.cookie);
+        const totalGroups = await fetchTotalGroups(req.headers.cookie, req.session);
+        const groups = await fetchGroups(skip, limit, req.headers.cookie, req.session);
 
         res.render('group/index', {
             title: 'Group List',
@@ -64,10 +55,9 @@ const groupCreateGet = async (req, res) => {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-        const communities = await getCommunities(req.headers.cookie);
-        res.render('group/create', { title: 'New Group', error: null, communities });
+        res.render('group/create', { title: 'New Group', error: null });
     } catch (error) {
-        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error, communities: [] });
+        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error });
     }
 };
 
@@ -77,18 +67,18 @@ const groupCreatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const { Name, Description, Community } = req.body;
+        const { Name, Description } = req.body;
+        Community = req.session.contributor.CommunityId;
 
         const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, Community });
-        const communities = await getCommunities(req.headers.cookie);
 
         if (result.issuccess) {
             res.redirect('/group');
         }else{
-            return res.render('group/create', { title: 'Create Group', error: result.message, communities });
+            return res.render('group/create', { title: 'Create Group', error: result.message });
         }
     } catch (error) {
-        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error, communities: [] });
+        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error });
     }
 };
 
@@ -99,15 +89,14 @@ const groupUpdateGet = async (req, res) => {
         }
 
         const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
-        const communities = await getCommunities(req.headers.cookie);
 
         if (result.group) {
-            res.render('group/update', { title: 'Update Group', group: result.group, communities });
+            res.render('group/update', { title: 'Update Group', group: result.group });
         } else {
-            res.render('group/update', { title: 'Update Group', group: null, error: "Group not found", communities });
+            res.render('group/update', { title: 'Update Group', group: null, error: "Group not found" });
         }
     } catch (error) {
-        res.render('group/update', { title: 'Update Group', group: null, error: "Error fetching group: " + error, communities: [] });
+        res.render('group/update', { title: 'Update Group', group: null, error: "Error fetching group: " + error });
     }
 };
 
@@ -117,7 +106,8 @@ const groupUpdatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const { Name, Description, Community } = req.body;
+        const { Name, Description } = req.body;
+        Community = req.session.contributor.CommunityId;
 
         await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, Community });
 
