@@ -22,10 +22,13 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.get('/count', async (req, res) => {
+router.get('/count/:communityid', async (req, res) => {
     try {
         const pool = await getPool();
-        const totalExpectationsResult = await pool.request().query('SELECT COUNT(*) AS total FROM expectations');
+        const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM expectations' :
+        `SELECT COUNT(e.Id) AS total FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${req.params.communityid}`;
+
+        const totalExpectationsResult = await pool.request().query(query);
         const totalExpectations = totalExpectationsResult.recordset[0].total;
 
         return res.json({ issuccess: true, message: "", totalExpectations });
@@ -44,12 +47,13 @@ router.get('', async (req, res) => {
 
         const skip = req.query.skip;
         const limit = req.query.limit;
+        const communityid = req.query.communityid;
         
         const pool = await getPool();
 
         const query = !skip || !limit || skip == 0 || limit == 0 
-            ? `SELECT * FROM expectations ORDER BY Id DESC` 
-            : `SELECT * FROM expectations ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+            ? (communityid == 0 ? `SELECT * FROM expectations ORDER BY Id DESC` : `SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${communityid} ORDER BY Id DESC`)
+            : (communityid == 0 ? `SELECT * FROM expectations ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
 
         const expectationsResult = await pool.request().query(query);
         let expectations = expectationsResult.recordset;

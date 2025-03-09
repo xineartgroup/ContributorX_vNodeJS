@@ -3,18 +3,6 @@ const getPool = require('../middleware/sqlconnection');
 
 const router = express.Router();
 
-router.get("/count", async (req, res) => {
-    try {
-        const pool = await getPool();
-        const totalContributorsResult = await pool.request().query('SELECT COUNT(*) AS total FROM Contributors');
-        const totalContributors = totalContributorsResult.recordset[0].total;
-
-        res.json({ issuccess: true, message: "", totalContributors });
-    } catch (err) {
-        res.json({ issuccess: false, message: "Server Error: " + err, totalContributors: 0 });
-    }
-});
-
 // Get all contributors
 router.get("/all", async (req, res) => {
     try {
@@ -33,11 +21,27 @@ router.get("/all", async (req, res) => {
     }
 });
 
+router.get("/count/:communityid", async (req, res) => {
+    try {
+        const pool = await getPool();
+        const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Contributors' :
+        `SELECT COUNT(*) AS total FROM Contributors WHERE CommunityId = ${req.params.communityid}`;
+
+        const totalContributorsResult = await pool.request().query(query);
+        const totalContributors = totalContributorsResult.recordset[0].total;
+
+        res.json({ issuccess: true, message: "", totalContributors });
+    } catch (err) {
+        res.json({ issuccess: false, message: "Server Error: " + err, totalContributors: 0 });
+    }
+});
+
 // Get list of contributors
 router.get("/", async (req, res) => {
     try {
         const skip = req.query.skip;
         const limit = req.query.limit;
+        const communityid = req.query.communityid;
         const sessionData = req.cookies['connect.sid'];
     
         if (!sessionData) {
@@ -45,8 +49,8 @@ router.get("/", async (req, res) => {
         }
 
         const query = !skip || !limit || skip == 0 || limit == 0 
-            ? `SELECT * FROM Contributors ORDER BY Id DESC` 
-            : `SELECT * FROM Contributors ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+            ? (communityid == 0 ? `SELECT * FROM Contributors ORDER BY Id DESC` : `SELECT * FROM Contributors WHERE communityid = ${communityid} ORDER BY Id DESC`)
+            : (communityid == 0 ? `SELECT * FROM Contributors ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT * FROM Contributors WHERE communityid = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
 
         const pool = await getPool();
         const result = await pool.request().query(query);

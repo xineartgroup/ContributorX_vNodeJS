@@ -26,7 +26,7 @@ router.get('/count/:communityid', async (req, res) => {
     try {
         const pool = await getPool();
         const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Groups' :
-        `SELECT COUNT(*) AS total FROM Groups WHERE communityid = ${req.params.communityid}`;
+        `SELECT COUNT(*) AS total FROM Groups WHERE CommunityId = ${req.params.communityid}`;
 
         const totalGroupsResult = await pool.request().query(query);
         const totalGroups = totalGroupsResult.recordset[0].total;
@@ -42,6 +42,7 @@ router.get('', async (req, res) => {
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
+        
         const pool = await getPool();
 
         const query = !skip || !limit || skip == 0 || limit == 0 

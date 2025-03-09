@@ -3,17 +3,8 @@ const { makeApiRequest } = require("./_baseController");
 const upload = require('./upload');
 const router = express.Router();
 
-const getCommunities = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/community/api', sessionCookie);
-    if (result.issuccess) {
-        return result.communities;
-    }else{
-        throw new Error("Unable to retrieve communities");
-    }
-};
-
-const fetchTotalContributors = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contributor/api/count', sessionCookie);
+const fetchTotalContributors = async (sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/contributor/api/count/${session.contributor.CommunityId}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributors;
     } else {
@@ -21,8 +12,8 @@ const fetchTotalContributors = async (sessionCookie) => {
     }
 };
 
-const fetchContributors = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/contributor/api?skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchContributors = async (skip, limit, sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/contributor/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
     if (result.issuccess) {
         return result.contributors;
     } else {
@@ -40,8 +31,8 @@ const contributorIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalContributors = await fetchTotalContributors(req.headers.cookie);
-        const contributors = await fetchContributors(skip, limit, req.headers.cookie);
+        const totalContributors = await fetchTotalContributors(req.headers.cookie, req.session);
+        const contributors = await fetchContributors(skip, limit, req.headers.cookie, req.session);
 
         res.render('contributor/index', {
             title: 'Contributor List',
@@ -93,11 +84,9 @@ const contributorCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
         
-        const communities = await getCommunities();
-
-        res.render('contributor/create', { title: 'New Contributor', communities });
+        res.render('contributor/create', { title: 'New Contributor' });
     } catch (err) {
-        res.status(500).render('contributor/', { title: 'New Contributor', communities: [], error: 'Server Error ' + err });
+        res.status(500).render('contributor/', { title: 'New Contributor', error: 'Server Error ' + err });
     }
 };
 
@@ -107,10 +96,13 @@ const contributorCreatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', '/contributor/api', req.headers.cookie, req.body);
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
+        Community = req.session.contributor.CommunityId;
+
+        await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
         res.redirect('/contributor');
     } catch (err) {
-        res.status(500).render('contributor/detail', { title: 'New Contributor', communities: [], error: 'Server Error ' + err });
+        res.status(500).render('contributor/detail', { title: 'New Contributor', error: 'Server Error ' + err });
     }
 };
 
@@ -133,7 +125,10 @@ const contributorUpdatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, req.body);
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
+        Community = req.session.contributor.CommunityId;
+
+        await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
         res.redirect('/contributor');
     } catch (err) {
         res.status(500).render('contributor/update', { title: 'Update Contributor', contributor: null, error: 'Server Error ' + err });

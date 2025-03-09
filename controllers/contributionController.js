@@ -12,8 +12,8 @@ const getGroups = async (sessionCookie) => {
     }
 };
 
-const fetchTotalContributions = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contribution/api/count', sessionCookie);
+const fetchTotalContributions = async (sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/contribution/api/count/${session.contributor.CommunityId}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributions;
     }else{
@@ -21,8 +21,8 @@ const fetchTotalContributions = async (sessionCookie) => {
     }
 }
 
-const fetchContributions = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/contribution/api?skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchContributions = async (skip, limit, sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/contribution/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
     if (result.issuccess) {
         return result.contributions;
     }else{
@@ -49,8 +49,8 @@ const contributionIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalContributions = await fetchTotalContributions(req.headers.cookie);
-        const contributions = await fetchContributions(skip, limit, req.headers.cookie);
+        const totalContributions = await fetchTotalContributions(req.headers.cookie, req.session);
+        const contributions = await fetchContributions(skip, limit, req.headers.cookie, req.session);
 
         res.render('contribution/index', { 
             title: 'Contribution List', 

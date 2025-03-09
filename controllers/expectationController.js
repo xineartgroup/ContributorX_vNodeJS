@@ -22,8 +22,8 @@ const getContributions = async (sessionCookie) => {
     }
 };
 
-const fetchTotalExpectations = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/expectation/api/count', sessionCookie);
+const fetchTotalExpectations = async (sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/expectation/api/count/${session.contributor.CommunityId}`, sessionCookie);
     if (result.issuccess) {
         return result.totalExpectations;
     }else{
@@ -31,8 +31,8 @@ const fetchTotalExpectations = async (sessionCookie) => {
     }
 };
 
-const fetchExpectations = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/expectation/api?skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchExpectations = async (skip, limit, sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/expectation/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
     if (result.issuccess) {
         return result.expectations;
     }else{
@@ -48,8 +48,8 @@ const expectationIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
         
-        const totalExpectations = await fetchTotalExpectations(req.headers.cookie);
-        const expectations = await fetchExpectations(skip, limit, req.headers.cookie);
+        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session);
+        const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session);
 
         res.render('expectation/index', {
             title: 'Expectation List',
