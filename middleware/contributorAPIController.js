@@ -6,10 +6,8 @@ const router = express.Router();
 // Get all contributors
 router.get("/all", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributors: [] });
         }
 
         const pool = await getPool();
@@ -23,6 +21,10 @@ router.get("/all", async (req, res) => {
 
 router.get("/count/:communityid", async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalContributors: [] });
+        }
+
         const pool = await getPool();
         const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Contributors' :
         `SELECT COUNT(*) AS total FROM Contributors WHERE CommunityId = ${req.params.communityid}`;
@@ -39,6 +41,10 @@ router.get("/count/:communityid", async (req, res) => {
 // Get list of contributors
 router.get("/", async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributors: [] });
+        }
+
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
@@ -81,10 +87,8 @@ router.get("/", async (req, res) => {
 // Get a single contributor by ID
 router.get("/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
         const { id } = req.params;
@@ -138,10 +142,8 @@ router.get("/:id", async (req, res) => {
 // Create a new contributor
 router.post("/", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
@@ -165,7 +167,7 @@ router.post("/", async (req, res) => {
         
         const Id = result.recordset[0].ID;
         
-        res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } });
+        res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
     } catch (err) {
         res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
@@ -174,10 +176,8 @@ router.post("/", async (req, res) => {
 // Update an existing contributor
 router.post("/update/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
         const { id } = req.params;
@@ -209,10 +209,8 @@ router.post("/update/:id", async (req, res) => {
 // Delete a contributor
 router.post("/delete/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
         const { id } = req.params;

@@ -6,10 +6,8 @@ const router = express.Router();
 
 router.get('/all', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", groups: [] });
         }
 
         const pool = await getPool();
@@ -24,6 +22,10 @@ router.get('/all', async (req, res) => {
 
 router.get('/count/:communityid', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalGroups: 0 });
+        }
+
         const pool = await getPool();
         const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Groups' :
         `SELECT COUNT(*) AS total FROM Groups WHERE CommunityId = ${req.params.communityid}`;
@@ -39,6 +41,10 @@ router.get('/count/:communityid', async (req, res) => {
 
 router.get('', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", groups: [] });
+        }
+
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
@@ -67,6 +73,10 @@ router.get('', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", group: null });
+        }
+
         const pool = await getPool();
         const groupResult = await pool.request()
             .input('Id', req.params.id)
@@ -90,6 +100,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", group: null });
+        }
+
         const { Name, Description, Community } = req.body;
         const pool = await getPool();
         const date = new Date();
@@ -110,6 +124,10 @@ router.post('/', async (req, res) => {
 
 router.post('/update/:id', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", group: null });
+        }
+
         const { Name, Description, Community } = req.body;
         const pool = await getPool();
 
@@ -128,6 +146,10 @@ router.post('/update/:id', async (req, res) => {
 
 router.post('/delete/:id', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", group: null });
+        }
+
         const pool = await getPool();
         await pool.request()
             .input('Id', req.params.id)

@@ -225,6 +225,12 @@
             border-radius: 4px;
         }
         
+        .form-group textarea {
+            width: 70%;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+        
         .form-group p {
             margin: 0; /* Removes extra spacing */
             padding: 5px 10px;

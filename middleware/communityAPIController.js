@@ -5,10 +5,8 @@ const router = express.Router();
 
 const communityCount = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", totalCommunities: 0 });
         }
 
         const pool = await getPool();
@@ -23,10 +21,8 @@ const communityCount = async (req, res) => {
 
 const communityList = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: [] });
         }
 
         const skip = req.query.skip;
@@ -48,10 +44,8 @@ const communityList = async (req, res) => {
 
 const communityItem = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", community: null });
         }
 
         const pool = await getPool();
@@ -73,10 +67,8 @@ const communityItem = async (req, res) => {
 
 const communityCreate = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", community: null });
         }
 
         const date = new Date();
@@ -99,10 +91,8 @@ const communityCreate = async (req, res) => {
 
 const communityUpdate = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", community: null });
         }
 
         const Id = req.params.id;
@@ -123,10 +113,8 @@ const communityUpdate = async (req, res) => {
 
 const communityDelete = async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-
-        if (!sessionData) {
-            //return res.json({ issuccess: false, message: "User not authorized", communities: null });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", community: null });
         }
 
         const pool = await getPool();

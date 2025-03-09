@@ -7,10 +7,8 @@ const router = express.Router();
 // Get all contributions
 router.get("/all", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributions: [] });
         }
 
         const pool = await getPool();
@@ -24,9 +22,7 @@ router.get("/all", async (req, res) => {
 
 router.get('/count/:communityid', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
         }
 
@@ -45,12 +41,10 @@ router.get('/count/:communityid', async (req, res) => {
 
 router.get('', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", contributions: null });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributions: [] });
         }
-    
+
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
@@ -79,10 +73,8 @@ router.get('', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", communitie: null });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contribution: null });
         }
 
         const pool = await getPool();
@@ -108,12 +100,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/create', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", contribution: null });
         }
-    
+
         const { Name, Amount, Group, DueDate } = req.body;
         const pool = await getPool();
         const newContributionResult = await pool.request()
@@ -128,7 +118,6 @@ router.post('/create', async (req, res) => {
         
         res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, Group, DueDate } });
     } catch (err) {
-        console.error("error: ", err);
         const { Name, Amount, Group, DueDate } = req.body;
         res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: 0, Name, Amount, Group, DueDate } });
     }
@@ -136,12 +125,10 @@ router.post('/create', async (req, res) => {
 
 router.post('/update/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", contribution: null });
         }
-    
+
         const Id = req.params.id;
         const { Name, Amount, Group, DueDate } = req.body;
         const pool = await getPool();
@@ -162,12 +149,10 @@ router.post('/update/:id', async (req, res) => {
 
 router.post('/delete/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", contribution: null });
         }
-    
+
         const pool = await getPool();
         await pool.request()
             .input('id', req.params.id)

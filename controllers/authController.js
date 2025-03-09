@@ -51,11 +51,11 @@ const register = async (req, res) => {
         const sessionCookie = req.headers.cookie;
         const communities = await getCommunities();
 
-        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
         const result = await makeApiRequest('POST', '/auth/api/register', sessionCookie, {
-            UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, Picture, IsActive
+            UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, Picture, IsActive
         });
 
         if (result.issuccess) {
@@ -64,7 +64,7 @@ const register = async (req, res) => {
             res.render("register", { error: "Registration Failed!!! " + result.message, communities });
         }
     } catch (error) {
-        res.render("register", { error: "Registration error: " + error, communities });
+        res.render("register", { error: "Registration error: " + error, communities: [] });
     }
 };
 

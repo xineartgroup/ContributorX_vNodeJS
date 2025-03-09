@@ -6,10 +6,8 @@ const router = express.Router();
 // Get all expenses
 router.get("/all", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expenses: [] });
         }
 
         const pool = await getPool();
@@ -31,6 +29,10 @@ router.get("/all", async (req, res) => {
 
 router.get("/count/:communityid", async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalExpenses: [] });
+        }
+
         const pool = await getPool();
         const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Expenses' :
         `SELECT COUNT(*) AS total FROM Expenses WHERE CommunityId = ${req.params.communityid}`;
@@ -47,15 +49,14 @@ router.get("/count/:communityid", async (req, res) => {
 // Get list of expenses
 router.get("/", async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expenses: [] });
+        }
+
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
-        const sessionData = req.cookies['connect.sid'];
     
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
-        }
-
         const query = !skip || !limit || skip == 0 || limit == 0 
             ? (communityid == 0 ? `SELECT * FROM Expenses ORDER BY Id DESC` : `SELECT * FROM Expenses WHERE communityid = ${communityid} ORDER BY Id DESC`)
             : (communityid == 0 ? `SELECT * FROM Expenses ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT * FROM Expenses WHERE communityid = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
@@ -80,9 +81,7 @@ router.get("/", async (req, res) => {
 // Get a single expense by ID
 router.get("/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 
@@ -109,9 +108,7 @@ router.get("/:id", async (req, res) => {
 // Create a new expense
 router.post("/", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 
@@ -138,9 +135,7 @@ router.post("/", async (req, res) => {
 // Update a expense
 router.post("/update/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 
@@ -163,9 +158,7 @@ router.post("/update/:id", async (req, res) => {
 // Delete a expense
 router.post("/delete/:id", async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
+        if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 

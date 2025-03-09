@@ -6,10 +6,8 @@ const router = express.Router();
 
 router.get('/all', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectations: [] });
         }
 
         const pool = await getPool();
@@ -24,6 +22,10 @@ router.get('/all', async (req, res) => {
 
 router.get('/count/:communityid', async (req, res) => {
     try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalExpectations: [] });
+        }
+
         const pool = await getPool();
         const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM expectations' :
         `SELECT COUNT(e.Id) AS total FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${req.params.communityid}`;
@@ -39,10 +41,8 @@ router.get('/count/:communityid', async (req, res) => {
 
 router.get('', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectations: [] });
         }
 
         const skip = req.query.skip;
@@ -81,10 +81,8 @@ router.get('', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
@@ -114,10 +112,8 @@ router.get('/:id', async (req, res) => {
 
 router.get('/getbycontributor/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectations: [] });
         }
 
         const pool = await getPool();
@@ -148,10 +144,8 @@ router.get('/getbycontributor/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
@@ -174,10 +168,8 @@ router.post('/', async (req, res) => {
 
 router.post('/update/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
@@ -199,10 +191,8 @@ router.post('/update/:id', async (req, res) => {
 
 router.post('/delete/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
@@ -218,10 +208,8 @@ router.post('/delete/:id', async (req, res) => {
 
 router.post('/payment/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
@@ -244,10 +232,8 @@ router.post('/payment/:id', async (req, res) => {
 
 router.get('/paymentapprove/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
@@ -281,10 +267,8 @@ router.get('/paymentapprove/:id', async (req, res) => {
 
 router.get('/paymentreject/:id', async (req, res) => {
     try {
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
@@ -303,12 +287,8 @@ router.get('/paymentreject/:id', async (req, res) => {
 
 router.get('/paymentwriteoff/:id', async (req, res) => {
     try {
-console.log("HERE!!!");
-
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
         const pool = await getPool();
