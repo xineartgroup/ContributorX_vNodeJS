@@ -31,10 +31,11 @@ const communityIndex = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
-        const sessionCookie = req.headers.cookie;
 
-        const totalCommunities = await fetchTotalCommunities(sessionCookie);
-        const communities = await fetchCommunities(skip, limit, sessionCookie);
+        const { searchValue } = req.body;
+
+        const totalCommunities = await fetchTotalCommunities(req.headers.cookie);
+        const communities = await fetchCommunities(skip, limit, req.headers.cookie);
 
         res.render('community/index', {
             title: 'Community List',
@@ -72,10 +73,9 @@ const communityCreatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
         const { Name, Description } = req.body;
 
-        await makeApiRequest('POST', `/community/api/`, sessionCookie, { Name, Description });
+        await makeApiRequest('POST', `/community/api/`, req.headers.cookie, { Name, Description });
 
         res.redirect('/community');
     } catch (error) {
@@ -90,8 +90,7 @@ const communityUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
-        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, sessionCookie);
+        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
 
         if (result.community) {
             res.render('community/update', { title: 'Update Community', community: result.community });
@@ -110,10 +109,9 @@ const communityUpdatePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
         const { Name, Description } = req.body;
 
-        await makeApiRequest('POST', `/community/api/update/${req.params.id}`, sessionCookie, { Name, Description });
+        await makeApiRequest('POST', `/community/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
 
         res.redirect('/community');
     } catch (error) {
@@ -128,8 +126,7 @@ const communityDeleteGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
-        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, sessionCookie);
+        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
 
         if (result.community) {
             res.render('community/delete', { title: 'Delete Community', community: result.community });
@@ -148,8 +145,7 @@ const communityDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const sessionCookie = req.headers.cookie;
-        await makeApiRequest('POST', `/community/api/delete/${req.params.id}`, sessionCookie);
+        await makeApiRequest('POST', `/community/api/delete/${req.params.id}`, req.headers.cookie);
 
         res.redirect('/community');
     } catch (error) {

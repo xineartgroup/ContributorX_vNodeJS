@@ -60,6 +60,7 @@ app.use(flash());
 app.use((req, res, next) => {
     res.locals.message = req.flash("message");
     res.locals.error = req.flash("error");
+    res.locals.session = req.session;  // Makes session available in all views
     next();
 });
 

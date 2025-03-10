@@ -2,8 +2,8 @@ const express = require("express");
 const { makeApiRequest } = require("./_baseController");
 const router = express.Router();
 
-const fetchTotalGroups = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/group/api/count/${session.contributor.CommunityId}`, sessionCookie);
+const fetchTotalGroups = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/group/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalGroups;
     }else{
@@ -11,8 +11,8 @@ const fetchTotalGroups = async (sessionCookie, session) => {
     }
 };
 
-const fetchGroups = async (skip, limit, sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchGroups = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     }else{
@@ -30,8 +30,10 @@ const groupIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalGroups = await fetchTotalGroups(req.headers.cookie, req.session);
-        const groups = await fetchGroups(skip, limit, req.headers.cookie, req.session);
+        const searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+
+        const totalGroups = await fetchTotalGroups(req.headers.cookie, req.session, searchValue);
+        const groups = await fetchGroups(skip, limit, req.headers.cookie, req.session, searchValue);
 
         res.render('group/index', {
             title: 'Group List',

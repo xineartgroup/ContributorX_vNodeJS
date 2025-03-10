@@ -5,6 +5,14 @@
 
     <div class="table-container">
         <h2>Communities</h2>
+        <form action="/community" method="GET">
+            <div class="form-search">
+                <input type="text" id="searchValue" name="searchValue" placeholder = "Search">
+                <button type="submit">
+                    <img src="/images/search-icon.png" alt="Search">
+                </button>
+            </div>
+        </form>
         <% if (communities.length > 0) { %>
             <table class="table">
                 <thead>
@@ -24,7 +32,7 @@
                                 </a>
                             </td>
                             <td><%= community.Description %></td>
-                            <td><%= community.DateCreated %></td>
+                            <td><%= community.DateCreated.split('T')[0] %></td>
                             <td>
                                 <a class="delete" href="/community/delete/<%= community.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">

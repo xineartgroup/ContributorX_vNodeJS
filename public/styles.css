@@ -49,7 +49,91 @@
             padding: 10px;
             display: block;
         }
+        
+        .site-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+        }
 
+        .site-title h1 {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .site-title p {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .site-menu {
+            display: flex;
+            flex-direction: column; /* Ensures items stack vertically */
+            align-items: center;
+            text-align: center;
+            background: #ffffff;
+            padding: 10px 20px;
+        }
+
+        .site-menu ul li {
+            position: relative;
+        }
+
+        .site-menu ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .site-menu .dropdown {
+            position: relative;
+        }
+
+        .site-menu .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            padding: 10px 0;
+            min-width: 180px;
+        }
+
+        .site-menu .dropdown-menu li {
+            width: 100%;
+        }
+
+        .site-menu .dropdown-menu li a {
+            display: block;
+            padding: 10px;
+            color: black;
+            transition: background-color 0.3s;
+        }
+
+        .site-menu .dropdown-menu li a:hover {
+            color: #bbb;
+        }
+
+        .site-menu .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .site-menu p {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+        }
         
         .dropdown {
             display: block;
@@ -64,7 +148,7 @@
             height: 40px;
             font-family: Arial, sans-serif;
             font-weight: bold;
-            background-color: #d9e1eb;
+            background-color: #ffffff;
         }
         .dropdown:hover {
             transform: translateY(-3px);
@@ -78,12 +162,12 @@
         }
         .dropdown a:hover {
             text-decoration: none;
-            color: #ffffff;
+            color: #bbb;
         }
         .dropdown-menu {
             display: none;
             position: absolute;
-            background: #d9e1eb;
+            background: #ffffff;
             list-style: none;
             padding: 0;
             margin: 0;
@@ -94,7 +178,7 @@
         }
         .dropdown-menu a:hover {
             /*text-decoration: underline;*/
-            color: #ffffff;
+            color: #bbb;
             display: block;
             padding: 10px 15px;
         }
@@ -188,6 +272,52 @@
             display: flex;
             flex-direction: column;
         }
+
+        .form-search {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0px;
+            margin-bottom: 0px;
+        }
+        
+        .form-search input {
+            width: 250px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-search input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .form-search button {
+            padding: 5px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        
+        .form-search button:hover {
+            background-color: #f0f0f0;
+            opacity: 0.8;
+        }
+        
+        .form-search button img {
+            width: 20px; /* Adjust icon size */
+            height: 20px;
+        }        
 
         .form-group {
             display: flex;
@@ -466,15 +596,22 @@
         }
         
         a.delete {
-            display: block;
+            display: flex; /* Use flexbox to center the image */
+            align-items: center;
+            justify-content: center;
+            width: 25px;
+            height: 25px;
             background: #ffffff;
-            padding: 5px;
-            margin: 0px;
-            border-radius: 20px;
+            border-radius: 50%;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
             text-align: center;
             text-decoration: none;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        
+        a.delete img {
+            width: 15px;
+            height: 15px;
         }
         
         a.delete:hover {

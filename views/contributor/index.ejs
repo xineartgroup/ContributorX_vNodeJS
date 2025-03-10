@@ -5,6 +5,14 @@
     
     <div class="table-container">
         <h2>Contributors</h2>
+        <form action="/contributor" method="GET">
+            <div class="form-search">
+                <input type="text" id="searchValue" name="searchValue" placeholder = "Search">
+                <button type="submit">
+                    <img src="/images/search-icon.png" alt="Search">
+                </button>
+            </div>
+        </form>
         <% if (contributors.length > 0) { %>
                 <table class="table">
                     <thead>

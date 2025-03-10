@@ -21,9 +21,8 @@ const getCommunities = async (sessionCookie) => {
 const login = async (req, res) => {
     try {
         const { UserName, Password } = req.body;
-        const sessionCookie = req.headers.cookie; // Pass the user's session cookie
 
-        const result = await makeApiRequest('POST', '/auth/api/login', sessionCookie, { UserName, Password });
+        const result = await makeApiRequest('POST', '/auth/api/login', req.headers.cookie, { UserName, Password });
 
         if (result.contributor && result.contributor.Password === Password) {
             req.session.isLoggedIn = true;
@@ -48,13 +47,12 @@ const showRegisterPage = async (req, res) => {
 
 const register = async (req, res) => {
     try {
-        const sessionCookie = req.headers.cookie;
         const communities = await getCommunities();
 
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
-        const result = await makeApiRequest('POST', '/auth/api/register', sessionCookie, {
+        const result = await makeApiRequest('POST', '/auth/api/register', req.headers.cookie, {
             UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, Picture, IsActive
         });
 
