@@ -30,16 +30,20 @@ const groupIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
 
         const totalGroups = await fetchTotalGroups(req.headers.cookie, req.session, searchValue);
         const groups = await fetchGroups(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         res.render('group/index', {
             title: 'Group List',
             groups,
             currentPage: page,
-            totalPages: Math.ceil(totalGroups / limit)
+            totalPages: Math.ceil(totalGroups / limit),
+            searchValue
         });
     } catch (error) {
         res.render("group/index", {
@@ -47,7 +51,8 @@ const groupIndex = async (req, res) => {
             groups: null,
             currentPage: 0,
             totalPages: 0,
-            error: "Error: " + error
+            error: "Error: " + error,
+            searchValue: ""
         });
     }
 };

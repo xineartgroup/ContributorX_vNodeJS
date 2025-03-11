@@ -3,13 +3,24 @@ const getPool = require('../middleware/sqlconnection');
 
 const router = express.Router();
 
-const communityCount = async (req, res) => {
+router.get('/count/:communityid/:searchValue', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             //return res.json({ issuccess: false, message: "User not authorized", totalCommunities: 0 });
         }
 
         const pool = await getPool();
+        let query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Communities' :
+        `SELECT COUNT(*) AS total FROM Communities`; // WHERE Id = ${req.params.communityid}
+
+        if (req.params.searchValue != "*")
+        {
+            if (query.includes(" WHERE "))
+                query = query + ` AND Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
+            else
+                query = query + ` WHERE Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
+        }
+
         const totalCommunitiesResult = await pool.request().query('SELECT COUNT(*) AS total FROM Communities');
         const totalCommunities = totalCommunitiesResult.recordset[0].total;
 
@@ -17,9 +28,9 @@ const communityCount = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: true, message: "Server Error: " + err, totalCommunities: 0 });
     }
-};
+});
 
-const communityList = async (req, res) => {
+router.get('', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             //return res.json({ issuccess: false, message: "User not authorized", communities: [] });
@@ -27,11 +38,30 @@ const communityList = async (req, res) => {
 
         const skip = req.query.skip;
         const limit = req.query.limit;
+        const communityid = req.query.searchValue;
+        const searchValue = req.query.searchValue;
 
         const pool = await getPool();
 
-        const query = !skip || !limit || skip == 0 || limit == 0 ? `SELECT * FROM Communities ORDER BY Name ASC`
-        : `SELECT * FROM Communities ORDER BY DateCreated DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        let query = "SELECT * FROM Communities";
+        
+        if (communityid == 0){
+            //query = query + ` WHERE Id = ${communityid}`;
+        }
+
+        if (searchValue && searchValue === "*") {
+        }else{
+            if (query.includes(" WHERE "))
+                query = query + ` AND Name LIKE '%${searchValue}%' OR Description LIKE '%${searchValue}%'`;
+            else
+                query = query + ` WHERE Name LIKE '%${searchValue}%' OR Description LIKE '%${searchValue}%'`;
+        }
+
+        query = query + " ORDER BY Id DESC";
+
+        if (skip && limit && skip != 0 && limit != 0){
+            query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
 
         const communitiesResult = await pool.request().query(query);
         const communities = communitiesResult.recordset;
@@ -40,9 +70,9 @@ const communityList = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, communities: null });
     }
-};
+});
 
-const communityItem = async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             //return res.json({ issuccess: false, message: "User not authorized", community: null });
@@ -63,9 +93,9 @@ const communityItem = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, community: null });
     }
-};
+});
 
-const communityCreate = async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             //return res.json({ issuccess: false, message: "User not authorized", community: null });
@@ -87,9 +117,9 @@ const communityCreate = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Error saving community. " + err, community: { Id: 0, Name, Description, date } });
     }
-};
+});
 
-const communityUpdate = async (req, res) => {
+router.post('/update/:id', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", community: null });
@@ -109,9 +139,9 @@ const communityUpdate = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, community: { Id: 0, Name, Description, date } });
     }
-};
+});
 
-const communityDelete = async (req, res) => {
+router.post('/delete/:id', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", community: null });
@@ -126,13 +156,6 @@ const communityDelete = async (req, res) => {
     } catch (err) {
         res.json({ issuccess: false, message: "Error deleting community" + err, community: null });
     }
-};
-
-router.get('/count', communityCount);
-router.get('', communityList);
-router.get('/:id', communityItem);
-router.post('/', communityCreate);
-router.post('/update/:id', communityUpdate);
-router.post('/delete/:id', communityDelete);
+});
 
 module.exports = router;

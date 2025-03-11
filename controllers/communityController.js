@@ -3,8 +3,9 @@ const { makeApiRequest } = require("./_baseController");
 
 const router = express.Router();
 
-const fetchTotalCommunities = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/community/api/count', sessionCookie);
+// Community Count (Get)
+const fetchTotalCommunities = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/community/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalCommunities;
     } else {
@@ -12,8 +13,9 @@ const fetchTotalCommunities = async (sessionCookie) => {
     }
 };
 
-const fetchCommunities = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/community/api?skip=${skip}&limit=${limit}`, sessionCookie);
+// Community List (List)
+const fetchCommunities = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/community/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.communities;
     } else {
@@ -32,16 +34,20 @@ const communityIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const { searchValue } = req.body;
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
 
-        const totalCommunities = await fetchTotalCommunities(req.headers.cookie);
-        const communities = await fetchCommunities(skip, limit, req.headers.cookie);
+        const totalCommunities = await fetchTotalCommunities(req.headers.cookie, req.session, searchValue);
+        const communities = await fetchCommunities(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         res.render('community/index', {
             title: 'Community List',
             communities,
             currentPage: page,
-            totalPages: Math.ceil(totalCommunities / limit)
+            totalPages: Math.ceil(totalCommunities / limit),
+            searchValue
         });
     } catch (error) {
         res.render("community/index", {
@@ -49,7 +55,8 @@ const communityIndex = async (req, res) => {
             communities: null,
             currentPage: 0,
             totalPages: 0,
-            error: "Error: " + error
+            error: "Error: " + error,
+            searchValue: ""
         });
     }
 };

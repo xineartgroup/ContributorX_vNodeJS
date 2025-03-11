@@ -17,16 +17,11 @@
         nav{
             display: flex;
             justify-content: space-between;
-            margin-bottom: 60px;
+            margin-bottom: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid #ddd;
             /*text-transform: uppercase;*/
         }
-        /*nav ul{
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }*/
         nav ul {
             list-style: none;
             padding: 0;
@@ -59,13 +54,13 @@
         }
 
         .site-title h1 {
-            font-size: 40px;
+            font-size: 44px;
             font-weight: bold;
             margin: 0;
         }
 
         .site-title p {
-            font-size: 16px;
+            font-size: 20px;
             color: #666;
             margin-top: 10px;
         }
@@ -130,7 +125,7 @@
 
         .site-menu p {
             margin-top: 20px;
-            font-size: 16px;
+            font-size: 18px;
             color: #666;
             text-align: center;
         }
@@ -201,9 +196,10 @@
             color: #777;
             text-align: center;
             margin-left: 80px auto 20px;
+            padding-top: 20px;
         }
         h2{
-            margin-bottom: 40px;
+            margin-bottom: 10px;
         }
         h3{
             text-transform: capitalize;
@@ -693,11 +689,11 @@
         }
         
         tr:nth-child(even) {
-            background-color: #f8f9fa;
+            background-color: #f8f8f8;
         }
         
         tr:hover {
-            background-color: #e9ecef;
+            background-color: #f8f8f8;
         }
         
         td {

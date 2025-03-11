@@ -4,6 +4,33 @@ const sql = require('mssql');
 
 const router = express.Router();
 
+router.get('/count/:communityid/:searchValue', async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalGroups: 0 });
+        }
+
+        const pool = await getPool();
+        let query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Groups' :
+        `SELECT COUNT(*) AS total FROM Groups WHERE CommunityId = ${req.params.communityid}`;
+
+        if (req.params.searchValue != "*")
+        {
+            if (query.includes(" WHERE "))
+                query = query + ` AND Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
+            else
+                query = query + ` WHERE Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
+        }
+
+        const totalGroupsResult = await pool.request().query(query);
+        const totalGroups = totalGroupsResult.recordset[0].total;
+
+        return res.json({ issuccess: true, message: "", totalGroups });
+    } catch (err) {
+        return res.json({ issuccess: false, message: "Server Error: " + err, totalGroups: 0 });
+    }
+});
+
 router.get('/all', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -66,33 +93,6 @@ router.get('', async (req, res) => {
         return res.json({ issuccess: true, message: "", groups });
     } catch (err) {
         return res.json({ issuccess: false, message: "Server Error: " + err, groups: [] });
-    }
-});
-
-router.get('/count/:communityid/:searchValue', async (req, res) => {
-    try {
-        if (!req.session?.isLoggedIn) {
-            return res.json({ issuccess: false, message: "User not authorized", totalGroups: 0 });
-        }
-
-        const pool = await getPool();
-        let query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Groups' :
-        `SELECT COUNT(*) AS total FROM Groups WHERE CommunityId = ${req.params.communityid}`;
-
-        if (req.params.searchValue != "*")
-        {
-            if (query.includes(" WHERE "))
-                query = query + ` AND Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
-            else
-                query = query + ` WHERE Name LIKE '%${req.params.searchValue}%' OR Description LIKE '%${req.params.searchValue}%'`;
-        }
-
-        const totalGroupsResult = await pool.request().query(query);
-        const totalGroups = totalGroupsResult.recordset[0].total;
-
-        return res.json({ issuccess: true, message: "", totalGroups });
-    } catch (err) {
-        return res.json({ issuccess: false, message: "Server Error: " + err, totalGroups: 0 });
     }
 });
 

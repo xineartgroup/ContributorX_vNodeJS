@@ -7,7 +7,7 @@
         <h2>Communities</h2>
         <form action="/community" method="GET">
             <div class="form-search">
-                <input type="text" id="searchValue" name="searchValue" placeholder = "Search">
+                <input type="text" id="searchValue" name="searchValue" placeholder = "Search" value="<%= searchValue ? searchValue : '' %>">
                 <button type="submit">
                     <img src="/images/search-icon.png" alt="Search">
                 </button>

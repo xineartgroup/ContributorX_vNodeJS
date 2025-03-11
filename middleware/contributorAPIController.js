@@ -3,6 +3,35 @@ const getPool = require('../middleware/sqlconnection');
 
 const router = express.Router();
 
+router.get("/count/:communityid/:searchValue", async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalContributors: [] });
+        }
+
+        const pool = await getPool();
+        let query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Contributors' :
+        `SELECT COUNT(*) AS total FROM Contributors WHERE CommunityId = ${req.params.communityid}`;
+
+        if (req.params.searchValue != "*")
+        {
+            if (query.includes(" WHERE "))
+                query = query + ` AND UserName LIKE '%${req.params.searchValue}%' OR FirstName LIKE '%${req.params.searchValue}%'
+OR LastName LIKE '%${req.params.searchValue}%' OR Email LIKE '%${req.params.searchValue}%' OR PhoneNumber LIKE '%${req.params.searchValue}%'`;
+            else
+                query = query + ` WHERE UserName LIKE '%${req.params.searchValue}%' OR FirstName LIKE '%${req.params.searchValue}%'
+OR LastName LIKE '%${req.params.searchValue}%' OR Email LIKE '%${req.params.searchValue}%' OR PhoneNumber LIKE '%${req.params.searchValue}%'`;
+        }
+        
+        const totalContributorsResult = await pool.request().query(query);
+        const totalContributors = totalContributorsResult.recordset[0].total;
+
+        res.json({ issuccess: true, message: "", totalContributors });
+    } catch (err) {
+        res.json({ issuccess: false, message: "Server Error: " + err, totalContributors: 0 });
+    }
+});
+
 // Get all contributors
 router.get("/all", async (req, res) => {
     try {
@@ -19,25 +48,6 @@ router.get("/all", async (req, res) => {
     }
 });
 
-router.get("/count/:communityid", async (req, res) => {
-    try {
-        if (!req.session?.isLoggedIn) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributors: [] });
-        }
-
-        const pool = await getPool();
-        const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM Contributors' :
-        `SELECT COUNT(*) AS total FROM Contributors WHERE CommunityId = ${req.params.communityid}`;
-
-        const totalContributorsResult = await pool.request().query(query);
-        const totalContributors = totalContributorsResult.recordset[0].total;
-
-        res.json({ issuccess: true, message: "", totalContributors });
-    } catch (err) {
-        res.json({ issuccess: false, message: "Server Error: " + err, totalContributors: 0 });
-    }
-});
-
 // Get list of contributors
 router.get("/", async (req, res) => {
     try {
@@ -48,17 +58,32 @@ router.get("/", async (req, res) => {
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
-        const sessionData = req.cookies['connect.sid'];
-    
-        if (!sessionData) {
-            return res.json({ issuccess: false, message: "User not authorized", totalContributions: 0 });
-        }
-
-        const query = !skip || !limit || skip == 0 || limit == 0 
-            ? (communityid == 0 ? `SELECT * FROM Contributors ORDER BY Id DESC` : `SELECT * FROM Contributors WHERE communityid = ${communityid} ORDER BY Id DESC`)
-            : (communityid == 0 ? `SELECT * FROM Contributors ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT * FROM Contributors WHERE communityid = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
+        const searchValue = req.query.searchValue;
 
         const pool = await getPool();
+
+        let query = "SELECT * FROM Contributors";
+        
+        if (communityid == 0){
+            query = query + ` WHERE communityid = ${communityid}`;
+        }
+
+        if (searchValue && searchValue === "*") {
+        }else{
+            if (query.includes(" WHERE "))
+                query = query + ` AND UserName LIKE '%${searchValue}%' OR FirstName LIKE '%${searchValue}%'
+OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNumber LIKE '%${searchValue}%'`;
+            else
+                query = query + ` WHERE UserName LIKE '%${searchValue}%' OR FirstName LIKE '%${searchValue}%'
+OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNumber LIKE '%${searchValue}%'`;
+        }
+
+        query = query + " ORDER BY Id DESC";
+
+        if (skip && limit && skip != 0 && limit != 0){
+            query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
+
         const result = await pool.request().query(query);
         const contributors = result.recordset;
 

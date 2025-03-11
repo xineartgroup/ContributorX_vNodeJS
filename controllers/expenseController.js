@@ -3,8 +3,8 @@ const { makeApiRequest } = require("./_baseController");
 const upload = require('./upload');
 const router = express.Router();
 
-const fetchTotalExpenses = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/expense/api/count/${session.contributor.CommunityId}`, sessionCookie);
+const fetchTotalExpenses = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/expense/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalExpenses;
     } else {
@@ -12,8 +12,8 @@ const fetchTotalExpenses = async (sessionCookie, session) => {
     }
 };
 
-const fetchExpenses = async (skip, limit, sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/expense/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchExpenses = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/expense/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.expenses;
     } else {
@@ -31,14 +31,20 @@ const expenseIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalExpenses = await fetchTotalExpenses(req.headers.cookie, req.session);
-        const expenses = await fetchExpenses(skip, limit, req.headers.cookie, req.session);
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+
+        const totalExpenses = await fetchTotalExpenses(req.headers.cookie, req.session, searchValue);
+        const expenses = await fetchExpenses(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         return res.render('expense/index', {
             title: 'Expense List',
             expenses,
             currentPage: page,
-            totalPages: Math.ceil(totalExpenses / limit)
+            totalPages: Math.ceil(totalExpenses / limit),
+            searchValue
         });
     } catch (error) {
         return res.render("expense/index", {
@@ -46,7 +52,8 @@ const expenseIndex = async (req, res) => {
             expenses: [],
             currentPage: 0,
             totalPages: 0,
-            error: "Error: " + error
+            error: "Error: " + error,
+            searchValue: ""
         });
     }
 };

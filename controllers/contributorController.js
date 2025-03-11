@@ -3,8 +3,8 @@ const { makeApiRequest } = require("./_baseController");
 const upload = require('./upload');
 const router = express.Router();
 
-const fetchTotalContributors = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/contributor/api/count/${session.contributor.CommunityId}`, sessionCookie);
+const fetchTotalContributors = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/contributor/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributors;
     } else {
@@ -12,8 +12,8 @@ const fetchTotalContributors = async (sessionCookie, session) => {
     }
 };
 
-const fetchContributors = async (skip, limit, sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/contributor/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchContributors = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/contributor/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.contributors;
     } else {
@@ -31,14 +31,20 @@ const contributorIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalContributors = await fetchTotalContributors(req.headers.cookie, req.session);
-        const contributors = await fetchContributors(skip, limit, req.headers.cookie, req.session);
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+
+        const totalContributors = await fetchTotalContributors(req.headers.cookie, req.session, searchValue);
+        const contributors = await fetchContributors(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         res.render('contributor/index', {
             title: 'Contributor List',
             contributors,
             currentPage: page,
-            totalPages: Math.ceil(totalContributors / limit)
+            totalPages: Math.ceil(totalContributors / limit),
+            searchValue
         });
     } catch (err) {
         res.render('contributor/index', {
@@ -46,7 +52,8 @@ const contributorIndex = async (req, res) => {
             contributors: [],
             currentPage: 0,
             totalPages: 0,
-            error: "Error: " + err
+            error: "Error: " + err,
+            searchValue: ""
         });
     }
 };
