@@ -1,28 +1,37 @@
 <nav>
-    <div class="site-title">
-        <a href="/"><h1>XineArt</h1></a>
-        <p><strong><%= title %></strong></p>
+    <div class="site-main">
+        <div class="site-title">
+            <a href="/"><h1>XineArt</h1></a>
+        </div>
+        <div class="site-menu">
+            <ul>
+                <li class="dropdown"><a href="/">Home</a></li>
+                <li class="dropdown">
+                    <a href="#">User ▼</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/reports/user">Payment Report</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Admin ▼</a> <!--▲-->
+                    <ul class="dropdown-menu">
+                        <li><a href="/community">Communities</a></li>
+                        <li><a href="/group">Groups</a></li>
+                        <li><a href="/contributor">Contributors</a></li>
+                        <li><a href="/contribution">Contributions</a></li>
+                        <li><a href="/expense">Expenses</a></li>
+                        <li><a href="/expectation">Expectations</a></li>
+                    </ul>
+                </li>
+                <li></li>
+                <li class="dropdown"><a href="/logout">Logout</a></li>
+            </ul>       
+        </div>
     </div>
-    <div class="site-menu">
-        <ul>
-            <li class="dropdown"><a href="/">Home</a></li>
-            <li class="dropdown"><a href="/About">About</a></li>
-            <li class="dropdown">
-                <a href="#">Admin ▼</a>
-                <ul class="dropdown-menu">
-                    <li><a href="/community">Communities</a></li>
-                    <li><a href="/group">Groups</a></li>
-                    <li><a href="/contributor">Contributors</a></li>
-                    <li><a href="/contribution">Contributions</a></li>
-                    <li><a href="/expense">Expenses</a></li>
-                    <li><a href="/expectation">Expectations</a></li>
-                </ul>
-            </li>
-            <li></li>
-            <li class="dropdown"><a href="/logout">Logout</a></li>
-        </ul>
-        <p>
-            Logged in as <strong><%= (session.contributor) ? session.contributor.UserName : 'Guest' %></strong><%= (session.contributor) ? ' (' + session.contributor.Role + ')' : 'Guest' %>
-        </p>        
+    <div class="site-sub">
+        <div><strong><%= title %></strong></div>
+        <div>
+            <p>Logged in as <strong><%= (session.contributor) ? session.contributor.UserName : 'Guest' %></strong><%= (session.contributor) ? ' (' + session.contributor.Role + ')' : 'Guest' %></p>
+        </div> 
     </div>
 </nav>

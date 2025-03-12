@@ -12,8 +12,8 @@ const getGroups = async (sessionCookie) => {
     }
 };
 
-const fetchTotalContributions = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/contribution/api/count/${session.contributor.CommunityId}`, sessionCookie);
+const fetchTotalContributions = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/contribution/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributions;
     }else{
@@ -21,8 +21,8 @@ const fetchTotalContributions = async (sessionCookie, session) => {
     }
 }
 
-const fetchContributions = async (skip, limit, sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/contribution/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchContributions = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/contribution/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.contributions;
     }else{
@@ -49,17 +49,30 @@ const contributionIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        const totalContributions = await fetchTotalContributions(req.headers.cookie, req.session);
-        const contributions = await fetchContributions(skip, limit, req.headers.cookie, req.session);
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+
+        const totalContributions = await fetchTotalContributions(req.headers.cookie, req.session, searchValue);
+        const contributions = await fetchContributions(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         res.render('contribution/index', { 
             title: 'Contribution List', 
             contributions,
             currentPage: page,
-            totalPages: Math.ceil(totalContributions / limit)
+            totalPages: Math.ceil(totalContributions / limit),
+            searchValue
         });
     } catch (err) {
-        res.status(500).send('Server Error');
+        res.render('contribution/index', { 
+            title: 'Contribution List', 
+            contributions: [],
+            currentPage: 0,
+            totalPages: 0,
+            error: "Error: " + err,
+            searchValue: ""
+        });
     }
 };
 

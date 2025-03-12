@@ -16,11 +16,8 @@
         }
         nav{
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            /*text-transform: uppercase;*/
+            flex-direction: column;
+            gap: 10px;
         }
         nav ul {
             list-style: none;
@@ -44,7 +41,21 @@
             padding: 10px;
             display: block;
         }
+
+        .site-main,
+        .site-sub {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
         
+        .site-sub p {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
         .site-title {
             display: flex;
             flex-direction: column;
@@ -57,12 +68,6 @@
             font-size: 44px;
             font-weight: bold;
             margin: 0;
-        }
-
-        .site-title p {
-            font-size: 20px;
-            color: #666;
-            margin-top: 10px;
         }
 
         .site-menu {
@@ -81,9 +86,9 @@
         .site-menu ul li a {
             text-decoration: none;
             color: #333;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 10px 15px;
+            font-size: 14px;
+            /* font-weight: bold;
+            padding: 10px 15px; */
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -100,12 +105,15 @@
             border-radius: 10px;
             display: none;
             flex-direction: column;
-            padding: 10px 0;
+            list-style: none;
+            padding: 0;
+            margin: 0;
             min-width: 180px;
         }
 
         .site-menu .dropdown-menu li {
-            width: 100%;
+            width: auto;
+            text-align: left;
         }
 
         .site-menu .dropdown-menu li a {

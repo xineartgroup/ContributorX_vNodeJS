@@ -48,7 +48,7 @@ const groupIndex = async (req, res) => {
     } catch (error) {
         res.render("group/index", {
             title: 'Group List',
-            groups: null,
+            groups: [],
             currentPage: 0,
             totalPages: 0,
             error: "Error: " + error,
