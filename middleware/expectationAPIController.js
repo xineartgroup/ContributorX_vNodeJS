@@ -4,6 +4,33 @@ const sql = require('mssql');
 
 const router = express.Router();
 
+router.get('/count/:communityid/:searchValue', async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", totalExpectations: [] });
+        }
+
+        const pool = await getPool();
+        let query = req.params.communityid === 0 ? 'SELECT COUNT(c.Id) AS total FROM Expectations e' :
+        `SELECT COUNT(e.Id) AS total FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id JOIN Contributions cn ON e.ContributionId = cn.Id WHERE c.CommunityId = ${req.params.communityid}`;
+
+        if (req.params.searchValue != "*")
+        {
+            if (query.includes(" WHERE "))
+                query = query + ` AND c.UserName LIKE '%${req.params.searchValue}%' OR cn.Name LIKE '%${req.params.searchValue}%'`;
+            else
+                query = query + ` WHERE c.UserName LIKE '%${req.params.searchValue}%' OR cn.Name LIKE '%${req.params.searchValue}%'`;
+        }
+
+        const totalExpectationsResult = await pool.request().query(query);
+        const totalExpectations = totalExpectationsResult.recordset[0].total;
+
+        return res.json({ issuccess: true, message: "", totalExpectations });
+    } catch (err) {
+        return res.json({ issuccess: false, message: "Server Error: " + err, totalExpectations: 0 });
+    }
+});
+
 router.get('/all', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -20,25 +47,6 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.get('/count/:communityid', async (req, res) => {
-    try {
-        if (!req.session?.isLoggedIn) {
-            return res.json({ issuccess: false, message: "User not authorized", totalExpectations: [] });
-        }
-
-        const pool = await getPool();
-        const query = req.params.communityid === 0 ? 'SELECT COUNT(*) AS total FROM expectations' :
-        `SELECT COUNT(e.Id) AS total FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${req.params.communityid}`;
-
-        const totalExpectationsResult = await pool.request().query(query);
-        const totalExpectations = totalExpectationsResult.recordset[0].total;
-
-        return res.json({ issuccess: true, message: "", totalExpectations });
-    } catch (err) {
-        return res.json({ issuccess: false, message: "Server Error: " + err, totalExpectations: 0 });
-    }
-});
-
 router.get('', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -48,12 +56,28 @@ router.get('', async (req, res) => {
         const skip = req.query.skip;
         const limit = req.query.limit;
         const communityid = req.query.communityid;
+        const searchValue = req.query.searchValue;
         
         const pool = await getPool();
+        let query = "SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id JOIN Contributions cn ON e.ContributionId = cn.Id";
+        
+        if (communityid == 0){
+            query = query + ` WHERE c.CommunityId = ${communityid}`;
+        }
 
-        const query = !skip || !limit || skip == 0 || limit == 0 
-            ? (communityid == 0 ? `SELECT * FROM expectations ORDER BY Id DESC` : `SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${communityid} ORDER BY Id DESC`)
-            : (communityid == 0 ? `SELECT * FROM expectations ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY` : `SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id WHERE c.CommunityId = ${communityid} ORDER BY Id DESC OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`);
+        if (searchValue && searchValue === "*") {
+        }else{
+            if (query.includes(" WHERE "))
+                query = query + ` AND c.UserName LIKE '%${searchValue}%' OR cn.Name LIKE '%${searchValue}%'`;
+            else
+                query = query + ` WHERE c.UserName LIKE '%${searchValue}%' OR cn.Name LIKE '%${searchValue}%'`;
+        }
+
+        query = query + " ORDER BY e.Id DESC";
+
+        if (skip && limit && skip != 0 && limit != 0){
+            query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
 
         const expectationsResult = await pool.request().query(query);
         let expectations = expectationsResult.recordset;
@@ -110,16 +134,23 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.get('/getbycontributor/:id', async (req, res) => {
+router.get('/getbycontributor/:id/:searchValue', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
             return res.json({ issuccess: false, message: "User not authorized", expectations: [] });
         }
 
         const pool = await getPool();
+
+        let query = "SELECT * FROM Expectations WHERE ContributorId = @ContributorId";
+
+        if (req.params.searchValue != "*"){
+            query = `SELECT e.* FROM Expectations e JOIN Contributions cn ON e.ContributionId = cn.Id WHERE ContributorId = @ContributorId AND cn.Name LIKE '%${req.params.searchValue}%';`;
+        }
+
         const expectationResult = await pool.request()
                             .input('ContributorId', req.params.id)
-                            .query("SELECT * FROM expectations WHERE ContributorId = @ContributorId");
+                            .query(query);
         const expectations = expectationResult.recordset;
 
         const result1 = await pool.request()

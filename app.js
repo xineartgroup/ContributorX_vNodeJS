@@ -83,12 +83,16 @@ app.get('/', async (req, res) => {
             return res.render('index', { title: "Home", sessionData, expectations: [] });
         }
 
-        const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}`, req.headers.cookie);
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
 
-        res.render('index', { title: "Home", sessionData, expectations: result.expectations });
+        const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}/${searchValue}`, req.headers.cookie);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
+
+        res.render('index', { title: "Home", sessionData, expectations: result.expectations, searchValue });
     } catch (err) {
-        console.error("Error fetching expectations:", err);
-        res.status(500).send("Server error");
+        res.render('index', { title: "Home", sessionData, expectations: [], searchValue: "" });
     }
 });
 

@@ -22,8 +22,8 @@ const getContributions = async (sessionCookie) => {
     }
 };
 
-const fetchTotalExpectations = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/expectation/api/count/${session.contributor.CommunityId}`, sessionCookie);
+const fetchTotalExpectations = async (sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/expectation/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalExpectations;
     }else{
@@ -31,8 +31,8 @@ const fetchTotalExpectations = async (sessionCookie, session) => {
     }
 };
 
-const fetchExpectations = async (skip, limit, sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/expectation/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}`, sessionCookie);
+const fetchExpectations = async (skip, limit, sessionCookie, session, searchValue) => {
+    const result = await makeApiRequest('GET', `/expectation/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.expectations;
     }else{
@@ -48,14 +48,20 @@ const expectationIndex = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
         
-        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session);
-        const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session);
+        let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+
+        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session, searchValue);
+        const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session, searchValue);
+
+        searchValue = decodeURIComponent(searchValue);
+        if (searchValue == "*") searchValue = "";
 
         res.render('expectation/index', {
             title: 'Expectation List',
             expectations,
             currentPage: page,
-            totalPages: Math.ceil(totalExpectations / limit)
+            totalPages: Math.ceil(totalExpectations / limit),
+            searchValue
         });
     } catch (err) {
         console.error(err);
@@ -63,7 +69,8 @@ const expectationIndex = async (req, res) => {
             title: 'Expectation List',
             expectations: [],
             currentPage: 0,
-            totalPages: 0
+            totalPages: 0,
+            searchValue: ""
         });
     }
 };
