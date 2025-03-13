@@ -250,12 +250,77 @@ router.post("/delete/:id", async (req, res) => {
 const AddGroup = async () => {
     try {
         const pool = await getPool();
-        const result = await pool.request().query("SELECT G.Name FROM Groupings AS GR JOIN Groups AS G ON GR.Group = G.ID");
+        const result = await pool.request().query("SELECT G.Name FROM Groupings AS GR JOIN Groups AS G ON GR.GroupId = G.ID");
         return result.recordset.map(item => item.Name).join("\n");
     } catch (err) {
         console.error(err);
         return "";
     }
 };
+
+router.post("/update1", async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", contributor: null });
+        }
+
+        const pool = await getPool();
+        
+        const { groups, id } = req.body; // Use req.body for POST
+        
+        if (!id) {
+            return res.status(400).json({ issuccess: false, message: "Contributor ID is required.", contributor: null });
+        }
+
+        // Convert comma-separated string to an array and remove empty values
+        const groupNames = Array.isArray(groups) ? groups : groups.split(',').filter(name => name.trim() !== "");
+
+        let groupDocs = [];
+
+        if (groupNames != ""){
+            // Find group IDs based on names
+            let str = "";
+            for (let i = 0; i < groupNames.length; i++){
+                str = str + "'" + groupNames[i] + "'";
+                if (groupNames.length > i + 1)
+                    str = str + ", ";
+            }
+            const groupsResult = await pool.request().query(`SELECT * FROM Groups WHERE Name IN (${str})`);
+            groupDocs = groupsResult.recordset;
+
+            if (groupDocs.length === 0) {
+                return res.status(400).json({ issuccess: false, message: "No valid groups found.", contributor: null });
+            }
+        }
+
+        const groupIds = groupDocs.map(group => group.Id);
+
+        const resultContributor = await pool.request()
+            .input("id", id)
+            .query("SELECT * FROM Contributors WHERE id = @id");
+        
+        let contributor = resultContributor.recordset[0];
+        if (!contributor) {
+            return res.status(404).json({ issuccess: false, message: "Contributor not found.", contributor });
+        }
+
+        // Update contributor's groups in the Grouping model
+        await pool.request()
+            .input('id', id)
+            .query('DELETE FROM Groupings WHERE ContributorId = @id'); // Remove old groupings
+        
+        for (const groupId of groupIds) {
+            await pool.request()
+                .input('ContributorId', id)
+                .input('GroupId', groupId)
+                .query('INSERT INTO Groupings (ContributorId, GroupId) OUTPUT INSERTED.ID VALUES (@ContributorId, @GroupId)');
+        }
+        
+        return res.json({ issuccess: true, message: "Contributor updated successfully!", contributor });
+
+    } catch (error) {
+        return res.status(400).json({ issuccess: false, message: error, contributor: null });
+    }
+});
 
 module.exports = router;
