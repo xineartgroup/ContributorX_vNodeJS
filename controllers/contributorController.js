@@ -39,22 +39,15 @@ const contributorIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('contributor/index', {
+        return res.render('contributor/index', {
             title: 'Contributor List',
             contributors,
             currentPage: page,
             totalPages: Math.ceil(totalContributors / limit),
             searchValue
         });
-    } catch (err) {
-        res.render('contributor/index', {
-            title: 'Contributor List',
-            contributors: [],
-            currentPage: 0,
-            totalPages: 0,
-            error: "Error: " + err,
-            searchValue: ""
-        });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -66,9 +59,13 @@ const contributorDetailGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
 
-        res.render('contributor/detail', { title: 'Contributor Detail', contributor: result.contributor, groups: result.groups, groupings: result.groupings, expectations: result.expectations });
-    } catch (err) {
-        res.status(500).render('contributor/detail', { title: 'Contributor Detail', contributor: [], error: 'Server Error ' + err });
+        if (result.issuccess) {
+            return res.render('contributor/detail', { title: 'Contributor Detail', contributor: result.contributor, groups: result.groups, groupings: result.groupings, expectations: result.expectations });
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -78,10 +75,15 @@ const contributorDetailPost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/contributor/api/${req.params.id}`, req.headers.cookie, req.body);
-        res.redirect('/contributor');
-    } catch (err) {
-        res.status(500).render('contributor/', { title: 'Contributor Detail', contributor: [], error: 'Server Error ' + err });
+        const result = await makeApiRequest('POST', `/contributor/api/${req.params.id}`, req.headers.cookie, req.body);
+
+        if (result.issuccess) {
+            return res.redirect('/contributor');
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -91,9 +93,9 @@ const contributorCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
         
-        res.render('contributor/create', { title: 'New Contributor' });
-    } catch (err) {
-        res.status(500).render('contributor/', { title: 'New Contributor', error: 'Server Error ' + err });
+        return res.render('contributor/create', { title: 'New Contributor' });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -106,10 +108,15 @@ const contributorCreatePost = async (req, res) => {
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
         Community = req.session.contributor.CommunityId;
 
-        await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
-        res.redirect('/contributor');
-    } catch (err) {
-        res.status(500).render('contributor/detail', { title: 'New Contributor', error: 'Server Error ' + err });
+        const result = await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
+        
+        if (result.issuccess) {
+            return res.redirect('/contributor');
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -120,9 +127,14 @@ const contributorUpdateGet = async (req, res) => {
         }
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
-        res.render('contributor/update', { title: 'Update Contributor', contributor: result.contributor });
-    } catch (err) {
-        res.status(500).render('contributor/update', { title: 'Update Contributor', contributor: null, error: 'Server Error ' + err });
+        
+        if (result.issuccess) {
+            return res.render('contributor/update', { title: 'Update Contributor', contributor: result.contributor });
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -135,10 +147,15 @@ const contributorUpdatePost = async (req, res) => {
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
         Community = req.session.contributor.CommunityId;
 
-        await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
-        res.redirect('/contributor');
-    } catch (err) {
-        res.status(500).render('contributor/update', { title: 'Update Contributor', contributor: null, error: 'Server Error ' + err });
+        const result = await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
+        
+        if (result.issuccess) {
+            return res.redirect('/contributor');
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -150,9 +167,13 @@ const contributorDeleteGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
         
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.contributor });
-    } catch (err) {
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor: null, error: 'Server Error ' + err });
+        if (result.issuccess) {
+            return res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.contributor });
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -162,10 +183,15 @@ const contributorDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/contributor/api/delete/${req.params.id}`, req.headers.cookie);
-        res.redirect('/contributor');
-    } catch (err) {
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor: null, error: 'Server Error ' + err });
+        const result = await makeApiRequest('POST', `/contributor/api/delete/${req.params.id}`, req.headers.cookie);
+        
+        if (result.issuccess) {
+            return res.redirect('/contributor');
+        }else{
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

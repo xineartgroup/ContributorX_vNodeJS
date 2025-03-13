@@ -63,15 +63,8 @@ const expectationIndex = async (req, res) => {
             totalPages: Math.ceil(totalExpectations / limit),
             searchValue
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('expectation/index', {
-            title: 'Expectation List',
-            expectations: [],
-            currentPage: 0,
-            totalPages: 0,
-            searchValue: ""
-        });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -83,9 +76,8 @@ const expectationCreateGet = async (req, res) => {
         const contributions = await getContributions(req.headers.cookie);
         
         res.render('expectation/create', { title: 'New Expectation', contributors, contributions });
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('expectation/create', { title: 'New Expectation', contributors: [], contributions: [] });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -97,17 +89,14 @@ const expectationCreatePost = async (req, res) => {
         const PaymentReciept = req.file ? req.file.filename : null;
         
         const result = await makeApiRequest('POST', `/expectation/api/`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept });
-        const contributors = await getContributors(req.headers.cookie);
-        const contributions = await getContributions(req.headers.cookie);
 
         if (result.issuccess) {
-            res.redirect('/expectation');
+            return res.redirect('/expectation');
         }else{
-            return res.render('expectation/create', { title: 'Create Expectation', error: result.message, contributors, contributions });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error("Error saving expectation:", err);
-        res.status(500).render('expectation/create', { title: 'New Expectation', contributors: [], contributions: [] });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -119,14 +108,13 @@ const expectationUpdateGet = async (req, res) => {
         const contributors = await getContributors(req.headers.cookie);
         const contributions = await getContributions(req.headers.cookie);
 
-        if (result.expectation) {
-            res.render('expectation/update', { title: 'Update Expectation', expectation: result.expectation, contributors, contributions });
+        if (result.issuccess) {
+            return res.render('expectation/update', { title: 'Update Expectation', expectation: result.expectation, contributors, contributions });
         } else {
-            res.render('expectation/update', { title: 'Update Expectation', expectation: null, error: "Expectation not found", contributors, contributions });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('expectation/update', { title: 'Update Expectation', expectation: null, error: err, contributors: [], contributions: [] });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -137,12 +125,15 @@ const expectationUpdatePost = async (req, res) => {
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReciept = req.file ? req.file.filename : req.body.PaymentReciept;
         
-        await makeApiRequest('POST', `/expectation/api/update/${req.params.id}`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept });
+        const result = await makeApiRequest('POST', `/expectation/api/update/${req.params.id}`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept });
         
-        res.redirect('/expectation');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        if (result.issuccess) {
+            return res.redirect('/expectation');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -152,14 +143,13 @@ const expectationDeleteGet = async (req, res) => {
         
         const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.expectation) {
-            res.render('expectation/delete', { title: 'Delete Expectation', expectation });
+        if (result.issuccess) {
+            return res.render('expectation/delete', { title: 'Delete Expectation', expectation });
         } else {
-            res.render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: "Expectation not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -167,12 +157,15 @@ const expectationDeletePost = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        await makeApiRequest('POST', `/expectation/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/expectation/api/delete/${req.params.id}`, req.headers.cookie);
 
-        res.redirect('/expectation');
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('expectation/delete', { title: 'Delete Expectation', expectation: null, error: err });
+        if (result.issuccess) {
+            return res.redirect('/expectation');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -185,14 +178,13 @@ const expectationPaymentGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.expectation) {
+        if (result.issuccess) {
             return res.render('expectation/makePayment', { title: 'Make Payment', expectation });
         } else {
-            return res.render('expectation/makePayment', { title: 'Make Payment', expectation: null, error: "Expectation not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error("Error fetching expectation:", err);
-        return res.status(500).render('expectation/makePayment', { title: 'Make Payment', expectation: null, error: "Expectation not found" });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -203,13 +195,15 @@ const expectationPaymentPost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/expectation/api/payment/${req.params.id}`, req.headers.cookie, req.body);
+        const result = await makeApiRequest('POST', `/expectation/api/payment/${req.params.id}`, req.headers.cookie, req.body);
 
-        return res.redirect('/');
-
-    } catch (err) {
-        console.error("Error processing payment:", err);
-        return res.status(500).send("Server error.");
+        if (result.issuccess) {
+            return res.redirect('/');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -222,14 +216,13 @@ const paymentApproval = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.expectation) {
+        if (result.issuccess) {
             return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation });
         } else {
-            return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation: null, error: "Expectation not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        console.error("Error: ", error);
-        return res.status(500).render('expectation/paymentApproval', { title: 'Approve Payment', expectation: null, error: error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -240,13 +233,15 @@ const paymentApprove = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('GET', `/expectation/api/paymentapprove/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/expectation/api/paymentapprove/${req.params.id}`, req.headers.cookie);
 
-        return res.redirect("/expectation");
-
+        if (result.issuccess) {
+            return res.redirect("/expectation");
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        console.error("Error: ", error);
-        return res.status(500).send("Server error.");
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -257,13 +252,15 @@ const paymentReject = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('GET', `/expectation/api/paymentreject/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/expectation/api/paymentreject/${req.params.id}`, req.headers.cookie);
 
-        return res.redirect("/expectation");
-
+        if (result.issuccess) {
+            return res.redirect("/expectation");
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        console.error("Error: ", error);
-        return res.status(500).send("Server error.");
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -274,13 +271,15 @@ const paymentWriteOff = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('GET', `/expectation/api/paymentwriteoff/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/expectation/api/delete/${req.params.id}`, req.headers.cookie); //const result = await makeApiRequest('GET', `/expectation/api/paymentwriteoff/${req.params.id}`, req.headers.cookie);
 
-        return res.redirect("/expectation");
-
+        if (result.issuccess) {
+            return res.redirect("/expectation");
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        console.error("Error: ", error);
-        return res.status(500).send("Server error.");
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

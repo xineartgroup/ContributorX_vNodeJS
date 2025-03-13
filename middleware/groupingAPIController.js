@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/count", async (req, res) => {
     try {
         const pool = await getPool();
-        const totalGroupingsResult = await pool.request().query('SELECT COUNT(*) AS total FROM Grouping');
+        const totalGroupingsResult = await pool.request().query('SELECT COUNT(*) AS total FROM Groupings');
         const totalGroupings = totalGroupingsResult.recordset[0].total;
 
         res.json({ issuccess: true, message: "", totalGroupings });
@@ -19,7 +19,19 @@ router.get("/count", async (req, res) => {
 router.get("/all", async (req, res) => {
     try {
         const pool = await getPool();
-        const result = await pool.request().query("SELECT * FROM Grouping");
+        const result = await pool.request().query("SELECT * FROM Groupings");
+        const groupings = result.recordset;
+        res.json({ issuccess: true, message: "", groupings });
+    } catch (err) {
+        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+    }
+});
+
+// Get groupings for group
+router.get("/bygroup/:groupId", async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`SELECT * FROM Groupings WHERE GroupId = ${req.params.groupId}`);
         const groupings = result.recordset;
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
@@ -36,7 +48,7 @@ router.get("/", async (req, res) => {
         const pool = await getPool();
 
         const groupingsResult = await pool.request().query(
-            `SELECT * FROM Grouping ORDER BY Id OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`
+            `SELECT * FROM Groupings ORDER BY Id OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`
         );
         const groupings = groupingsResult.recordset;
             
@@ -66,7 +78,7 @@ router.get("/:id", async (req, res) => {
         const pool = await getPool();
         const resultGrouping = await pool.request()
             .input("id", id)
-            .query("SELECT * FROM Grouping WHERE id = @id");
+            .query("SELECT * FROM Groupings WHERE id = @id");
         
         if (resultGrouping.recordset.length > 0) {
             const grouping = resultGrouping.recordset;
@@ -99,7 +111,7 @@ router.post("/", async (req, res) => {
         await pool.request()
             .input('ContributorId', Contributor)
             .input('GroupId', Group)
-            .query('INSERT INTO Grouping (ContributorId, GroupId) OUTPUT INSERTED.ID VALUES (@ContributorId, @GroupId)');
+            .query('INSERT INTO Groupings (ContributorId, GroupId) OUTPUT INSERTED.ID VALUES (@ContributorId, @GroupId)');
 
         const Id = result.recordset[0].ID;
         
@@ -118,7 +130,7 @@ router.post("/update/:id", async (req, res) => {
             .input('id', req.params.id)
             .input('ContributorId', req.body.Contributor)
             .input('GroupId', req.body.Group)
-            .query('UPDATE Grouping SET ContributorId = @ContributorId, GroupId = @GroupId WHERE Id = @id');
+            .query('UPDATE Groupings SET ContributorId = @ContributorId, GroupId = @GroupId WHERE Id = @id');
             
             res.json({ issuccess: true, message: "", grouping: { Id, Contributor, Group } });
     } catch (err) {
@@ -133,7 +145,7 @@ router.post("/delete/:id", async (req, res) => {
         const pool = await getPool();
         await pool.request()
             .input('id', req.params.id)
-            .query('DELETE FROM Grouping WHERE Id = @id');
+            .query('DELETE FROM Groupings WHERE Id = @id');
         res.json({ issuccess: true, message: "", grouping: null });
     } catch (err) {
         console.error(err);

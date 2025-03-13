@@ -47,14 +47,7 @@ const expenseIndex = async (req, res) => {
             searchValue
         });
     } catch (error) {
-        return res.render("expense/index", {
-            title: 'Expense List',
-            expenses: [],
-            currentPage: 0,
-            totalPages: 0,
-            error: "Error: " + error,
-            searchValue: ""
-        });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -66,7 +59,7 @@ const expenseCreateGet = async (req, res) => {
 
         return res.render('expense/create', { title: 'New Expense', error: null });
     } catch (error) {
-        return res.render("expense/create", { title: 'New Expense', error: "Error creating expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -88,10 +81,10 @@ const expenseCreatePost = async (req, res) => {
         if (result.issuccess) {
             return res.redirect('/expense');
         } else {
-            return res.render('expense/create', { title: 'Create Expense', error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        return res.render("expense/create", { title: 'New Expense', error: "Error creating expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -106,10 +99,10 @@ const expenseUpdateGet = async (req, res) => {
         if (result.issuccess) {
             return res.render('expense/update', { title: 'Update Expense', expense: result.expense });
         } else {
-            return res.render('expense/update', { title: 'Update Expense', expense: null, error: "Expense not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        return res.render('expense/update', { title: 'Update Expense', expense: null, error: "Error fetching expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -130,10 +123,10 @@ const expenseUpdatePost = async (req, res) => {
         if (result.issuccess) {
             return res.redirect('/expense');
         } else {
-            return res.render('expense/create', { title: 'Create Expense', error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        return res.render("expense/update", { title: 'Update Expense', error: "Error updating expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -145,13 +138,13 @@ const expenseDeleteGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/expense/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.expense) {
+        if (result.issuccess) {
             return res.render('expense/delete', { title: 'Delete Expense', expense: result.expense });
         } else {
-            return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Error fetching expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -166,10 +159,10 @@ const expenseDeletePost = async (req, res) => {
         if (result.issuccess) {
             return res.redirect('/expense');
         } else {
-            return res.render('expense/delete', { title: 'Delete Expense', expense: null, error: "Expense not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        return res.render("expense/delete", { title: 'Delete Expense', error: "Error deleting expense: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

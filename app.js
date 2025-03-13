@@ -70,17 +70,12 @@ app.use((req, res, next) => {
 });
 
 app.get('/', async (req, res) => {
-    const sessionData = req.session;
-
-    if (!sessionData || !req.session.isLoggedIn) {
-        return res.redirect('/login');
-    }
+    if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
 
     try {
-        const contributor = sessionData.contributor;
+        const contributor = req.session.contributor;
         if (!contributor) {
-            console.warn("No contributor found in session.");
-            return res.render('index', { title: "Home", sessionData, expectations: [] });
+            return res.render('error', { title: 'Error', detail: "No contributor found in session." });
         }
 
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
@@ -90,14 +85,20 @@ app.get('/', async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('index', { title: "Home", sessionData, expectations: result.expectations, searchValue });
+        res.render('index', { title: "Home", sessionData: req.session, expectations: result.expectations, searchValue });
     } catch (err) {
-        res.render('index', { title: "Home", sessionData, expectations: [], searchValue: "" });
+        res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
     }
 });
 
 app.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
+});
+
+app.get('/reports/payment', (req, res) => {
+    if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
+
+    res.render('reports/payment', { title: 'Payment Report' });
 });
 
 app.get('/users', (req, res) => {
@@ -123,5 +124,5 @@ app.use('/grouping/api', groupingapiController);
 app.use('/expectation/api', expectationapiController);
 
 app.use((req, res) => {
-    res.status(404).render('error', { title: 'Error' });
+    res.status(404).render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
 });

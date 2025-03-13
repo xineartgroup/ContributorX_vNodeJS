@@ -12,6 +12,24 @@ const getGroups = async (sessionCookie) => {
     }
 };
 
+const getGroupingsForGroup = async (groupId, sessionCookie) => {
+    const result = await makeApiRequest('GET', `/grouping/api/bygroup/${groupId}`, sessionCookie);
+    if (result.issuccess) {
+        return result.groupings;
+    } else {
+        throw new Error(result.message);
+    }
+};
+
+const createExpectationAsync = async (expectation, sessionCookie) => {
+    const result = await makeApiRequest('POST', `/expectation/api/`, sessionCookie, expectation);
+    if (result.issuccess) {
+        return result.expectation;
+    } else {
+        throw new Error(result.message);
+    }
+};
+
 const fetchTotalContributions = async (sessionCookie, session, searchValue) => {
     const result = await makeApiRequest('GET', `/contribution/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
@@ -64,15 +82,8 @@ const contributionIndex = async (req, res) => {
             totalPages: Math.ceil(totalContributions / limit),
             searchValue
         });
-    } catch (err) {
-        res.render('contribution/index', { 
-            title: 'Contribution List', 
-            contributions: [],
-            currentPage: 0,
-            totalPages: 0,
-            error: "Error: " + err,
-            searchValue: ""
-        });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -84,36 +95,40 @@ const contributionCreateGet = async (req, res) => {
     
         const groups = await getGroups(req.headers.cookie);
         res.render('contribution/create', { title: 'New Contribution', groups });
-    } catch (err) {
-        res.render('contribution/create', { title: 'New Contribution', contribution: null, groups: [], error: "Server Error" + err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
 const contributionCreatePost = async (req, res) => {
-    let groups = [];
-    let contribution = null;
-
-    try{
-        const { Name, Amount, Group, DueDate } = req.body;
-        contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await getGroups(req.headers.cookie);
-    }catch{}
-
     try {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-    
+        
         const { Name, Amount, Group, DueDate } = req.body;
         const result = await makeApiRequest('POST', `/contribution/api/create`, req.headers.cookie, { Name, Amount, Group, DueDate });
-
+        
         if (result.issuccess) {
-            res.redirect('/contribution');
+            const groupings = await getGroupingsForGroup(result.contribution.Group, req.headers.cookie);
+            
+            for (let i = 0; i < groupings.length; i++) {
+                let expectation = {
+                    Contributor: groupings[i].ContributorId,
+                    Contribution: result.contribution.Id,
+                    PaymentStatus: 0, //Utility.PaymentStatus.New
+                    AmountPaid: 0.0,
+                    AmountToApprove: 0.0
+                };
+                await createExpectationAsync(expectation, req.headers.cookie);
+            }
+            
+            return res.redirect('/contribution');
         }else{
-            return res.render('contribution/create', { title: 'Create Contribution', contribution, groups, error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        res.render('contribution/create', { title: 'Create Contribution', contribution: null, groups: [], error: "Server Error" + err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -126,40 +141,29 @@ const contributionUpdateGet = async (req, res) => {
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
         let groups = await getGroups(req.headers.cookie);
 
-        if (contribution) {
-            res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
-        }else{
-            res.render('contribution/update', { title: 'Update Contribution', contribution: null, groups, error: "Contribution not found" });
-        }
-    } catch (err) {
-        res.render('contribution/update', { title: 'Update Contribution', contribution: null, groups: [], error: "Server Error" + err });
+        return res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
 const contributionUpdatePost = async (req, res) => {
-    let groups = [];
-    let contribution = null;
-
-    try{
-        const { Name, Amount, Group, DueDate } = req.body;
-        contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await getGroups(req.headers.cookie);
-    }catch{}
-
     try {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
     
-        const result = await makeApiRequest('POST', `/contribution/api/update/${req.params.id}`, req.headers.cookie, contribution);
+        const { Name, Amount, Group, DueDate } = req.body;
+
+        const result = await makeApiRequest('POST', `/contribution/api/update/${req.params.id}`, req.headers.cookie, { Id: req.params.id, Name, Amount, Group, DueDate });
 
         if (result.issuccess) {
-            res.redirect('/contribution');
+            return res.redirect('/contribution');
         }else{
-            res.render('contribution/update', { title: 'Update Contribution', contribution, groups, error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        res.render('contribution/update', { title: 'Update Contribution', contribution, groups, error: "Server Error" });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -172,26 +176,13 @@ const contributionDeleteGet = async (req, res) => {
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
         let groups = await getGroups(req.headers.cookie);
 
-        if (contribution) {
-            res.render('contribution/delete', { title: 'Delete Contribution', contribution, groups });
-        }else{
-            res.render('contribution/delete', { title: 'Delete Contribution', contribution: null, groups, error: "Contribution not found" });
-        }
-    } catch (err) {
-        res.render('contribution/delete', { title: 'Delete Contribution', contribution: null, groups: [], error: "Server Error" + err });
+        return res.render('contribution/delete', { title: 'Delete Contribution', contribution, groups });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
 const contributionDeletePost = async (req, res) => {
-    let groups = [];
-    let contribution = null;
-
-    try{
-        const { Name, Amount, Group, DueDate } = req.body;
-        contribution = { Id: req.params.id, Name, Amount, Group, DueDate };
-        groups = await getGroups(req.headers.cookie);
-    }catch{}
-
     try {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
@@ -200,12 +191,12 @@ const contributionDeletePost = async (req, res) => {
         const result = await makeApiRequest('POST', `/contribution/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            res.redirect('/contribution');
+            return res.redirect('/contribution');
         }else{
-            res.render('contribution/delete', { title: 'Update Contribution', contribution, groups, error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        res.render('contribution/delete', { title: 'Update Contribution', contribution, groups, error: "Error deleting contribution. ", err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

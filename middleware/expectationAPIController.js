@@ -38,7 +38,7 @@ router.get('/all', async (req, res) => {
         }
 
         const pool = await getPool();
-        const expectationsResult = await pool.request().query('SELECT * FROM expectations');
+        const expectationsResult = await pool.request().query('SELECT * FROM Expectations');
         let expectations = expectationsResult.recordset;
 
         return res.json({ issuccess: true, message: "", expectations });
@@ -110,7 +110,7 @@ router.get('/:id', async (req, res) => {
         }
 
         const pool = await getPool();
-        const expectationResult = await pool.request().query("SELECT * FROM expectations WHERE ID = " + req.params.id);
+        const expectationResult = await pool.request().query("SELECT * FROM Expectations WHERE ID = " + req.params.id);
         const expectation = expectationResult.recordset[0];
 
         if (expectation){
@@ -180,14 +180,18 @@ router.post('/', async (req, res) => {
         }
 
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
-        const PaymentReciept = req.file ? req.file.filename : null;
+        const PaymentReciept = req.file ? req.file.filename : '';
         
         const pool = await getPool();
 
-        const newExpectationResult = await pool.request().query(`
-            INSERT INTO expectations (Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept) OUTPUT INSERTED.ID
-            VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, ${PaymentReciept})
-        `);
+        const query = `
+            INSERT INTO Expectations (ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept) OUTPUT INSERTED.ID
+            VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReciept}')
+        `;
+
+        console.log("query: ", query);
+        
+        const newExpectationResult = await pool.request().query(query);
         
         const Id = newExpectationResult.recordset[0].ID;
         return res.json({ issuccess: true, message: "", expectation: { Id, Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } });
@@ -209,7 +213,7 @@ router.post('/update/:id', async (req, res) => {
         const pool = await getPool();
 
         await pool.request().query(`
-            UPDATE expectations SET Contributor=${Contributor}, Contribution=${Contribution}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReciept=${PaymentReciept}
+            UPDATE Expectations SET ContributorId=${Contributor}, ContributionId=${Contribution}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReciept=${PaymentReciept}
             WHERE ID=${req.params.id}
         `);
         
@@ -228,7 +232,7 @@ router.post('/delete/:id', async (req, res) => {
 
         const pool = await getPool();
 
-        await pool.request().query("DELETE FROM expectations WHERE ID = ${req.params.id}");
+        await pool.request().query(`DELETE FROM Expectations WHERE ID = ${req.params.id}`);
         
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (err) {
@@ -250,7 +254,7 @@ router.post('/payment/:id', async (req, res) => {
         const PaymentReciept = req.file ? req.file.filename : "";
 
         await pool.request().query(`
-            UPDATE expectations
+            UPDATE Expectations
             SET AmountToApprove = ${AmountToApprove}, PaymentStatus = 1, PaymentReciept = '${PaymentReciept}'
             WHERE id = ${expectationId}`); //PaymentMethod = ${PaymentMethod},
 
@@ -269,7 +273,7 @@ router.get('/paymentapprove/:id', async (req, res) => {
 
         const pool = await getPool();
 
-        const expectations = await pool.request().query(`SELECT * FROM expectations WHERE id = ${req.params.id}`);
+        const expectations = await pool.request().query(`SELECT * FROM Expectations WHERE id = ${req.params.id}`);
 
         if (expectations.length === 0)
             return res.status(404).json({ issuccess: false, message: "Expectation not found", expectation: null });
@@ -285,7 +289,7 @@ router.get('/paymentapprove/:id', async (req, res) => {
         const paymentStatus = expectation.Contribution.Amount - updatedAmountPaid === 0 ? 3 : 2; // "Cleared" : "Approved"
 
         await pool.request().query(`
-            UPDATE expectations
+            UPDATE Expectations
             SET AmountPaid = ${updatedAmountPaid}, AmountToApprove = 0, PaymentStatus = ${paymentStatus}
             WHERE id = ${expectation.Id}`);
 
@@ -305,7 +309,7 @@ router.get('/paymentreject/:id', async (req, res) => {
         const pool = await getPool();
 
         await pool.request().query(`
-            UPDATE expectations
+            UPDATE Expectations
             SET AmountToApprove = 0, PaymentStatus = 0
             WHERE id = ${req.params.id}`);
 
@@ -324,7 +328,7 @@ router.get('/paymentwriteoff/:id', async (req, res) => {
 
         const pool = await getPool();
 
-        const expectations = await pool.request().query(`SELECT * FROM expectations WHERE id = ${req.params.id}`);
+        const expectations = await pool.request().query(`SELECT * FROM Expectations WHERE id = ${req.params.id}`);
 
         if (expectations.length === 0)
             return res.status(404).json({ issuccess: false, message: "Expectation not found", expectation: null });
@@ -332,7 +336,7 @@ router.get('/paymentwriteoff/:id', async (req, res) => {
         const expectation = expectations.recordset[0];
 
         await pool.request().query(`
-            UPDATE expectations
+            UPDATE Expectations
             SET AmountPaid = AmountToApprove, AmountToApprove = 0, PaymentStatus = 3
             WHERE id = ${expectation.Id}`);
 

@@ -46,14 +46,7 @@ const groupIndex = async (req, res) => {
             searchValue
         });
     } catch (error) {
-        res.render("group/index", {
-            title: 'Group List',
-            groups: [],
-            currentPage: 0,
-            totalPages: 0,
-            error: "Error: " + error,
-            searchValue: ""
-        });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -62,9 +55,9 @@ const groupCreateGet = async (req, res) => {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-        res.render('group/create', { title: 'New Group', error: null });
+        return res.render('group/create', { title: 'New Group', error: null });
     } catch (error) {
-        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -80,12 +73,12 @@ const groupCreatePost = async (req, res) => {
         const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, Community });
 
         if (result.issuccess) {
-            res.redirect('/group');
+            return res.redirect('/group');
         }else{
-            return res.render('group/create', { title: 'Create Group', error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        res.render("group/create", { title: 'New Group', error: "Error creating group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -97,13 +90,13 @@ const groupUpdateGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.group) {
-            res.render('group/update', { title: 'Update Group', group: result.group });
+        if (result.issuccess) {
+            return res.render('group/update', { title: 'Update Group', group: result.group });
         } else {
-            res.render('group/update', { title: 'Update Group', group: null, error: "Group not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        res.render('group/update', { title: 'Update Group', group: null, error: "Error fetching group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -116,11 +109,15 @@ const groupUpdatePost = async (req, res) => {
         const { Name, Description } = req.body;
         const Community = req.session.contributor.CommunityId;
 
-        await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, Community });
+        const result = await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, Community });
 
-        res.redirect('/group');
+        if (result.issuccess) {
+            return res.redirect('/group');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        res.render("group/update", { title: 'Update Group', error: "Error updating group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -132,13 +129,13 @@ const groupDeleteGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.group) {
-            res.render('group/delete', { title: 'Delete Group', group: result.group });
+        if (result.issuccess) {
+            return res.render('group/delete', { title: 'Delete Group', group: result.group });
         } else {
-            res.render('group/delete', { title: 'Delete Group', group: null, error: "Group not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        res.render('group/delete', { title: 'Delete Group', group: null, error: "Error fetching group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -148,11 +145,15 @@ const groupDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/group/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/group/api/delete/${req.params.id}`, req.headers.cookie);
 
-        res.redirect('/group');
+        if (result.issuccess) {
+            return res.redirect('/group');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        res.render("group/delete", { title: 'Delete Group', error: "Error deleting group: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

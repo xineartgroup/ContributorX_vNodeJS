@@ -29,19 +29,19 @@ const login = async (req, res) => {
             req.session.contributor = result.contributor;
             res.redirect("/");
         } else {
-            res.render("login", { error: "Invalid username or password" });
+            return res.render("login", { error: "Invalid username or password" });
         }
     } catch (error) {
-        res.render("login", { error: "Login error: " + error });
+        return res.render("login", { error: "Login error: " + error });
     }
 };
 
 const showRegisterPage = async (req, res) => {
     try {
         const communities = await getCommunities();
-        res.render("register", { error: null, communities });
+        return res.render("register", { error: null, communities });
     } catch (error) {
-        res.render("register", { error: "Error fetching communities:" + error, communities: [] });
+        return res.render("register", { error: "Error fetching communities:" + error, communities: [] });
     }
 };
 
@@ -57,12 +57,12 @@ const register = async (req, res) => {
         });
 
         if (result.issuccess) {
-            res.redirect("/login");
+            return res.redirect("/login");
         } else {
-            res.render("register", { error: "Registration Failed!!! " + result.message, communities });
+            return res.render("register", { error: "Registration Failed!!! " + result.message, communities });
         }
     } catch (error) {
-        res.render("register", { error: "Registration error: " + error, communities: [] });
+        return res.render("register", { error: "Registration error: " + error, communities: [] });
     }
 };
 

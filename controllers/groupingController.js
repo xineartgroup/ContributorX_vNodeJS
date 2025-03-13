@@ -54,15 +54,8 @@ const groupingIndex = async (req, res) => {
             currentPage: page,
             totalPages: Math.ceil(totalGroupings / limit)
         });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render("grouping/index", {
-            title: 'Expense List',
-            groupings: [],
-            currentPage: 0,
-            totalPages: 0,
-            error: err
-        });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -71,19 +64,9 @@ const groupingCreateGet = async (req, res) => {
         const contributors = await getContributors(req.headers.cookie);
         const groups = await getGroups(req.headers.cookie);
 
-        return res.render('grouping/create', {
-            title: 'New Grouping',
-            contributors,
-            groups
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).res.render('grouping/create', {
-            title: 'New Grouping',
-            contributors: [],
-            groups: [],
-            error: err
-        });
+        return res.render('grouping/create', { title: 'New Grouping', contributors, groups });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -96,11 +79,10 @@ const groupingCreatePost = async (req, res) => {
         if (result.issuccess) {
             return res.redirect('/grouping');
         } else {
-            return res.render('grouping/create', { title: 'Create Grouping', error: result.message });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error('Error saving grouping:', err);
-        return res.status(500).render('grouping/create', { title: 'Create Grouping', error: err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -112,24 +94,12 @@ const groupingUpdateGet = async (req, res) => {
         const groups = await getGroups(req.headers.cookie);
 
         if (result.issuccess){
-            return res.render('grouping/update', {
-                title: 'Update Grouping',
-                grouping,
-                contributors,
-                groups
-            });
+            return res.render('grouping/update', { title: 'Update Grouping', grouping, contributors, groups });
         }else{
-            return res.render('grouping/update', {
-                title: 'Update Grouping',
-                grouping,
-                contributors,
-                groups,
-                error: result.message
-            });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send('Server Error');
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -144,11 +114,10 @@ const groupingUpdatePost = async (req, res) => {
         if (result.issuccess) {
             return res.redirect('/grouping');
         } else {
-            return res.render('grouping/create', { title: 'Create Grouping', error: result.message, communities });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render('grouping/create', { title: 'Create Grouping', error: err, communities });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -159,11 +128,10 @@ const groupingDeleteGet = async (req, res) => {
         if (result.expense) {
             return res.render('grouping/delete', { title: 'Delete Grouping', grouping });
         } else {
-            return res.render('grouping/delete', { title: 'Delete Grouping', grouping: null, error: "Grouping not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render('grouping/delete', { title: 'Delete Grouping', grouping: null, error: err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -174,11 +142,10 @@ const groupingDeletePost = async (req, res) => {
         if (result.issuccess) {
             res.redirect('/grouping');
         } else {
-            return res.render('grouping/delete', { title: 'Delete Grouping', expense: null, error: "Grouping not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render('grouping/delete', { title: 'Delete Grouping', expense: null, error: err });
+    } catch (error) {
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 

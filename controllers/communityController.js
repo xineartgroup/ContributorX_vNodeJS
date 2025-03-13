@@ -50,14 +50,7 @@ const communityIndex = async (req, res) => {
             searchValue
         });
     } catch (error) {
-        res.render("community/index", {
-            title: 'Community List',
-            communities: null,
-            currentPage: 0,
-            totalPages: 0,
-            error: "Error: " + error,
-            searchValue: ""
-        });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -69,7 +62,7 @@ const communityCreateGet = (req, res) => {
         }
         res.render('community/create', { title: 'New Community' });
     } catch (error) {
-        res.render("community/create", { title: 'New Community', error: "Error creating community: " + error, communities: [] });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -82,11 +75,15 @@ const communityCreatePost = async (req, res) => {
 
         const { Name, Description } = req.body;
 
-        await makeApiRequest('POST', `/community/api/`, req.headers.cookie, { Name, Description });
+        const result = await makeApiRequest('POST', `/community/api/`, req.headers.cookie, { Name, Description });
 
-        res.redirect('/community');
+        if (result.issuccess) {
+            return res.redirect('/community');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        res.render("community/create", { title: 'New Community', error: "Error creating community: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -99,13 +96,13 @@ const communityUpdateGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.community) {
-            res.render('community/update', { title: 'Update Community', community: result.community });
+        if (result.issuccess) {
+            return res.render('community/update', { title: 'Update Community', community: result.community });
         } else {
-            res.render('community/update', { title: 'Update Community', community: null, error: "Community not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        res.render('community/update', { title: 'Update Community', community: null, error: "Error fetching community: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -118,11 +115,15 @@ const communityUpdatePost = async (req, res) => {
 
         const { Name, Description } = req.body;
 
-        await makeApiRequest('POST', `/community/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
+        const result = await makeApiRequest('POST', `/community/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
 
-        res.redirect('/community');
+        if (result.issuccess) {
+            return res.redirect('/community');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        res.render("community/update", { title: 'Update Community', error: "Error updating community: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -135,13 +136,13 @@ const communityDeleteGet = async (req, res) => {
 
         const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
 
-        if (result.community) {
-            res.render('community/delete', { title: 'Delete Community', community: result.community });
+        if (result.issuccess) {
+            return res.render('community/delete', { title: 'Delete Community', community: result.community });
         } else {
-            res.render('community/delete', { title: 'Delete Community', community: null, error: "Community not found" });
+            return res.render('error', { title: 'Error', detail: result.message });
         }
     } catch (error) {
-        res.render('community/delete', { title: 'Delete Community', community: null, error: "Error fetching community: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
@@ -152,11 +153,15 @@ const communityDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        await makeApiRequest('POST', `/community/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/community/api/delete/${req.params.id}`, req.headers.cookie);
 
-        res.redirect('/community');
+        if (result.issuccess) {
+            return res.redirect('/community');
+        } else {
+            return res.render('error', { title: 'Error', detail: result.message });
+        }
     } catch (error) {
-        res.render("community/delete", { title: 'Delete Community', error: "Error deleting community: " + error });
+        return res.render('error', { title: 'Error', detail: error });
     }
 };
 
