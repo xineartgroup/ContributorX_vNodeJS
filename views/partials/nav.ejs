@@ -9,7 +9,9 @@
                 <li class="dropdown">
                     <a href="#">User ▼</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/reports/payment">Payment Report</a></li>
+                        <li><a href="/contributor/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Update Profile</a></li>
+                        <li><a href="/contributor/changepassword">Change Password</a></li>
+                        <li><a href="/user/payment">Payment Report</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">

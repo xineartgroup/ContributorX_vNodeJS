@@ -1,5 +1,6 @@
 const express = require("express");
 const getPool = require('../middleware/sqlconnection');
+const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
@@ -174,11 +175,13 @@ router.post("/", async (req, res) => {
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
+        const hashedPassword = await bcrypt.hash(Password, 10);
+
         const pool = await getPool();
         const result = await pool.request()
         .input('UserID', UserName)
         .input('UserName', UserName)
-        .input('Password', Password)
+        .input('Password', hashedPassword)
         .input('FirstName', FirstName)
         .input('LastName', LastName)
         .input('Email', Email)
@@ -205,27 +208,32 @@ router.post("/update/:id", async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
-        const { id } = req.params;
-        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } = req.body;
+        const id = req.params.id;
+        
         const pool = await getPool();
 
-        await pool.request()
-            .input('UserName', UserName)
-            .input('Password', Password)
-            .input('FirstName', FirstName)
-            .input('LastName', LastName)
-            .input('Email', Email)
-            .input('Role', Role)
-            .input('PhoneNumber', PhoneNumber)
-            .input('Picture', Picture)
-            .input('CommunityId', Community.Id)
-            .input('IsActive', IsActive === 'true')
-            .input('id', req.params.id)
-            .query(`UPDATE Contributors SET UserName = @UserName, Password = @Password, FirstName = @FirstName, 
-                    LastName = @LastName, Email = @Email, Role = @Role, PhoneNumber = @PhoneNumber, 
-                    Picture = @Picture, CommunityId = @CommunityId, IsActive = @IsActive WHERE ID = @id`);
+        const resultContributor = await pool.request()
+            .input("id", id)
+            .query("SELECT * FROM Contributors WHERE id = @id");
 
-        res.json({ issuccess: true, message: "", contributor: { id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
+        if (resultContributor.recordset.length > 0) {
+            let contributor = resultContributor.recordset[0];
+            const { FirstName, LastName, Email, PhoneNumber, Community } = req.body;
+
+            await pool.request()
+                .input('FirstName', FirstName)
+                .input('LastName', LastName)
+                .input('Email', Email)
+                .input('PhoneNumber', PhoneNumber)
+                .input('CommunityId', Community)
+                .input('id', id)
+                .query(`UPDATE Contributors SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, CommunityId = @CommunityId WHERE ID = @id`);
+
+            res.json({ issuccess: true, message: "", contributor });
+        }
+        else{
+            res.status(404).json({ issuccess: false, message: "No contributor found with ID", contributor: null });
+        }
     } catch (err) {
         res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
@@ -320,6 +328,46 @@ router.post("/update1", async (req, res) => {
 
     } catch (error) {
         return res.status(400).json({ issuccess: false, message: error, contributor: null });
+    }
+});
+
+router.post('/changepassword/:id', async (req, res) => {
+    const { PasswordOld, PasswordNew, PasswordConfirm } = req.body;
+
+    if (PasswordNew != PasswordConfirm){
+        return res.json({ issuccess: false, message: "New Password and confirmation don't match!!!" });
+    }
+
+    if (PasswordOld == PasswordNew){
+        return res.json({ issuccess: false, message: "Old Password and New Password are the same!!!" });
+    }
+
+    const { id } = req.params;
+    
+    try {
+        const pool = await getPool();
+        const result = await pool.request()
+            .input('Id', id)
+            .query('SELECT * FROM Contributors WHERE Id = @Id');
+
+        const contributor = result.recordset[0];
+
+        const isMatch = await bcrypt.compare(PasswordOld, contributor.Password); // Password == contributor.Password; // 
+
+        if (!contributor || !isMatch) {
+            return res.json({ issuccess: false, message: "Password mismatch!!!" });
+        }
+
+        const hashedPassword = await bcrypt.hash(PasswordNew, 10);
+
+        await pool.request()
+            .input('Password', hashedPassword)
+            .input('id', id)
+            .query(`UPDATE Contributors SET Password = @Password WHERE ID = @id`);
+
+        return res.json({ issuccess: true, message: "" });
+    } catch (error) {
+        return res.json({ issuccess: false, message: "Login error: " + error });
     }
 });
 

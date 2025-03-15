@@ -9,7 +9,7 @@
         <form action="/contributor/update/<%= contributor.Id %>" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="UserName">Username:</label>
-                <input type="text" id="UserName" name="UserName" value="<%= contributor.UserName %>" required>
+                <input type="text" id="UserName" name="UserName" value="<%= contributor.UserName %>" disabled>
             </div>
 
             <div class="form-group">
@@ -29,7 +29,7 @@
 
             <div class="form-group">
                 <label for="Role">Role:</label>
-                <select id="Role" name="Role" value="<%= contributor.Role %>" required>
+                <select id="Role" name="Role" value="<%= contributor.Role %>" disabled>
                     <option value="">--Select--</option>
                     <option value="Administrator" <%= contributor.Role === "Administrator" ? 'selected' : '' %>>Administrator</option>
                     <option value="Contributor" <%= contributor.Role === "Contributor" ? 'selected' : '' %>>Contributor</option>
@@ -44,12 +44,12 @@
 
             <div class="form-group">
                 <label for="Picture">Upload Picture:</label>
-                <input type="file" id="Picture" name="Picture" required>
+                <input type="file" id="Picture" name="Picture">
             </div>
 
             <div class="form-group">
                 <label for="IsActive">Status:</label>
-                <select id="IsActive" name="IsActive">
+                <select id="IsActive" name="IsActive" disabled>
                     <option value="true" <%= contributor.IsActive ? 'selected' : '' %>>Yes</option>
                     <option value="false" <%= !contributor.IsActive ? 'selected' : '' %>>No</option>
                 </select>

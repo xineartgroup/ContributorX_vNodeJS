@@ -24,12 +24,12 @@ const login = async (req, res) => {
 
         const result = await makeApiRequest('POST', '/auth/api/login', req.headers.cookie, { UserName, Password });
 
-        if (result.contributor && result.contributor.Password === Password) {
+        if (result.issuccess) {
             req.session.isLoggedIn = true;
             req.session.contributor = result.contributor;
             res.redirect("/");
         } else {
-            return res.render("login", { error: "Invalid username or password" });
+            return res.render("login", { error: result.message });
         }
     } catch (error) {
         return res.render("login", { error: "Login error: " + error });

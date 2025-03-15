@@ -1,10 +1,11 @@
 const express = require('express');
 const sql = require('mssql');
 const getPool = require('../middleware/sqlconnection');
+const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
-const login = async (req, res) => {
+router.post('/login', async (req, res) => {
     const { UserName, Password } = req.body;
 
     try {
@@ -15,20 +16,21 @@ const login = async (req, res) => {
 
         const contributor = result.recordset[0];
 
-        if (!contributor || contributor.Password !== Password) {
+        const isMatch = await bcrypt.compare(Password, contributor.Password); // Password == contributor.Password; // 
+
+        if (!contributor || !isMatch) {
             return res.json({ issuccess: false, error: "Invalid username or password", contributor });
         }
-
         req.session.isLoggedIn = true;
         req.session.contributor = contributor;
 
-        res.json({ issuccess: true, message: "", contributor });
+        return res.json({ issuccess: true, message: "", contributor });
     } catch (error) {
-        res.json({ issuccess: false, message: "Login error: " + error, contributor });
+        return res.json({ issuccess: false, message: "Login error: " + error, contributor: null });
     }
-};
+});
 
-const register = async (req, res) => {
+router.post('/register', async (req, res) => {
     const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, Picture, IsActive } = req.body;
 
     try {
@@ -57,10 +59,12 @@ const register = async (req, res) => {
             }
         }
 
+        const hashedPassword = await bcrypt.hash(Password, 10);
+
         await pool.request()
             .input('UserID', UserName)
             .input('UserName', UserName)
-            .input('Password', Password)
+            .input('Password', hashedPassword)
             .input('FirstName', FirstName)
             .input('LastName', LastName)
             .input('Email', Email)
@@ -72,14 +76,10 @@ const register = async (req, res) => {
             .input('StartDate', new Date())
             .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
 
-        res.status(201).json({ issuccess: true, message: "Registration successful", contributor: null });
+        return res.status(201).json({ issuccess: true, message: "Registration successful", contributor: null });
     } catch (error) {
-        res.json({ issuccess: false, message: "Registration error: " + error, contributor: null });
+        return res.json({ issuccess: false, message: "Registration error: " + error, contributor: null });
     }
-};
-
-// Define routes
-router.post('/login', login);
-router.post('/register', register);
+});
 
 module.exports = router;

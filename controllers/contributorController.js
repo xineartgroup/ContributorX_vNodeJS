@@ -150,7 +150,7 @@ const contributorUpdatePost = async (req, res) => {
         const result = await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
         
         if (result.issuccess) {
-            return res.redirect('/contributor');
+            return res.redirect('/');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -195,6 +195,39 @@ const contributorDeletePost = async (req, res) => {
     }
 };
 
+const changePasswordGet = async (req, res) => {
+    try {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        res.render('contributor/changepassword', { title: 'Change Password' });
+    } catch (error) {
+        return res.render("contributor/changepassword", { title: 'Change Password', error: "Login error: " + error });
+    }
+};
+
+const changePasswordPost = async (req, res) => {
+    try {
+        if (!req.session || !req.session.isLoggedIn) {
+            return res.redirect('/login');
+        }
+
+        const { PasswordOld, PasswordNew, PasswordConfirm } = req.body;
+
+        const result = await makeApiRequest('POST', `/contributor/api/changepassword/${req.session.contributor.Id}`, req.headers.cookie, { PasswordOld, PasswordNew, PasswordConfirm });
+
+        if (result.issuccess) {
+            res.redirect("/");
+        } else {
+            console.log("error: ", result.message);
+            return res.render("contributor/changepassword", { title: 'Change Password', error: result.message });
+        }
+    } catch (error) {
+        return res.render("contributor/changepassword", { title: 'Change Password', error: "Login error: " + error });
+    }
+};
+
 router.get('', contributorIndex);
 router.get('/detail/:id', contributorDetailGet);
 router.post('/detail/:id', contributorDetailPost);
@@ -204,5 +237,7 @@ router.get('/update/:id', contributorUpdateGet);
 router.post('/update/:id', upload.single("PaymentReciept"), contributorUpdatePost);
 router.get('/delete/:id', contributorDeleteGet);
 router.post('/delete/:id', contributorDeletePost);
+router.get("/changepassword", changePasswordGet);
+router.post("/changepassword", changePasswordPost);
 
 module.exports = router;

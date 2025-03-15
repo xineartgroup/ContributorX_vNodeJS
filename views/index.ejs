@@ -32,7 +32,7 @@
                         
                         <% expectations.forEach(item => { %>
                             <% if (contributorId === 0) contributorId = item.Contributor; %>
-                            <% if (item.Contribution) { %>
+                            <% if (item.Contribution && item.paymentStatus != 3) { %>
                                 <tr>
                                     <td><%= item.Contribution.Name %></td>
                                     <td><%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>

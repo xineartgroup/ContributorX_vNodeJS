@@ -95,10 +95,14 @@ app.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
 });
 
-app.get('/reports/payment', (req, res) => {
+app.get('/user/changepassword', (req, res) => {
+    res.render('/user/changepassword', { title: 'Change Password' });
+});
+
+app.get('/user/payment', (req, res) => {
     if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
 
-    res.render('reports/payment', { title: 'Payment Report' });
+    res.render('user/payment', { title: 'Payment Report' });
 });
 
 app.get('/users', (req, res) => {
