@@ -1,8 +1,6 @@
 const express = require("express");
 const http = require('http');
 
-const router = express.Router();
-
 const makeApiRequest = (method, path, sessionCookie, data = null) => {
     return new Promise((resolve, reject) => {
         const postData = data ? JSON.stringify(data) : null;
@@ -27,7 +25,7 @@ const makeApiRequest = (method, path, sessionCookie, data = null) => {
             } )
         };
 
-        const request = http.request(options, (response) => {
+        const req = http.request(options, (response) => {
             let responseData = '';
 
             response.on('data', (chunk) => {
@@ -44,13 +42,13 @@ const makeApiRequest = (method, path, sessionCookie, data = null) => {
             });
         });
 
-        request.on('error', (error) => reject("Request error: " + error));
+        req.on('error', (error) => reject("Request error: " + error));
 
         if (postData) {
-            request.write(postData);
+            req.write(postData);
         }
 
-        request.end();
+        req.end();
     });
 };
 

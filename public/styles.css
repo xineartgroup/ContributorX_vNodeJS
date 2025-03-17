@@ -210,7 +210,7 @@
             margin-bottom: 10px;
         }
         h3{
-            text-transform: capitalize;
+            text-transform: capitalize; /*text-transform: uppercase;*/
             margin-bottom: 8px;
         }
         content{
@@ -672,40 +672,87 @@
             padding: 15px;
         }
         
-        table {
+        .table-container table {
             width: 100%;
             border-collapse: collapse;
             font-family: Arial, sans-serif;
         }
         
-        thead {
+        .table-container thead {
             background-color: #007bff;
             color: white;
         }
         
-        th {
+        .table-container th {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
             /*text-transform: uppercase;*/
         }
         
-        td {
+        .table-container td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
         
-        tr:nth-child(even) {
+        .table-container tr:nth-child(even) {
             background-color: #f8f8f8;
         }
         
-        tr:hover {
+        .table-container tbody tr:hover {
             background-color: #f8f8f8;
         }
         
-        td {
+        .table-container thead tr:hover {
+            background-color: #0056b3;
+        }
+        
+        .table-container thead a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .table-container thead a:hover {
+            text-decoration: none;
+            color: #f8f9fa;
+        }
+        
+        .table-container td {
             color: #333;
+        }
+        
+        .table-report {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 15px;
+        }
+        
+        .table-report table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        }
+        
+        .table-report thead {
+            background-color: #313131;
+            color: white;
+        }
+        
+        .table-report th {
+            padding: 6px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table-report td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
         
         .table-button {

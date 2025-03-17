@@ -57,6 +57,8 @@ router.get('', async (req, res) => {
         const limit = req.query.limit;
         const communityid = req.query.communityid;
         const searchValue = req.query.searchValue;
+        const sortName = req.query.sortName;
+        const sortOrder = req.query.sortOrder;
         
         const pool = await getPool();
         let query = "SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id JOIN Contributions cn ON e.ContributionId = cn.Id";
@@ -73,9 +75,9 @@ router.get('', async (req, res) => {
                 query = query + ` WHERE c.UserName LIKE '%${searchValue}%' OR cn.Name LIKE '%${searchValue}%'`;
         }
 
-        query = query + " ORDER BY e.Id DESC";
+        query = query + ` ORDER BY ${sortName} ${sortOrder}`;
 
-        if (skip && limit && skip != 0 && limit != 0){
+        if (skip && limit){
             query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
         }
 
@@ -189,8 +191,6 @@ router.post('/', async (req, res) => {
             VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReciept}')
         `;
 
-        console.log("query: ", query);
-        
         const newExpectationResult = await pool.request().query(query);
         
         const Id = newExpectationResult.recordset[0].ID;

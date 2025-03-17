@@ -85,7 +85,7 @@ app.get('/', async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('index', { title: "Home", sessionData: req.session, expectations: result.expectations, searchValue });
+        res.render('index', { title: "Home", expectations: result.expectations, searchValue });
     } catch (err) {
         res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
     }
@@ -97,12 +97,6 @@ app.get('/about', (req, res) => {
 
 app.get('/user/changepassword', (req, res) => {
     res.render('/user/changepassword', { title: 'Change Password' });
-});
-
-app.get('/user/payment', (req, res) => {
-    if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
-
-    res.render('user/payment', { title: 'Payment Report' });
 });
 
 app.get('/users', (req, res) => {

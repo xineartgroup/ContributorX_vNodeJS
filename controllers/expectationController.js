@@ -31,8 +31,8 @@ const fetchTotalExpectations = async (sessionCookie, session, searchValue) => {
     }
 };
 
-const fetchExpectations = async (skip, limit, sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/expectation/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
+const fetchExpectations = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
+    const result = await makeApiRequest('GET', `/expectation/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.expectations;
     }else{
@@ -49,9 +49,11 @@ const expectationIndex = async (req, res) => {
         const skip = (page - 1) * limit;
         
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+        let sortName = req.query.sortName != null && req.query.sortName != '' ? req.query.sortName : "e.Id";
+        let sortOrder = req.query.sortOrder != null && req.query.sortOrder != '' ? req.query.sortOrder : "desc";
 
-        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session, searchValue);
-        const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session, searchValue);
+        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session, searchValue, sortName, sortOrder);
+        const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session, searchValue, sortName, sortOrder);
 
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
@@ -61,7 +63,9 @@ const expectationIndex = async (req, res) => {
             expectations,
             currentPage: page,
             totalPages: Math.ceil(totalExpectations / limit),
-            searchValue
+            searchValue,
+            sortName,
+            sortOrder
         });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
@@ -283,6 +287,27 @@ const paymentWriteOff = async (req, res) => {
     }
 };
 
+const paymentReport = async (req, res) => {
+    if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
+
+    const contributor = req.session.contributor;
+    if (!contributor) {
+        return res.render('error', { title: 'Error', detail: "No contributor found in session." });
+    }
+
+    const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}/*`, req.headers.cookie);
+
+    res.render('expectation/paymentReport', { title: 'My Payment Report', expectations: result.expectations });
+};
+
+const paymentReportAll = async (req, res) => {
+    if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
+
+    const expectations = await fetchExpectations(0, 1000000000, req.headers.cookie, req.session, '', 'e.Id', 'asc');
+
+    res.render('expectation/paymentReportAll', { title: 'Payment Report', expectations });
+};
+
 router.get('', expectationIndex);
 router.get('/create', expectationCreateGet);
 router.post('/', expectationCreatePost);
@@ -296,5 +321,7 @@ router.get('/paymentApproval/:id', paymentApproval);
 router.get('/paymentapprove/:id', paymentApprove);
 router.get('/paymentreject/:id', paymentReject);
 router.get('/paymentwriteoff/:id', paymentWriteOff);
+router.get('/paymentReport', paymentReport);
+router.get('/paymentReportAll', paymentReportAll);
 
 module.exports = router;

@@ -11,18 +11,19 @@
                     <ul class="dropdown-menu">
                         <li><a href="/contributor/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Update Profile</a></li>
                         <li><a href="/contributor/changepassword">Change Password</a></li>
-                        <li><a href="/user/payment">Payment Report</a></li>
+                        <li><a href="/expectation/paymentReport">My Payment Report</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#">Admin ▼</a> <!--▼▲-->
                     <ul class="dropdown-menu">
-                        <li><a href="/community">Communities</a></li>
+                        <li><a href="/community/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Community</a></li>
                         <li><a href="/group">Groups</a></li>
                         <li><a href="/contributor">Contributors</a></li>
                         <li><a href="/contribution">Contributions</a></li>
                         <li><a href="/expense">Expenses</a></li>
                         <li><a href="/expectation">Expectations</a></li>
+                        <li><a href="/expectation/paymentReportAll">Payment Report</a></li>
                     </ul>
                 </li>
                 <li></li>
@@ -37,3 +38,59 @@
         </div> 
     </div>
 </nav>
+
+<script>
+    const columnMap = {
+        "Contributor": "c.UserName",
+        "Bill/Pledge": "cn.Name",
+        "Amount Owed": "cn.Amount",
+        "Previously Paid": "AmountPaid",
+        "Amount to Approve": "AmountToApprove"
+    };
+
+    function sortTable(event, column) {
+        event.preventDefault(); // Prevents default link behavior
+        
+        const columnKey = columnMap[column];
+        if (!columnKey) return;
+        
+        const url = new URL(window.location.href); // Get current URL
+        const params = url.searchParams;
+        const currentSort = params.get('sortOrder');
+        const page = params.get('page');
+        const searchValue = params.get('searchValue');
+        
+        // Toggle between 'asc' and 'desc'
+        const newSort = currentSort === 'asc' ? 'desc' : 'asc';
+        
+        // Remove all sorting params and set only the selected column
+        [...params.keys()].forEach(param => params.delete(param));
+        if (page) params.set('page', page);
+        if (searchValue) params.set('searchValue', searchValue);
+        params.set('sortName', columnKey);
+        params.set('sortOrder', newSort);
+        
+        window.location.href = url.toString(); // Redirect to the updated URL
+    }
+
+    // Update header display based on the current URL parameters
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        document.querySelectorAll("thead a").forEach(a => {
+            let colText = a.innerText.replace("▼", "").replace("▲", "").trim();
+            
+            const columnKey = columnMap[colText];
+            if (!columnKey) return;
+            
+            const currentName = urlParams.get('sortName');
+            const currentOrder = urlParams.get('sortOrder');
+            
+            if (columnKey === currentName && currentOrder) {
+                a.innerHTML = `${colText} ${currentOrder === "asc" ? "▲" : "▼"}`;
+            } else {
+                a.innerHTML = `${colText}`;
+            }
+        });
+    });
+</script>

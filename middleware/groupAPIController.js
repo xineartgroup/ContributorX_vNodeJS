@@ -76,7 +76,7 @@ router.get('', async (req, res) => {
 
         query = query + " ORDER BY Id DESC";
 
-        if (skip && limit && skip != 0 && limit != 0){
+        if (skip && limit){
             query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
         }
 

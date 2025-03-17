@@ -15,11 +15,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Contributor</th>
-                        <th>Bill/Pledge</th>
-                        <th>Amount Owed</th>
-                        <th>Previously Paid</th>
-                        <th>Amount to Approve</th>
+                        <th><a href="#" onclick="sortTable(event, 'Contributor')">Contributor</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Bill/Pledge')">Bill/Pledge</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Amount Owed')">Amount Owed</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Previously Paid')">Previously Paid</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Amount to Approve')">Amount to Approve</a></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,15 +72,15 @@
     </div>
     <div class="pagination">
         <% if (currentPage > 1) { %>
-            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
+            <a class="button-link" href="?page=<%= currentPage - 1 %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="prev">Previous</a>
         <% } %>
     
         <% for (let i = 1; i <= totalPages; i++) { %>
-            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+            <a class="button-link" href="?page=<%= i %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
         <% } %>
     
         <% if (currentPage < totalPages) { %>
-            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
+            <a class="button-link" href="?page=<%= currentPage + 1 %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="next">Next</a>
         <% } %>
     </div>
 </body>

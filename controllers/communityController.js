@@ -118,7 +118,7 @@ const communityUpdatePost = async (req, res) => {
         const result = await makeApiRequest('POST', `/community/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
 
         if (result.issuccess) {
-            return res.redirect('/community');
+            return res.redirect('/');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
