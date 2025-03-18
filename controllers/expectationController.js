@@ -52,7 +52,7 @@ const expectationIndex = async (req, res) => {
         let sortName = req.query.sortName != null && req.query.sortName != '' ? req.query.sortName : "e.Id";
         let sortOrder = req.query.sortOrder != null && req.query.sortOrder != '' ? req.query.sortOrder : "desc";
 
-        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session, searchValue, sortName, sortOrder);
+        const totalExpectations = await fetchTotalExpectations(req.headers.cookie, req.session, searchValue);
         const expectations = await fetchExpectations(skip, limit, req.headers.cookie, req.session, searchValue, sortName, sortOrder);
 
         searchValue = decodeURIComponent(searchValue);

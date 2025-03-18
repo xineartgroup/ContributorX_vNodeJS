@@ -60,6 +60,8 @@ router.get("/", async (req, res) => {
         const limit = req.query.limit;
         const communityid = req.query.communityid;
         const searchValue = req.query.searchValue;
+        let sortName = req.query.sortName;
+        const sortOrder = req.query.sortOrder;
 
         const pool = await getPool();
 
@@ -79,7 +81,17 @@ OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNum
 OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNumber LIKE '%${searchValue}%'`;
         }
 
-        query = query + " ORDER BY Id DESC";
+        if (sortName === "Name"){
+            sortName = "CONCAT(FirstName, ' ', LastName)";
+        }
+        if (sortName === "Status"){
+            sortName = "IsActive";
+        }
+        if (sortName === "cn.Amount"){
+            sortName = "Id";
+        }
+
+        query = query + ` ORDER BY ${sortName} ${sortOrder}`;
 
         if (skip && limit){
             query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;

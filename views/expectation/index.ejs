@@ -70,18 +70,6 @@
             </table>
         <% } %>
     </div>
-    <div class="pagination">
-        <% if (currentPage > 1) { %>
-            <a class="button-link" href="?page=<%= currentPage - 1 %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="prev">Previous</a>
-        <% } %>
-    
-        <% for (let i = 1; i <= totalPages; i++) { %>
-            <a class="button-link" href="?page=<%= i %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
-        <% } %>
-    
-        <% if (currentPage < totalPages) { %>
-            <a class="button-link" href="?page=<%= currentPage + 1 %>&searchValue=<%= searchValue ? searchValue : '' %>&sortName=<%= sortName ? sortName : '' %>&sortOrder=<%= sortOrder ? sortOrder : '' %>" class="next">Next</a>
-        <% } %>
-    </div>
+    <%- include('../partials/pagination') %>
 </body>
 <%- include('../partials/footer') %>

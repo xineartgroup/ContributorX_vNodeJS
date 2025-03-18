@@ -41,9 +41,14 @@
 
 <script>
     const columnMap = {
+        "Phone Number": "PhoneNumber",
+        "Date Created": "DateCreated",
+        "Date Registered": "StartDate",
+        "Due Date": "DueDate",
         "Contributor": "c.UserName",
         "Bill/Pledge": "cn.Name",
         "Amount Owed": "cn.Amount",
+        "Amount Paid": "AmountPaid",
         "Previously Paid": "AmountPaid",
         "Amount to Approve": "AmountToApprove"
     };
@@ -51,9 +56,9 @@
     function sortTable(event, column) {
         event.preventDefault(); // Prevents default link behavior
         
-        const columnKey = columnMap[column];
-        if (!columnKey) return;
-        
+        let columnKey = columnMap[column];
+        if (!columnKey) columnKey = column; // Fallback to the column name if not found in the map
+
         const url = new URL(window.location.href); // Get current URL
         const params = url.searchParams;
         const currentSort = params.get('sortOrder');
@@ -78,18 +83,18 @@
         const urlParams = new URLSearchParams(window.location.search);
         
         document.querySelectorAll("thead a").forEach(a => {
-            let colText = a.innerText.replace("▼", "").replace("▲", "").trim();
+            let column = a.innerText.replace("▼", "").replace("▲", "").trim();
             
-            const columnKey = columnMap[colText];
-            if (!columnKey) return;
+            let columnKey = columnMap[column];
+            if (!columnKey) columnKey = column;
             
             const currentName = urlParams.get('sortName');
             const currentOrder = urlParams.get('sortOrder');
             
             if (columnKey === currentName && currentOrder) {
-                a.innerHTML = `${colText} ${currentOrder === "asc" ? "▲" : "▼"}`;
+                a.innerHTML = `${column} ${currentOrder === "asc" ? "▲" : "▼"}`;
             } else {
-                a.innerHTML = `${colText}`;
+                a.innerHTML = `${column}`;
             }
         });
     });

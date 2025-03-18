@@ -57,6 +57,8 @@ router.get('', async (req, res) => {
         const limit = req.query.limit;
         const communityid = req.query.communityid;
         const searchValue = req.query.searchValue;
+        const sortName = req.query.sortName;
+        const sortOrder = req.query.sortOrder;
         
         const pool = await getPool();
 
@@ -74,7 +76,7 @@ router.get('', async (req, res) => {
                 query = query + ` WHERE Name LIKE '%${searchValue}%' OR Description LIKE '%${searchValue}%'`;
         }
 
-        query = query + " ORDER BY Id DESC";
+        query = query + ` ORDER BY ${sortName} ${sortOrder}`;
 
         if (skip && limit){
             query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;

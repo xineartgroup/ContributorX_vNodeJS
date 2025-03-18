@@ -847,4 +847,55 @@
             background-color: #999;
         }
         
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .pagination a {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 14px;  /* Ensures uniform size */
+            height: 14px; /* Ensures uniform size */
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+            border: 2px solid #007bff;
+            border-radius: 50%; /* Makes it circular */
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            pointer-events: none;
+        }
+        
+        .pagination a.prev,
+        .pagination a.next {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .ellipsis {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+        }
         

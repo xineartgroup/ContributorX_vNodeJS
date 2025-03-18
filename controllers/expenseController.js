@@ -12,8 +12,8 @@ const fetchTotalExpenses = async (sessionCookie, session, searchValue) => {
     }
 };
 
-const fetchExpenses = async (skip, limit, sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/expense/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
+const fetchExpenses = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
+    const result = await makeApiRequest('GET', `/expense/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.expenses;
     } else {
@@ -32,9 +32,11 @@ const expenseIndex = async (req, res) => {
         const skip = (page - 1) * limit;
 
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+        let sortName = req.query.sortName != null && req.query.sortName != '' ? req.query.sortName : "Id";
+        let sortOrder = req.query.sortOrder != null && req.query.sortOrder != '' ? req.query.sortOrder : "desc";
 
         const totalExpenses = await fetchTotalExpenses(req.headers.cookie, req.session, searchValue);
-        const expenses = await fetchExpenses(skip, limit, req.headers.cookie, req.session, searchValue);
+        const expenses = await fetchExpenses(skip, limit, req.headers.cookie, req.session, searchValue, sortName, sortOrder);
 
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
@@ -44,7 +46,9 @@ const expenseIndex = async (req, res) => {
             expenses,
             currentPage: page,
             totalPages: Math.ceil(totalExpenses / limit),
-            searchValue
+            searchValue,
+            sortName,
+            sortOrder
         });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });

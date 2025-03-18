@@ -17,13 +17,13 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone Number</th>
-                            <th>Date Registered</th>
-                            <th>Status</th>
-                            <th>Amount Owed</th>
+                            <th><a href="#" onclick="sortTable(event, 'Username')">Username</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Name')">Name</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Email')">Email</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Phone Number')">Phone Number</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Date Registered')">Date Registered</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Status')">Status</a></th>
+                            <th><a href="#" onclick="sortTable(event, 'Amount Owed')">Amount Owed</a></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -60,19 +60,7 @@
                 </table>
         <% } %>
     </div>
-    <div class="pagination">
-        <% if (currentPage > 1) { %>
-            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
-        <% } %>
-    
-        <% for (let i = 1; i <= totalPages; i++) { %>
-            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
-        <% } %>
-    
-        <% if (currentPage < totalPages) { %>
-            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
-        <% } %>
-    </div>
+    <%- include('../partials/pagination') %>
     <div class="row pb-3">
         <div class="col-6 text-end">
             <a href="/contributor/create" class="btn">Create Contributor</a>

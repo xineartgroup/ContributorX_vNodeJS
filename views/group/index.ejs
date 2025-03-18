@@ -16,9 +16,9 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Date Created</th>
+                        <th><a href="#" onclick="sortTable(event, 'Name')">Name</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Description')">Description</a></th>
+                        <th><a href="#" onclick="sortTable(event, 'Date Created')">Date Created</a></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -47,19 +47,7 @@
                 </table>
             <% } %>
     </div>
-    <div class="pagination">
-        <% if (currentPage > 1) { %>
-            <a class="button-link" href="?page=<%= currentPage - 1 %>" class="prev">Previous</a>
-        <% } %>
-    
-        <% for (let i = 1; i <= totalPages; i++) { %>
-            <a class="button-link" href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
-        <% } %>
-    
-        <% if (currentPage < totalPages) { %>
-            <a class="button-link" href="?page=<%= currentPage + 1 %>" class="next">Next</a>
-        <% } %>
-    </div>
+    <%- include('../partials/pagination') %>
     <div class="row pb-3">
         <div class="col-6 text-end">
             <a href="/group/create" class="btn">Create Group</a>

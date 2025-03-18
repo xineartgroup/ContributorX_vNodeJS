@@ -14,8 +14,8 @@ const fetchTotalCommunities = async (sessionCookie, session, searchValue) => {
 };
 
 // Community List (List)
-const fetchCommunities = async (skip, limit, sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/community/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}`, sessionCookie);
+const fetchCommunities = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
+    const result = await makeApiRequest('GET', `/community/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.communities;
     } else {
@@ -35,9 +35,11 @@ const communityIndex = async (req, res) => {
         const skip = (page - 1) * limit;
 
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
+        let sortName = req.query.sortName != null && req.query.sortName != '' ? req.query.sortName : "e.Id";
+        let sortOrder = req.query.sortOrder != null && req.query.sortOrder != '' ? req.query.sortOrder : "desc";
 
         const totalCommunities = await fetchTotalCommunities(req.headers.cookie, req.session, searchValue);
-        const communities = await fetchCommunities(skip, limit, req.headers.cookie, req.session, searchValue);
+        const communities = await fetchCommunities(skip, limit, req.headers.cookie, req.session, searchValue, sortName, sortOrder);
 
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
@@ -47,7 +49,9 @@ const communityIndex = async (req, res) => {
             communities,
             currentPage: page,
             totalPages: Math.ceil(totalCommunities / limit),
-            searchValue
+            searchValue,
+            sortName,
+            sortOrder
         });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
