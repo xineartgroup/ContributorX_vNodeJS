@@ -25,7 +25,7 @@ OR LastName LIKE '%${req.params.searchValue}%' OR Email LIKE '%${req.params.sear
         }
         
         const totalContributorsResult = await pool.request().query(query);
-        const totalContributors = totalContributorsResult.recordset[0].total;
+        const totalContributors = totalContributorsResult.recordset.length > 0 ? totalContributorsResult.recordset[0].total : 0;
 
         res.json({ issuccess: true, message: "", totalContributors });
     } catch (err) {
@@ -67,7 +67,7 @@ router.get("/", async (req, res) => {
 
         let query = "SELECT * FROM Contributors";
         
-        if (communityid == 0){
+        if (communityid > 0){
             query = query + ` WHERE communityid = ${communityid}`;
         }
 
@@ -111,7 +111,7 @@ OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNum
                     const result1 = await pool.request()
                     .input('Id', contributors[i].Expectations[j].ContributionId)
                     .query("SELECT * FROM contributions WHERE Id = @Id");
-                    contributors[i].Expectations[j].Contribution = result1.recordset[0];
+                    contributors[i].Expectations[j].Contribution = result1.recordset.length > 0 ? result1.recordset[0] : null;
                 }
             }
         }
@@ -158,14 +158,14 @@ router.get("/:id", async (req, res) => {
                 const result1 = await pool.request()
                 .input('Id', groupings[i].GroupId)
                 .query("SELECT * FROM groups WHERE Id = @Id");
-                groupings[i].Group = result1.recordset[0];
+                groupings[i].Group = result1.recordset.length > 0 ? result1.recordset[0] : null;
             }
     
             for (var i = 0; i < expectations.length; i++){
                 const result1 = await pool.request()
                 .input('Id', expectations[i].ContributionId)
                 .query("SELECT * FROM contributions WHERE Id = @Id");
-                expectations[i].Contribution = result1.recordset[0];
+                expectations[i].Contribution = result1.recordset.length > 0 ? result1.recordset[0] : null;
             }
     
             const groupHtml = await AddGroup();
@@ -205,7 +205,7 @@ router.post("/", async (req, res) => {
         .input('StartDate', new Date())
         .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) OUTPUT INSERTED.ID VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
         
-        const Id = result.recordset[0].ID;
+        const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
         res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
     } catch (err) {
@@ -319,7 +319,7 @@ router.post("/update1", async (req, res) => {
             .input("id", id)
             .query("SELECT * FROM Contributors WHERE id = @id");
         
-        let contributor = resultContributor.recordset[0];
+        let contributor = resultContributor.recordset.length > 0 ? resultContributor.recordset[0] : null;
         if (!contributor) {
             return res.status(404).json({ issuccess: false, message: "Contributor not found.", contributor });
         }
@@ -362,12 +362,13 @@ router.post('/changepassword/:id', async (req, res) => {
             .input('Id', id)
             .query('SELECT * FROM Contributors WHERE Id = @Id');
 
-        const contributor = result.recordset[0];
+        const contributor = result.recordset.length > 0 ? result.recordset[0] : null;
 
-        const isMatch = await bcrypt.compare(PasswordOld, contributor.Password); // Password == contributor.Password; // 
-
-        if (!contributor || !isMatch) {
-            return res.json({ issuccess: false, message: "Password mismatch!!!" });
+        if (!contributor) {
+            const isMatch = await bcrypt.compare(PasswordOld, contributor.Password);
+            if (!isMatch) {
+                return res.json({ issuccess: false, message: "Password mismatch!!!", contributor: null });
+            }
         }
 
         const hashedPassword = await bcrypt.hash(PasswordNew, 10);
@@ -377,9 +378,9 @@ router.post('/changepassword/:id', async (req, res) => {
             .input('id', id)
             .query(`UPDATE Contributors SET Password = @Password WHERE ID = @id`);
 
-        return res.json({ issuccess: true, message: "" });
+        return res.json({ issuccess: true, message: "", contributor: null });
     } catch (error) {
-        return res.json({ issuccess: false, message: "Login error: " + error });
+        return res.json({ issuccess: false, message: "Login error: " + error, contributor: null });
     }
 });
 

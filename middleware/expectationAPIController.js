@@ -23,7 +23,7 @@ router.get('/count/:communityid/:searchValue', async (req, res) => {
         }
 
         const totalExpectationsResult = await pool.request().query(query);
-        const totalExpectations = totalExpectationsResult.recordset[0].total;
+        const totalExpectations = totalExpectationsResult.recordset.length > 0 ? totalExpectationsResult.recordset[0].total : 0;
 
         return res.json({ issuccess: true, message: "", totalExpectations });
     } catch (err) {
@@ -63,7 +63,7 @@ router.get('', async (req, res) => {
         const pool = await getPool();
         let query = "SELECT e.* FROM Expectations e JOIN Contributors c ON e.ContributorId = c.Id JOIN Contributions cn ON e.ContributionId = cn.Id";
         
-        if (communityid == 0){
+        if (communityid > 0){
             query = query + ` WHERE c.CommunityId = ${communityid}`;
         }
 
@@ -88,14 +88,14 @@ router.get('', async (req, res) => {
             const result1 = await pool.request()
             .input('Id', expectations[i].ContributorId)
             .query("SELECT * FROM contributors WHERE Id = @Id");
-            expectations[i].Contributor = result1.recordset[0];
+            expectations[i].Contributor = result1.recordset.length > 0 ? result1.recordset[0] : null;
         }
 
         for (var i = 0; i < expectations.length; i++){
             const result1 = await pool.request()
             .input('Id', expectations[i].ContributionId)
             .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectations[i].Contribution = result1.recordset[0];
+            expectations[i].Contribution = result1.recordset.length > 0 ? result1.recordset[0] : null;
         }
 
         return res.json({ issuccess: true, message: "", expectations });
@@ -113,18 +113,18 @@ router.get('/:id', async (req, res) => {
 
         const pool = await getPool();
         const expectationResult = await pool.request().query("SELECT * FROM Expectations WHERE ID = " + req.params.id);
-        const expectation = expectationResult.recordset[0];
+        let expectation = expectationResult.recordset.length > 0 ? expectationResult.recordset[0] : null;
 
         if (expectation){
             const result1 = await pool.request()
             .input('Id', expectation.ContributorId)
             .query("SELECT * FROM contributors WHERE Id = @Id");
-            expectation.Contributor = result1.recordset[0];
+            expectation.Contributor = result1.recordset.length > 0 ? result1.recordset[0] : null;
 
             const result2 = await pool.request()
             .input('Id', expectation.ContributionId)
             .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectation.Contribution = result2.recordset[0];
+            expectation.Contribution = result2.recordset.length > 0 ? result2.recordset[0] : null;
 
             return res.json({ issuccess: true, message: "", expectation });
         } else {
@@ -160,12 +160,12 @@ router.get('/getbycontributor/:id/:searchValue', async (req, res) => {
         .query("SELECT * FROM contributors WHERE Id = @Id");
 
         for (var i = 0; i < expectations.length; i++){
-            expectations[i].Contributor = result1.recordset[0];
+            expectations[i].Contributor = result1.recordset.length > 0 ? result1.recordset[0] : null;
 
             const result2 = await pool.request()
             .input('Id', expectations[i].ContributionId)
             .query("SELECT * FROM contributions WHERE Id = @Id");
-            expectations[i].Contribution = result2.recordset[0];
+            expectations[i].Contribution = result2.recordset.length > 0 ? result2.recordset[0] : null;
         }
 
         return res.json({ issuccess: true, message: "", expectations });
@@ -193,7 +193,7 @@ router.post('/', async (req, res) => {
 
         const newExpectationResult = await pool.request().query(query);
         
-        const Id = newExpectationResult.recordset[0].ID;
+        const Id = newExpectationResult.recordset.length > 0 ? newExpectationResult.recordset[0].ID : null;
         return res.json({ issuccess: true, message: "", expectation: { Id, Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } });
     } catch (err) {
         console.error("Error saving expectation:", err);
@@ -283,7 +283,7 @@ router.get('/paymentapprove/:id', async (req, res) => {
         const result1 = await pool.request()
         .input('Id', expectation.ContributionId)
         .query("SELECT * FROM contributions WHERE Id = @Id");
-        expectation.Contribution = result1.recordset[0];
+        expectation.Contribution = result1.recordset.length > 0 ? result1.recordset[0] : null;
         
         const updatedAmountPaid = expectation.AmountPaid + expectation.AmountToApprove;
         const paymentStatus = expectation.Contribution.Amount - updatedAmountPaid === 0 ? 3 : 2; // "Cleared" : "Approved"
@@ -333,7 +333,7 @@ router.get('/paymentwriteoff/:id', async (req, res) => {
         if (expectations.length === 0)
             return res.status(404).json({ issuccess: false, message: "Expectation not found", expectation: null });
 
-        const expectation = expectations.recordset[0];
+        const expectation = expectations.recordset.length > 0 ? expectations.recordset[0] : null;
 
         await pool.request().query(`
             UPDATE Expectations

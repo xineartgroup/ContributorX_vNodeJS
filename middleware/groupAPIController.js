@@ -64,7 +64,7 @@ router.get('', async (req, res) => {
 
         let query = "SELECT * FROM Groups";
         
-        if (communityid == 0){
+        if (communityid > 0){
             query = query + ` WHERE communityid = ${communityid}`;
         }
 
@@ -89,7 +89,7 @@ router.get('', async (req, res) => {
             const result = await pool.request()
                 .input('Id', sql.Int, groups[i].CommunityId)
                 .query("SELECT * FROM Communities WHERE Id = @Id");
-            groups[i].Community = result.recordset[0];
+            groups[i].Community = result.recordset.length > 0 ? result.recordset[0] : null;
         }
 
         return res.json({ issuccess: true, message: "", groups });
@@ -108,13 +108,13 @@ router.get('/:id', async (req, res) => {
         const groupResult = await pool.request()
             .input('Id', req.params.id)
             .query('SELECT * FROM Groups WHERE Id = @Id');
-        const group = groupResult.recordset[0];
+        const group = groupResult.recordset.length > 0 ? groupResult.recordset[0] : null;
 
         if (group) {
             const communityResult = await pool.request()
                 .input('Id', sql.Int, group.CommunityId)
                 .query("SELECT * FROM Communities WHERE Id = @Id");
-            group.Community = communityResult.recordset[0];
+            group.Community = communityResult.recordset.length > 0 ? communityResult.recordset[0] : null;
 
             return res.json({ issuccess: true, message: "", group });
         } else {
@@ -142,7 +142,7 @@ router.post('/', async (req, res) => {
             .input('DateCreated', date)
             .query('INSERT INTO Groups (Name, Description, CommunityId, DateCreated) OUTPUT INSERTED.ID VALUES (@Name, @Description, @CommunityId, @DateCreated)');
         
-        const Id = newGroupResult.recordset[0].ID;
+        const Id = newGroupResult.recordset.length > 0 ? newGroupResult.recordset[0].ID : 0;
         return res.json({ issuccess: true, message: "", group: { Id, Name, Description, Community, DateCreated: date } });
     } catch (err) {
         return res.json({ issuccess: false, message: "Error saving group: " + err, group: null });

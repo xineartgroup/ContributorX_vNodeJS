@@ -23,7 +23,7 @@ router.get('/count/:communityid/:searchValue', async (req, res) => {
         }
 
         const totalContributionsResult = await pool.request().query(query);
-        const totalContributions = totalContributionsResult.recordset[0].total;
+        const totalContributions = totalContributionsResult.recordset.length > 0 ? totalContributionsResult.recordset[0].total : 0;
 
         res.json({ issuccess: true, message: "", totalContributions });
     } catch (err) {
@@ -63,7 +63,7 @@ router.get('', async (req, res) => {
 
         let query = "SELECT c.* FROM Contributions c JOIN Groups g ON c.GroupId = g.Id";
         
-        if (communityid == 0){
+        if (communityid > 0){
             query = query + ` WHERE g.CommunityId = ${communityid}`;
         }
 
@@ -98,7 +98,7 @@ router.get('', async (req, res) => {
             const result1 = await pool.request()
             .input('Id', contributions[i].GroupId)
             .query("SELECT * FROM groups WHERE Id = @Id");
-            contributions[i].Group = result1.recordset[0];
+            contributions[i].Group = result1.recordset.length > 0 ? result1.recordset[0] : null;
         }
 
         res.json({issuccess: true, message: "", contributions });
@@ -118,13 +118,13 @@ router.get('/:id', async (req, res) => {
         const communityResult = await pool.request()
             .input('Id', req.params.id)
             .query('SELECT * FROM Contributions WHERE Id = @Id');
-        const contribution = communityResult.recordset[0];
+        const contribution = communityResult.recordset.length > 0 ? communityResult.recordset[0] : null;
 
         if (contribution) {
             const result1 = await pool.request()
             .input('Id', contribution.GroupId)
             .query("SELECT * FROM groups WHERE Id = @Id");
-            contribution.Group = result1.recordset[0];
+            contribution.Group = result1.recordset.length > 0 ? result1.recordset[0] : null;
             res.json({ issuccess: true, message: "", contribution });
         } else {
             res.json({ issuccess: false, message: "No contribution with id found", contribution });
@@ -150,7 +150,7 @@ router.post('/create', async (req, res) => {
             .input('DueDate', DueDate)
             .query('INSERT INTO Contributions (Name, Amount, GroupId, DateCreated, DueDate) OUTPUT INSERTED.ID VALUES (@Name, @Amount, @Group, @DateCreated, @DueDate)');
         
-        const Id = newContributionResult.recordset[0].ID;
+        const Id = newContributionResult.recordset.length > 0 ? newContributionResult.recordset[0].ID : 0;
         
         res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, Group, DueDate } });
     } catch (err) {

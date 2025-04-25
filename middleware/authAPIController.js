@@ -14,17 +14,19 @@ router.post('/login', async (req, res) => {
             .input('UserName', sql.NVarChar, UserName)
             .query('SELECT * FROM Contributors WHERE UserName = @UserName');
 
-        const contributor = result.recordset[0];
+        const contributor = result.recordset.length > 0 ? result.recordset[0] : null;
 
-        const isMatch = await bcrypt.compare(Password, contributor.Password); // Password == contributor.Password; // 
+        if (contributor) {
+            const isMatch = await bcrypt.compare(Password, contributor.Password);
+            if (isMatch) {
+                req.session.isLoggedIn = true;
+                req.session.contributor = contributor;
 
-        if (!contributor || !isMatch) {
-            return res.json({ issuccess: false, error: "Invalid username or password", contributor });
+                return res.json({ issuccess: true, message: "", contributor });
+            }
         }
-        req.session.isLoggedIn = true;
-        req.session.contributor = contributor;
 
-        return res.json({ issuccess: true, message: "", contributor });
+        return res.json({ issuccess: false, message: "Invalid username or password", contributor });
     } catch (error) {
         return res.json({ issuccess: false, message: "Login error: " + error, contributor: null });
     }
@@ -55,7 +57,7 @@ router.post('/register', async (req, res) => {
                     .input('DateCreated', sql.DateTime, new Date())
                     .query('INSERT INTO Communities (Name, Description, DateCreated) OUTPUT INSERTED.ID VALUES (@CommunityName, @CommunityDescription, @DateCreated)');
                 
-                newCommunityId = newCommunityResult.recordset[0].ID;
+                newCommunityId = newCommunityResult.recordset.length > 0 ? newCommunityResult.recordset[0].ID : 0;
             }
         }
 

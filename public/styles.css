@@ -366,10 +366,10 @@
         }
         
         .form-group p {
-            margin: 0; /* Removes extra spacing */
+            width: 70%;
+            margin: 0;
             padding: 5px 10px;
             border-radius: 4px;
-            width: 100%; /* Makes it match input widths */
         }
 
         .form-group-inline {

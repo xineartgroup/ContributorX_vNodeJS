@@ -183,7 +183,7 @@ const expectationPaymentGet = async (req, res) => {
         const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('expectation/makePayment', { title: 'Make Payment', expectation });
+            return res.render('expectation/makePayment', { title: 'Make Payment', expectation: result.expectation });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -221,7 +221,7 @@ const paymentApproval = async (req, res) => {
         const result = await makeApiRequest('GET', `/expectation/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation });
+            return res.render('expectation/paymentApproval', { title: 'Approve Payment', expectation: result.expectation });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }

@@ -72,7 +72,7 @@ router.get("/", async (req, res) => {
 
         let query = "SELECT * FROM Expenses";
         
-        if (communityid == 0){
+        if (communityid > 0){
             query = query + ` WHERE communityid = ${communityid}`;
         }
 
@@ -120,14 +120,16 @@ router.get("/:id", async (req, res) => {
         if (result.recordset.length === 0) {
             return res.status(404).json({ message: "Expenses not found" });
         }
-        const expense = result.recordset[0];
+        const expense = result.recordset.length > 0 ? result.recordset[0] : null;
         
-        const result1 = await pool.request()
-        .input('Id', expense.CommunityId)
-        .query("SELECT * FROM Communities WHERE Id = @Id");
-        expense.Community = result1.recordset[0];
-        
-        res.json({ issuccess: true, message: "", expense });
+        if (!expense) {
+            const result1 = await pool.request()
+            .input('Id', expense.CommunityId)
+            .query("SELECT * FROM Communities WHERE Id = @Id");
+            expense.Community = result1.recordset.length > 0 ? result1.recordset[0] : null;
+            
+            res.json({ issuccess: true, message: "", expense });
+        }
     } catch (error) {
         res.json({ issuccess: false, message: "Server error: " + error, expense: null });
     }
@@ -152,7 +154,7 @@ router.post("/", async (req, res) => {
             .input("PaymentReciept", PaymentReciept)
             .query("INSERT INTO Expenses (Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReciept) OUTPUT INSERTED.ID VALUES (@Name, @Description, @DateCreated, @AmountPaid, @CommunityId, @PaymentReciept);");
         
-        const Id = result.recordset[0].ID;
+        const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
         res.json({ issuccess: true, message: "", expense: { Id, Name, Description, DateCreated, AmountPaid, Community, PaymentReciept } });
     } catch (error) {

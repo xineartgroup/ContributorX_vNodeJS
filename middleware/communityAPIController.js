@@ -45,7 +45,7 @@ router.get('', async (req, res) => {
 
         let query = "SELECT * FROM Communities";
         
-        if (communityid == 0){
+        if (communityid > 0){
             //query = query + ` WHERE Id = ${communityid}`;
         }
 
@@ -83,7 +83,7 @@ router.get('/:id', async (req, res) => {
         const communityResult = await pool.request()
             .input('Id', req.params.id)
             .query('SELECT * FROM Communities WHERE Id = @Id');
-        const community = communityResult.recordset[0];
+        const community = communityResult.recordset.length > 0 ? communityResult.recordset[0] : null;
 
         if (community) {
             res.json({ issuccess: true, message: "", community });
@@ -111,7 +111,7 @@ router.post('/', async (req, res) => {
             .input('DateCreated', date)
             .query('INSERT INTO Communities (Name, Description, DateCreated) OUTPUT INSERTED.ID VALUES (@Name, @Description, @DateCreated)');
         
-        const Id = newCommunityResult.recordset[0].ID;
+        const Id = newCommunityResult.recordset.length > 0 ? newCommunityResult.recordset[0].ID : 0;
         
         res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
     } catch (err) {

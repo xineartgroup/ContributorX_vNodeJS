@@ -3,8 +3,8 @@ const { makeApiRequest } = require('./_baseController');
 
 const router = express.Router();
 
-const getGroups = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/group/api/all', sessionCookie);
+const getGroups = async (sessionCookie, session) => {
+    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&searchValue=*&sortName=Name&sortOrder=ASC`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     } else {
@@ -97,7 +97,7 @@ const contributionCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
     
-        const groups = await getGroups(req.headers.cookie);
+        const groups = await getGroups(req.headers.cookie, req.session);
         res.render('contribution/create', { title: 'New Contribution', groups });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
@@ -143,7 +143,7 @@ const contributionUpdateGet = async (req, res) => {
         }
     
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
-        let groups = await getGroups(req.headers.cookie);
+        let groups = await getGroups(req.headers.cookie, req.session);
 
         return res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
     } catch (error) {
@@ -178,7 +178,7 @@ const contributionDeleteGet = async (req, res) => {
         }
     
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
-        let groups = await getGroups(req.headers.cookie);
+        let groups = await getGroups(req.headers.cookie, req.session);
 
         return res.render('contribution/delete', { title: 'Delete Contribution', contribution, groups });
     } catch (error) {

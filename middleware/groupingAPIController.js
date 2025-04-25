@@ -112,8 +112,8 @@ router.post("/", async (req, res) => {
             .input('ContributorId', Contributor)
             .input('GroupId', Group)
             .query('INSERT INTO Groupings (ContributorId, GroupId) OUTPUT INSERTED.ID VALUES (@ContributorId, @GroupId)');
-
-        const Id = result.recordset[0].ID;
+        
+        const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
         res.json({ issuccess: true, message: "", grouping: { Id, Contributor, Group } });
     } catch (err) {

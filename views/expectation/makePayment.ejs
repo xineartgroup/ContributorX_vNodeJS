@@ -21,7 +21,7 @@
 
             <div class="form-group">
                 <label>Due Date:</label>
-                <p><%= expectation.Contribution ? expectation.Contribution.DueDate.toDateString() : 'N/A' %></p>
+                <p><%= expectation.Contribution ? expectation.Contribution.DueDate.split('T')[0] : 'N/A' %></p>
             </div>
 
             <div class="form-group">
