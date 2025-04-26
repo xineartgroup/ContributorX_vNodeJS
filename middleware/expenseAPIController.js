@@ -97,7 +97,7 @@ router.get("/", async (req, res) => {
             const result1 = await pool.request()
             .input('Id', expenses[i].CommunityId)
             .query("SELECT * FROM Communities WHERE Id = @Id");
-            expenses[i].Community = result1.recordset[0];
+            expenses[i].Community = result1.recordset.length > 0 ? result1.recordset[0] : null;
         }
 
         res.json({ issuccess: true, message: "", expenses });
@@ -122,7 +122,7 @@ router.get("/:id", async (req, res) => {
         }
         const expense = result.recordset.length > 0 ? result.recordset[0] : null;
         
-        if (!expense) {
+        if (expense) {
             const result1 = await pool.request()
             .input('Id', expense.CommunityId)
             .query("SELECT * FROM Communities WHERE Id = @Id");
