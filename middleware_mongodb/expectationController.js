@@ -60,7 +60,7 @@ const expectationCreatePost = async (req, res) => {
             AmountPaid,
             AmountToApprove,
             PaymentStatus,
-            PaymentReciept: req.file ? req.file.filename : null
+            PaymentReceipt: req.file ? req.file.filename : null
         });
 
         await expectation.save();
@@ -103,7 +103,7 @@ const expectationUpdatePost = async (req, res) => {
             AmountPaid: req.body.AmountPaid,
             AmountToApprove: req.body.AmountToApprove,
             PaymentStatus: req.body.PaymentStatus,
-            PaymentReciept: req.body.PaymentReciept
+            PaymentReceipt: req.body.PaymentReceipt
         };
 
         await Expectation.findByIdAndUpdate(req.params.id, updatedData, { new: true });
@@ -175,7 +175,7 @@ const expectationPaymentPost = async (req, res) => {
         expectation.AmountToApprove = req.body.AmountToApprove;
         expectation.PaymentMethod = req.body.PaymentMethod;
         expectation.PaymentStatus = 1; // Mark as processing
-        expectation.PaymentReciept = req.file ? req.file.filename : "";
+        expectation.PaymentReceipt = req.file ? req.file.filename : "";
 
         await expectation.save();
         console.log("Updated Expectation:", expectation);

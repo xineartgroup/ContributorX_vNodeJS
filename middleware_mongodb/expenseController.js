@@ -62,7 +62,7 @@ const expenseCreatePost = async (req, res) => {
             Description,
             AmountPaid,
             Community,
-            PaymentReciept: req.file.filename
+            PaymentReceipt: req.file.filename
         });
 
         await expense.save();
@@ -107,7 +107,7 @@ const expenseUpdatePost = async (req, res) => {
             Description: req.body.Description,
             AmountPaid: req.body.AmountPaid,
             Community: req.body.Community,
-            PaymentReciept: req.file ? req.file.filename : req.body.PaymentReciept
+            PaymentReceipt: req.file ? req.file.filename : req.body.PaymentReceipt
         };
 
         await Expense.findByIdAndUpdate(req.params.id, updatedData, { new: true });

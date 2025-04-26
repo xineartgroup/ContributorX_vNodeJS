@@ -75,11 +75,11 @@ const expenseCreatePost = async (req, res) => {
 
         const { Name, Description, AmountPaid } = req.body;
         const Community = req.session.contributor.CommunityId;
-        const PaymentReciept = req.file ? req.file.filename : '';
+        const PaymentReceipt = req.file ? req.file.filename : '';
         const DateCreated = new Date();
 
         const result = await makeApiRequest('POST', `/expense/api/`, req.headers.cookie, {
-            Name, Description, DateCreated, AmountPaid, Community, PaymentReciept
+            Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt
         });
 
         if (result.issuccess) {
@@ -118,10 +118,10 @@ const expenseUpdatePost = async (req, res) => {
 
         const { Name, Description, AmountPaid } = req.body;
         const Community = req.session.contributor.CommunityId;
-        const PaymentReciept = req.file ? req.file.filename : req.body.PaymentReciept || '';
+        const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt || '';
 
         const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
-            Name, Description, AmountPaid, Community, PaymentReciept
+            Name, Description, AmountPaid, Community, PaymentReceipt
         });
 
         if (result.issuccess) {
@@ -172,9 +172,9 @@ const expenseDeletePost = async (req, res) => {
 
 router.get('', expenseIndex);
 router.get('/create', expenseCreateGet);
-router.post('/', upload.single("PaymentReciept"), expenseCreatePost);
+router.post('/', upload.single("PaymentReceipt"), expenseCreatePost);
 router.get('/update/:id', expenseUpdateGet);
-router.post('/update/:id', upload.single("PaymentReciept"), expenseUpdatePost);
+router.post('/update/:id', upload.single("PaymentReceipt"), expenseUpdatePost);
 router.get('/delete/:id', expenseDeleteGet);
 router.post('/delete/:id', expenseDeletePost);
 

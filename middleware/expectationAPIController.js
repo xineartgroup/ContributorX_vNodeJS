@@ -182,13 +182,13 @@ router.post('/', async (req, res) => {
         }
 
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
-        const PaymentReciept = req.file ? req.file.filename : '';
+        const PaymentReceipt = req.file ? req.file.filename : '';
         
         const pool = await getPool();
 
         const query = `
-            INSERT INTO Expectations (ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReciept) OUTPUT INSERTED.ID
-            VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReciept}')
+            INSERT INTO Expectations (ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt) OUTPUT INSERTED.ID
+            VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReceipt}')
         `;
 
         const newExpectationResult = await pool.request().query(query);
@@ -208,12 +208,12 @@ router.post('/update/:id', async (req, res) => {
         }
 
         const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
-        const PaymentReciept = req.file ? req.file.filename : req.body.PaymentReciept;
+        const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt;
         
         const pool = await getPool();
 
         await pool.request().query(`
-            UPDATE Expectations SET ContributorId=${Contributor}, ContributionId=${Contribution}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReciept=${PaymentReciept}
+            UPDATE Expectations SET ContributorId=${Contributor}, ContributionId=${Contribution}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReceipt=${PaymentReceipt}
             WHERE ID=${req.params.id}
         `);
         
@@ -251,11 +251,11 @@ router.post('/payment/:id', async (req, res) => {
 
         const expectationId = req.params.id;
         const { AmountToApprove, PaymentMethod } = req.body;
-        const PaymentReciept = req.file ? req.file.filename : "";
+        const PaymentReceipt = req.file ? req.file.filename : "";
 
         await pool.request().query(`
             UPDATE Expectations
-            SET AmountToApprove = ${AmountToApprove}, PaymentStatus = 1, PaymentReciept = '${PaymentReciept}'
+            SET AmountToApprove = ${AmountToApprove}, PaymentStatus = 1, PaymentReceipt = '${PaymentReceipt}'
             WHERE id = ${expectationId}`); //PaymentMethod = ${PaymentMethod},
 
         return res.json({ issuccess: true, message: "", expectation: null });

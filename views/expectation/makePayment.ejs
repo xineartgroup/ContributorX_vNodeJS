@@ -43,8 +43,8 @@
             </div>
 
             <div class="form-group">
-                <label for="PaymentReciept">Payment Receipt:</label>
-                <input type="file" id="PaymentReciept" name="PaymentReciept">
+                <label for="PaymentReceipt">Payment Receipt:</label>
+                <input type="file" id="PaymentReceipt" name="PaymentReceipt">
             </div>
 
             <div class="image-container">
@@ -75,7 +75,7 @@
 
         selectPaymentMethod(); // Initialize on page load
 
-        document.getElementById("PaymentReciept").addEventListener("change", function (event) {
+        document.getElementById("PaymentReceipt").addEventListener("change", function (event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();

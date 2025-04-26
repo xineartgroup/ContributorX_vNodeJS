@@ -67,7 +67,7 @@ const contributionCreatePost = async (req, res) => {
                 PaymentStatus: 0,
                 AmountPaid: 0.0,
                 AmountToApprove: 0.0,
-                PaymentReciept: '',
+                PaymentReceipt: '',
             });
             await expectation.save();
         }        

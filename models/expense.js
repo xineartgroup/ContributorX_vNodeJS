@@ -9,7 +9,7 @@ const expenseSchema = new Schema({
     DateCreated: { type: Date, required: true, default: Date.now() },
     AmountPaid: { type: Number, required: true },
     Community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
-    PaymentReciept: { type: String, required: false, default: '' },
+    PaymentReceipt: { type: String, required: false, default: '' },
 }, { timestamps: true });
 
 const Expense = mongoose.model('Expense', expenseSchema);

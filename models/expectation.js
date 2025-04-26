@@ -9,7 +9,7 @@ const expectationSchema = new Schema({
     AmountPaid: { type: Number, required: true },
     AmountToApprove: { type: Number, required: true },
     PaymentStatus: { type: Number, required: true },
-    PaymentReciept: { type: String, required: false, default: '' },
+    PaymentReceipt: { type: String, required: false, default: '' },
 }, { timestamps: true });
 
 const Expectation = mongoose.models.Expectation || mongoose.model('Expectation', expectationSchema);
