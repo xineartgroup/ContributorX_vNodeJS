@@ -72,9 +72,9 @@ const groupCreatePost = async (req, res) => {
         }
 
         const { Name, Description } = req.body;
-        const Community = req.session.contributor.CommunityId;
+        const CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, Community });
+        const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, CommunityId });
 
         if (result.issuccess) {
             return res.redirect('/group');
@@ -111,9 +111,9 @@ const groupUpdatePost = async (req, res) => {
         }
 
         const { Name, Description } = req.body;
-        const Community = req.session.contributor.CommunityId;
+        const CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, Community });
+        const result = await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, CommunityId });
 
         if (result.issuccess) {
             return res.redirect('/group');

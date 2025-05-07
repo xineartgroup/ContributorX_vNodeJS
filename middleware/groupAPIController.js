@@ -98,6 +98,33 @@ router.get('', async (req, res) => {
     }
 });
 
+router.get('/getbyname/:name', async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            return res.json({ issuccess: false, message: "User not authorized", group: null });
+        }
+
+        const pool = await getPool();
+        const groupResult = await pool.request()
+            .input('Name', req.params.name)
+            .query('SELECT * FROM Groups WHERE Name = @Name');
+        const group = groupResult.recordset.length > 0 ? groupResult.recordset[0] : null;
+
+        if (group) {
+            const communityResult = await pool.request()
+                .input('Id', sql.Int, group.CommunityId)
+                .query("SELECT * FROM Communities WHERE Id = @Id");
+            group.Community = communityResult.recordset.length > 0 ? communityResult.recordset[0] : null;
+
+            return res.json({ issuccess: true, message: "", group });
+        } else {
+            return res.json({ issuccess: false, message: "No group with this ID found", group: null });
+        }
+    } catch (err) {
+        return res.json({ issuccess: false, message: "Server Error: " + err, group: null });
+    }
+});
+
 router.get('/:id', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -131,19 +158,19 @@ router.post('/', async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", group: null });
         }
 
-        const { Name, Description, Community } = req.body;
+        const { Name, Description, CommunityId } = req.body;
         const pool = await getPool();
         const date = new Date();
         
         const newGroupResult = await pool.request()
             .input('Name', Name)
             .input('Description', Description)
-            .input('CommunityId', Community)
+            .input('CommunityId', CommunityId)
             .input('DateCreated', date)
             .query('INSERT INTO Groups (Name, Description, CommunityId, DateCreated) OUTPUT INSERTED.ID VALUES (@Name, @Description, @CommunityId, @DateCreated)');
         
         const Id = newGroupResult.recordset.length > 0 ? newGroupResult.recordset[0].ID : 0;
-        return res.json({ issuccess: true, message: "", group: { Id, Name, Description, Community, DateCreated: date } });
+        return res.json({ issuccess: true, message: "", group: { Id, Name, Description, CommunityId, DateCreated: date } });
     } catch (err) {
         return res.json({ issuccess: false, message: "Error saving group: " + err, group: null });
     }
@@ -155,17 +182,17 @@ router.post('/update/:id', async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", group: null });
         }
 
-        const { Name, Description, Community } = req.body;
+        const { Name, Description, CommunityId } = req.body;
         const pool = await getPool();
 
         await pool.request()
             .input('Id', req.params.id)
             .input('Name', Name)
             .input('Description', Description)
-            .input('CommunityId', Community)
+            .input('CommunityId', CommunityId)
             .query('UPDATE Groups SET Name = @Name, Description = @Description, CommunityId = @CommunityId WHERE Id = @Id');
         
-        return res.json({ issuccess: true, message: "", group: { Id: req.params.id, Name, Description, Community } });
+        return res.json({ issuccess: true, message: "", group: { Id: req.params.id, Name, Description, CommunityId } });
     } catch (err) {
         return res.json({ issuccess: false, message: "Server Error: " + err, group: null });
     }

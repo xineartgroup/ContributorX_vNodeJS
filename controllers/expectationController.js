@@ -297,6 +297,8 @@ const paymentReport = async (req, res) => {
 
     const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}/*`, req.headers.cookie);
 
+    console.log("Result: ", result);
+
     res.render('expectation/paymentReport', { title: 'My Payment Report', expectations: result.expectations });
 };
 

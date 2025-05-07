@@ -21,8 +21,8 @@
             </div>
 
             <div class="form-group">
-                <label for="Group">Group:</label>
-                <select id="Group" name="Group" required>
+                <label for="GroupId">Group:</label>
+                <select id="GroupId" name="GroupId" required>
                     <% groups.forEach(group => { %>
                         <option value="<%= group.Id %>" <%= contribution.Group.Id === group.Id ? 'selected' : '' %>><%= group.Name %></option>
                     <% }) %>

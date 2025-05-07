@@ -140,22 +140,22 @@ router.post('/create', async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", contribution: null });
         }
 
-        const { Name, Amount, Group, DueDate } = req.body;
+        const { Name, Amount, GroupId, DueDate } = req.body;
         const pool = await getPool();
         const newContributionResult = await pool.request()
             .input('Name', Name)
             .input('Amount', Amount)
-            .input('Group', Group)
+            .input('Group', GroupId)
             .input('DateCreated', new Date())
             .input('DueDate', DueDate)
             .query('INSERT INTO Contributions (Name, Amount, GroupId, DateCreated, DueDate) OUTPUT INSERTED.ID VALUES (@Name, @Amount, @Group, @DateCreated, @DueDate)');
         
         const Id = newContributionResult.recordset.length > 0 ? newContributionResult.recordset[0].ID : 0;
         
-        res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, Group, DueDate } });
+        res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, GroupId, DueDate } });
     } catch (err) {
-        const { Name, Amount, Group, DueDate } = req.body;
-        res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: 0, Name, Amount, Group, DueDate } });
+        const { Name, Amount, GroupId, DueDate } = req.body;
+        res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: 0, Name, Amount, GroupId, DueDate } });
     }
 });
 
@@ -166,20 +166,20 @@ router.post('/update/:id', async (req, res) => {
         }
 
         const Id = req.params.id;
-        const { Name, Amount, Group, DueDate } = req.body;
+        const { Name, Amount, GroupId, DueDate } = req.body;
         const pool = await getPool();
         await pool.request()
             .input('id', Id)
             .input('Name', Name)
             .input('Amount', Amount)
-            .input('Group', Group)
+            .input('Group', GroupId)
             .input('DueDate', DueDate)
             .query('UPDATE Contributions SET Name = @Name, Amount = @Amount, GroupId = @Group, DueDate = @DueDate WHERE Id = @id');
         
-        res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, Group, DueDate } });
+        res.json({ issuccess: true, message: "", contribution: { Id, Name, Amount, GroupId, DueDate } });
     } catch (err) {
-        const { Name, Amount, Group, DueDate } = req.body;
-        res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: req.params.id, Name, Amount, Group, DueDate } });
+        const { Name, Amount, GroupId, DueDate } = req.body;
+        res.json({ issuccess: false, message: "Error saving contribution: " + err, contribution: { Id: req.params.id, Name, Amount, GroupId, DueDate } });
     }
 });
 

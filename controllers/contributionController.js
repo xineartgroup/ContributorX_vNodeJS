@@ -110,8 +110,8 @@ const contributionCreatePost = async (req, res) => {
             return res.redirect('/login');
         }
         
-        const { Name, Amount, Group, DueDate } = req.body;
-        const result = await makeApiRequest('POST', `/contribution/api/create`, req.headers.cookie, { Name, Amount, Group, DueDate });
+        const { Name, Amount, GroupId, DueDate } = req.body;
+        const result = await makeApiRequest('POST', `/contribution/api/create`, req.headers.cookie, { Name, Amount, GroupId, DueDate });
         
         if (result.issuccess) {
             const groupings = await getGroupingsForGroup(result.contribution.Group, req.headers.cookie);
@@ -157,9 +157,9 @@ const contributionUpdatePost = async (req, res) => {
             return res.redirect('/login');
         }
     
-        const { Name, Amount, Group, DueDate } = req.body;
+        const { Name, Amount, GroupId, DueDate } = req.body;
 
-        const result = await makeApiRequest('POST', `/contribution/api/update/${req.params.id}`, req.headers.cookie, { Id: req.params.id, Name, Amount, Group, DueDate });
+        const result = await makeApiRequest('POST', `/contribution/api/update/${req.params.id}`, req.headers.cookie, { Id: req.params.id, Name, Amount, GroupId, DueDate });
 
         if (result.issuccess) {
             return res.redirect('/contribution');
