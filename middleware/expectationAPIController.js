@@ -181,20 +181,20 @@ router.post('/', async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
-        const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
+        const { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReceipt = req.file ? req.file.filename : '';
         
         const pool = await getPool();
 
         const query = `
             INSERT INTO Expectations (ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt) OUTPUT INSERTED.ID
-            VALUES (${Contributor}, ${Contribution}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReceipt}')
+            VALUES (${ContributorId}, ${ContributionId}, ${AmountPaid}, ${AmountToApprove}, ${PaymentStatus}, '${PaymentReceipt}')
         `;
 
         const newExpectationResult = await pool.request().query(query);
         
         const Id = newExpectationResult.recordset.length > 0 ? newExpectationResult.recordset[0].ID : null;
-        return res.json({ issuccess: true, message: "", expectation: { Id, Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } });
+        return res.json({ issuccess: true, message: "", expectation: { Id, ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } });
     } catch (err) {
         console.error("Error saving expectation:", err);
         return res.status(500).json({ issuccess: false, message: err, expectation: null });
@@ -207,17 +207,17 @@ router.post('/update/:id', async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", expectation: null });
         }
 
-        const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
+        const { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt;
         
         const pool = await getPool();
 
         await pool.request().query(`
-            UPDATE Expectations SET ContributorId=${Contributor}, ContributionId=${Contribution}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReceipt=${PaymentReceipt}
+            UPDATE Expectations SET ContributorId=${ContributorId}, ContributionId=${ContributionId}, AmountPaid=${AmountPaid}, AmountToApprove=${AmountToApprove}, PaymentStatus=${PaymentStatus}, PaymentReceipt=${PaymentReceipt}
             WHERE ID=${req.params.id}
         `);
         
-        return res.json({ issuccess: true, message: "", expectation: { Id: req.params.id, Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } });
+        return res.json({ issuccess: true, message: "", expectation: { Id: req.params.id, ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ issuccess: false, message: err, expectation: null });

@@ -89,10 +89,10 @@ const expectationCreatePost = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
+        const { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReceipt = req.file ? req.file.filename : null;
         
-        const result = await makeApiRequest('POST', `/expectation/api/`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt });
+        const result = await makeApiRequest('POST', `/expectation/api/`, req.headers.cookie, { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt });
 
         if (result.issuccess) {
             return res.redirect('/expectation');
@@ -126,10 +126,10 @@ const expectationUpdatePost = async (req, res) => {
     try {
         if (!req.session || !req.session.isLoggedIn) return res.redirect('/login');
         
-        const { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
+        const { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } = req.body;
         const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt;
         
-        const result = await makeApiRequest('POST', `/expectation/api/update/${req.params.id}`, req.headers.cookie, { Contributor, Contribution, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt });
+        const result = await makeApiRequest('POST', `/expectation/api/update/${req.params.id}`, req.headers.cookie, { ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus, PaymentReceipt });
         
         if (result.issuccess) {
             return res.redirect('/expectation');

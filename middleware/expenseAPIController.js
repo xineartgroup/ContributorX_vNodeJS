@@ -142,21 +142,23 @@ router.post("/", async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 
-        const { Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt } = req.body;
-        
+        let { Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt } = req.body;
+
+        DateCreated = new Date(DateCreated).toISOString().slice(0, 19).replace('T', ' ');
+
         const pool = await getPool();
         const result = await pool.request()
             .input("Name", Name)
             .input("Description", Description)
             .input("DateCreated", DateCreated)
             .input("AmountPaid", AmountPaid)
-            .input("CommunityId", Community)
+            .input("CommunityId", CommunityId)
             .input("PaymentReceipt", PaymentReceipt)
             .query("INSERT INTO Expenses (Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt) OUTPUT INSERTED.ID VALUES (@Name, @Description, @DateCreated, @AmountPaid, @CommunityId, @PaymentReceipt);");
         
         const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
-        res.json({ issuccess: true, message: "", expense: { Id, Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt } });
+        res.json({ issuccess: true, message: "", expense: { Id, Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt } });
     } catch (error) {
         res.json({ issuccess: false, message: "Server error: " + error, expense: null });
     }
@@ -169,17 +171,17 @@ router.post("/update/:id", async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", expense: null });
         }
 
-        const { Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt } = req.body;
+        const { Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt } = req.body;
         const pool = await getPool();
         await pool.request()
             .input("id", req.params.id)
             .input("Name", Name)
             .input("Description", Description)
             .input("AmountPaid", AmountPaid)
-            .input("CommunityId", Community)
+            .input("CommunityId", CommunityId)
             .input("PaymentReceipt", PaymentReceipt ? PaymentReceipt : '')
             .query("UPDATE Expenses SET Name = @Name, Description = @Description, AmountPaid = @AmountPaid, CommunityId = @CommunityId, PaymentReceipt = @PaymentReceipt WHERE id = @id");
-        res.json({ issuccess: true, message: "", expense: { Id: req.params.id, Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt } });
+        res.json({ issuccess: true, message: "", expense: { Id: req.params.id, Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt } });
     } catch (error) {
         res.json({ issuccess: false, message: "Server error: " + error, expense: null });
     }

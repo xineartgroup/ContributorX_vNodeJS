@@ -110,9 +110,9 @@ const contributorCreatePost = async (req, res) => {
         }
 
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
-        Community = req.session.contributor.CommunityId;
+        CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
+        const result = await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
         
         if (result.issuccess) {
             return res.redirect('/contributor');
@@ -149,9 +149,9 @@ const contributorUpdatePost = async (req, res) => {
         }
 
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
-        Community = req.session.contributor.CommunityId;
+        CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive });
+        const result = await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
         
         if (result.issuccess) {
             return res.redirect('/');

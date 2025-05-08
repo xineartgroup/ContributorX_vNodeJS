@@ -74,12 +74,12 @@ const expenseCreatePost = async (req, res) => {
         }
 
         const { Name, Description, AmountPaid } = req.body;
-        const Community = req.session.contributor.CommunityId;
+        const CommunityId = req.session.contributor.CommunityId;
         const PaymentReceipt = req.file ? req.file.filename : '';
         const DateCreated = new Date();
 
         const result = await makeApiRequest('POST', `/expense/api/`, req.headers.cookie, {
-            Name, Description, DateCreated, AmountPaid, Community, PaymentReceipt
+            Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt
         });
 
         if (result.issuccess) {
@@ -117,11 +117,11 @@ const expenseUpdatePost = async (req, res) => {
         }
 
         const { Name, Description, AmountPaid } = req.body;
-        const Community = req.session.contributor.CommunityId;
+        const CommunityId = req.session.contributor.CommunityId;
         const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt || '';
 
         const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
-            Name, Description, AmountPaid, Community, PaymentReceipt
+            Name, Description, AmountPaid, CommunityId, PaymentReceipt
         });
 
         if (result.issuccess) {

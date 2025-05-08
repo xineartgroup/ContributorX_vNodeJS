@@ -23,7 +23,7 @@
                         <% let contributorId = 0; %>
                         
                         <% expectations.forEach(item => { %>
-                            <% if (contributorId === 0) contributorId = item.Contributor; %>
+                            <% if (contributorId === 0) contributorId = item.ContributorId; %>
                             <% if (item.Contribution && item.paymentStatus != 3) { %>
                                 <tr>
                                     <td><%= item.Contributor.FirstName + ' ' + item.Contributor.LastName %></td>

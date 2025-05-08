@@ -39,6 +39,18 @@ router.get("/bygroup/:groupId", async (req, res) => {
     }
 });
 
+// Get groupings for contributor
+router.get("/bycontributor/:contributorId", async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`SELECT * FROM Groupings WHERE ContributorId = ${req.params.contributorId}`);
+        const groupings = result.recordset;
+        res.json({ issuccess: true, message: "", groupings });
+    } catch (err) {
+        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+    }
+});
+
 // Get list of groupings
 router.get("/", async (req, res) => {
     try {

@@ -184,7 +184,7 @@ router.post("/", async (req, res) => {
             return res.json({ issuccess: false, message: "User not authorized", contributor: null });
         }
 
-        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, IsActive } = req.body;
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
         const hashedPassword = await bcrypt.hash(Password, 10);
@@ -200,14 +200,14 @@ router.post("/", async (req, res) => {
         .input('Role', Role)
         .input('PhoneNumber', PhoneNumber)
         .input('Picture', Picture)
-        .input('CommunityId', Community)
+        .input('CommunityId', CommunityId)
         .input('IsActive', IsActive)
         .input('StartDate', new Date())
         .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) OUTPUT INSERTED.ID VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
         
         const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
-        res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, Community, IsActive } });
+        res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive } });
     } catch (err) {
         res.status(500).json({ issuccess: false, message: err.message, contributor: null });
     }
@@ -230,14 +230,14 @@ router.post("/update/:id", async (req, res) => {
 
         if (resultContributor.recordset.length > 0) {
             let contributor = resultContributor.recordset[0];
-            const { FirstName, LastName, Email, PhoneNumber, Community } = req.body;
+            const { FirstName, LastName, Email, PhoneNumber, CommunityId } = req.body;
 
             await pool.request()
                 .input('FirstName', FirstName)
                 .input('LastName', LastName)
                 .input('Email', Email)
                 .input('PhoneNumber', PhoneNumber)
-                .input('CommunityId', Community)
+                .input('CommunityId', CommunityId)
                 .input('id', id)
                 .query(`UPDATE Contributors SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, CommunityId = @CommunityId WHERE ID = @id`);
 
