@@ -33,7 +33,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, Picture, IsActive } = req.body;
+    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, Picture, IsActive } = req.body;
 
     try {
         const pool = await getPool();
@@ -47,9 +47,9 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ issuccess: false, message: "Username already exists.", contributor: null });
         }
 
-        let newCommunityId = Community;
+        let newCommunityId = CommunityId;
 
-        if (!Community || Community == '') {
+        if (!CommunityId || CommunityId == '') {
             if (req.body.CommunityName && req.body.CommunityName.trim() !== '') {
                 const newCommunityResult = await pool.request()
                     .input('CommunityName', sql.NVarChar, req.body.CommunityName)

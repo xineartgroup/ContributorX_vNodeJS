@@ -38,30 +38,32 @@ router.get('', async (req, res) => {
 
         const skip = req.query.skip;
         const limit = req.query.limit;
-        const communityid = req.query.searchValue;
-        const searchValue = req.query.searchValue;
+        const searchValue = req.query.searchValue || '';
 
         const pool = await getPool();
 
         let query = "SELECT * FROM Communities";
         
-        if (communityid > 0){
-            //query = query + ` WHERE Id = ${communityid}`;
-        }
-
-        if (searchValue && searchValue === "*") {
-        }else{
-            if (query.includes(" WHERE "))
-                query = query + ` AND Name LIKE '%${searchValue}%' OR Description LIKE '%${searchValue}%'`;
-            else
-                query = query + ` WHERE Name LIKE '%${searchValue}%' OR Description LIKE '%${searchValue}%'`;
+        if (searchValue && searchValue !== "*") {
+            if (query.includes(" WHERE ")) {
+                query += " AND (Name LIKE @search OR Description LIKE @search)";
+                pool.request().input("search", `%${searchValue}%`);
+            }
+            else {
+                query += " WHERE (Name LIKE @search OR Description LIKE @search)";
+                pool.request().input("search", `%${searchValue}%`);
+            }
         }
 
         query = query + " ORDER BY Id DESC";
 
         if (skip && limit){
-            query = query + ` OFFSET ${skip} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+            query += " OFFSET @skip ROWS FETCH NEXT @limit ROWS ONLY";
+            pool.request().input("skip", parseInt(skip));
+            pool.request().input("limit", parseInt(limit));
         }
+
+        console.log(query);
 
         const communitiesResult = await pool.request().query(query);
         const communities = communitiesResult.recordset;

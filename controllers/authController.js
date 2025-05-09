@@ -49,11 +49,11 @@ const register = async (req, res) => {
     try {
         const communities = await getCommunities();
 
-        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, IsActive } = req.body;
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, CommunityName, IsActive } = req.body;
         let Picture = req.file ? req.file.filename : '';
 
         const result = await makeApiRequest('POST', '/auth/api/register', req.headers.cookie, {
-            UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Community, CommunityName, Picture, IsActive
+            UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, CommunityName, Picture, IsActive
         });
 
         if (result.issuccess) {
