@@ -24,7 +24,7 @@ const expenseIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -40,7 +40,7 @@ const expenseCreateGet = async (req, res) => {
         res.render('expense/create', { title: 'New Expense', communities });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err);
+        res.send('Server Error: ' + err);
     }
 };
 
@@ -54,7 +54,7 @@ const expenseCreatePost = async (req, res) => {
 
         const { Name, Description, AmountPaid, Community } = req.body;
         if (!req.file) {
-            return res.status(400).send("Payment Receipt file is required.");
+            return res.send("Payment Receipt file is required.");
         }
 
         const expense = new Expense({
@@ -69,7 +69,7 @@ const expenseCreatePost = async (req, res) => {
         res.redirect('/expense');
     } catch (err) {
         console.error("Error saving expense:", err);
-        res.status(500).send("Error saving expense.");
+        res.send("Error saving expense.");
     }
 };
 
@@ -83,12 +83,12 @@ const expenseUpdateGet = async (req, res) => {
 
         const expense = await Expense.findById(req.params.id);
         const communities = await Community.find();
-        if (!expense) return res.status(404).send('Expense not found');
+        if (!expense) return res.send('Expense not found');
 
         res.render('expense/update', { title: 'Update Expense', expense, communities });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -114,7 +114,7 @@ const expenseUpdatePost = async (req, res) => {
         res.redirect('/expense');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -127,12 +127,12 @@ const expenseDeleteGet = async (req, res) => {
         }
 
         const expense = await Expense.findById(req.params.id).populate('Community');
-        if (!expense) return res.status(404).send('Expense not found');
+        if (!expense) return res.send('Expense not found');
 
         res.render('expense/delete', { title: 'Delete Expense', expense });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -148,7 +148,7 @@ const expenseDeletePost = async (req, res) => {
         res.redirect('/expense');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error deleting expense' });
+        res.json({ error: 'Error deleting expense' });
     }
 };
 

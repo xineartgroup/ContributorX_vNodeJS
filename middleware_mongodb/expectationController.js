@@ -26,7 +26,7 @@ const expectationIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -42,7 +42,7 @@ const expectationCreateGet = async (req, res) => {
         res.render('expectation/create', { title: 'New Expectation', contributors, contributions });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -67,7 +67,7 @@ const expectationCreatePost = async (req, res) => {
         res.redirect('/expectation');
     } catch (err) {
         console.error("Error saving expectation:", err);
-        res.status(500).send("Error saving expectation.");
+        res.send("Error saving expectation.");
     }
 };
 
@@ -81,12 +81,12 @@ const expectationUpdateGet = async (req, res) => {
         const expectation = await Expectation.findById(req.params.id);
         const contributors = await Contributor.find();
         const contributions = await Contribution.find();
-        if (!expectation) return res.status(404).send('Expectation not found');
+        if (!expectation) return res.send('Expectation not found');
 
         res.render('expectation/update', { title: 'Update Expectation', expectation, contributors, contributions });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -110,7 +110,7 @@ const expectationUpdatePost = async (req, res) => {
         res.redirect('/expectation');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -122,12 +122,12 @@ const expectationDeleteGet = async (req, res) => {
         }
 
         const expectation = await Expectation.findById(req.params.id).populate('Contributor Contribution');
-        if (!expectation) return res.status(404).send('Expectation not found');
+        if (!expectation) return res.send('Expectation not found');
 
         res.render('expectation/delete', { title: 'Delete Expectation', expectation });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -142,7 +142,7 @@ const expectationDeletePost = async (req, res) => {
         res.redirect('/expectation');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error deleting expectation' });
+        res.json({ error: 'Error deleting expectation' });
     }
 };
 
@@ -155,12 +155,12 @@ const expectationPaymentGet = async (req, res) => {
     
         console.log("Expectation ID:", req.params.id);
         const expectation = await Expectation.findById(req.params.id).populate('Contributor Contribution');
-        if (!expectation) return res.status(404).send("Expectation not found");
+        if (!expectation) return res.send("Expectation not found");
 
         res.render('expectation/makePayment', { title: 'Update Expectation', expectation });
     } catch (err) {
         console.error("Error fetching expectation:", err);
-        res.status(500).send("Server error");
+        res.send("Server error");
     }
 };
 
@@ -183,7 +183,7 @@ const expectationPaymentPost = async (req, res) => {
         res.redirect('/');
     } catch (err) {
         console.error("Error processing payment:", err);
-        res.status(500).send("Server error.");
+        res.send("Server error.");
     }
 };
 

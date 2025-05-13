@@ -72,9 +72,9 @@ const groupingCreateGet = async (req, res) => {
 
 const groupingCreatePost = async (req, res) => {
     try {
-        const { Contributor, Group } = req.body;
+        const { ContributorId, GroupId } = req.body;
 
-        const result = await makeApiRequest('POST', `/grouping/api/`, req.headers.cookie, { Contributor, Group });
+        const result = await makeApiRequest('POST', `/grouping/api/`, req.headers.cookie, { ContributorId, GroupId });
 
         if (result.issuccess) {
             return res.redirect('/grouping');
@@ -105,10 +105,10 @@ const groupingUpdateGet = async (req, res) => {
 
 const groupingUpdatePost = async (req, res) => {
     try {
-        const { Contributor, Group } = req.body;
+        const { ContributorId, GroupId } = req.body;
 
         const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
-            Contributor, Group
+            ContributorId, GroupId
         });
         
         if (result.issuccess) {

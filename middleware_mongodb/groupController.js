@@ -24,7 +24,7 @@ const groupIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -40,7 +40,7 @@ const groupCreateGet = async (req, res) => {
         res.render('group/create', { title: 'New Group', communities });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -58,7 +58,7 @@ const groupCreatePost = async (req, res) => {
         res.redirect('/group');
     } catch (err) {
         console.error("Error saving group:", err);
-        res.status(500).send("Error saving group.");
+        res.send("Error saving group.");
     }
 };
 
@@ -72,12 +72,12 @@ const groupUpdateGet = async (req, res) => {
     
         const group = await Group.findById(req.params.id);
         const communities = await Community.find();
-        if (!group) return res.status(404).send('Group not found');
+        if (!group) return res.send('Group not found');
 
         res.render('group/update', { title: 'Update Group', group, communities });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -99,7 +99,7 @@ const groupUpdatePost = async (req, res) => {
         res.redirect('/group');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -112,12 +112,12 @@ const groupDeleteGet = async (req, res) => {
           }
     
         const group = await Group.findById(req.params.id).populate('Community');
-        if (!group) return res.status(404).send('Group not found');
+        if (!group) return res.send('Group not found');
 
         res.render('group/delete', { title: 'Delete Group', group });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -133,7 +133,7 @@ const groupDeletePost = async (req, res) => {
         res.redirect('/group');
     } catch (err) {
         console.error(err);
-        res.status(500).send({ error: "Error deleting group" });
+        res.send({ error: "Error deleting group" });
     }
 };
 

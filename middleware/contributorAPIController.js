@@ -45,7 +45,7 @@ router.get("/all", async (req, res) => {
         const contributors = result.recordset;
         res.json({ issuccess: true, message: "", contributors });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributors: [] });
+        res.json({ issuccess: false, message: err.message, contributors: [] });
     }
 });
 
@@ -118,7 +118,7 @@ OR LastName LIKE '%${searchValue}%' OR Email LIKE '%${searchValue}%' OR PhoneNum
 
         res.json({ issuccess: true, message: "", contributors });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributors: [] });
+        res.json({ issuccess: false, message: err.message, contributors: [] });
     }
 });
 
@@ -173,7 +173,7 @@ router.get("/:id", async (req, res) => {
             res.json({ issuccess: true, message: "", contributor, groups, groupings, expectations });
         }
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributor: null, groups: [], groupings: [], expectations: [] });
+        res.json({ issuccess: false, message: err.message, contributor: null, groups: [], groupings: [], expectations: [] });
     }
 });
 
@@ -209,7 +209,7 @@ router.post("/", async (req, res) => {
         
         res.json({ issuccess: true, message: "", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive } });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
+        res.json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 
@@ -230,7 +230,14 @@ router.post("/update/:id", async (req, res) => {
 
         if (resultContributor.recordset.length > 0) {
             let contributor = resultContributor.recordset[0];
-            const { FirstName, LastName, Email, PhoneNumber, CommunityId } = req.body;
+            const { FirstName, LastName, Email, PhoneNumber, CommunityId, IsActive } = req.body;
+
+            contributor.FirstName = FirstName;
+            contributor.LastName = LastName;
+            contributor.Email = Email;
+            contributor.PhoneNumber = PhoneNumber;
+            contributor.CommunityId = CommunityId;
+            contributor.IsActive = IsActive;
 
             await pool.request()
                 .input('FirstName', FirstName)
@@ -238,16 +245,17 @@ router.post("/update/:id", async (req, res) => {
                 .input('Email', Email)
                 .input('PhoneNumber', PhoneNumber)
                 .input('CommunityId', CommunityId)
+                .input('IsActive', IsActive)
                 .input('id', id)
-                .query(`UPDATE Contributors SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, CommunityId = @CommunityId WHERE ID = @id`);
+                .query(`UPDATE Contributors SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, IsActive = @IsActive, CommunityId = @CommunityId WHERE ID = @id`);
 
             res.json({ issuccess: true, message: "", contributor });
         }
         else{
-            res.status(404).json({ issuccess: false, message: "No contributor found with ID", contributor: null });
+            res.json({ issuccess: false, message: "No contributor found with ID", contributor: null });
         }
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
+        res.json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 
@@ -263,7 +271,7 @@ router.post("/delete/:id", async (req, res) => {
         await pool.request().input("id", id).query("DELETE FROM Contributors WHERE id = @id");
         res.json({ issuccess: true, message: "", contributor: null });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributor: null });
+        res.json({ issuccess: false, message: err.message, contributor: null });
     }
 });
 
@@ -286,11 +294,16 @@ router.post("/update1", async (req, res) => {
 
         const pool = await getPool();
         
-        const { groups, id } = req.body; // Use req.body for POST
+        const { groups, id, IsActive } = req.body; // Use req.body for POST
         
         if (!id) {
-            return res.status(400).json({ issuccess: false, message: "Contributor ID is required.", contributor: null });
+            return res.json({ issuccess: false, message: "Contributor ID is required.", contributor: null });
         }
+
+        await pool.request()
+            .input('IsActive', IsActive)
+            .input('id', id)
+            .query(`UPDATE Contributors SET IsActive = @IsActive WHERE ID = @id`);
 
         // Convert comma-separated string to an array and remove empty values
         const groupNames = Array.isArray(groups) ? groups : groups.split(',').filter(name => name.trim() !== "");
@@ -309,7 +322,7 @@ router.post("/update1", async (req, res) => {
             groupDocs = groupsResult.recordset;
 
             if (groupDocs.length === 0) {
-                return res.status(400).json({ issuccess: false, message: "No valid groups found.", contributor: null });
+                return res.json({ issuccess: false, message: "No valid groups found.", contributor: null });
             }
         }
 
@@ -321,7 +334,7 @@ router.post("/update1", async (req, res) => {
         
         let contributor = resultContributor.recordset.length > 0 ? resultContributor.recordset[0] : null;
         if (!contributor) {
-            return res.status(404).json({ issuccess: false, message: "Contributor not found.", contributor });
+            return res.json({ issuccess: false, message: "Contributor not found.", contributor });
         }
 
         // Update contributor's groups in the Grouping model
@@ -339,7 +352,7 @@ router.post("/update1", async (req, res) => {
         return res.json({ issuccess: true, message: "Contributor updated successfully!", contributor });
 
     } catch (error) {
-        return res.status(400).json({ issuccess: false, message: error, contributor: null });
+        return res.json({ issuccess: false, message: error, contributor: null });
     }
 });
 

@@ -202,7 +202,11 @@
                 type: 'POST',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify({ groups: groupsText, id: id }),
+                data: JSON.stringify({ 
+                    groups: groupsText, 
+                    id: id,
+                    IsActive: $('#IsActive').val() === "true"
+                }),
                 success: function (response) {
                     alert(response.message);
                 },

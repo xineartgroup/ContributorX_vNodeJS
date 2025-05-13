@@ -42,7 +42,7 @@ router.get("/all", async (req, res) => {
         const contributions = result.recordset;
         res.json({ issuccess: true, message: "", contributions });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, contributions: [] });
+        res.json({ issuccess: false, message: err.message, contributions: [] });
     }
 });
 

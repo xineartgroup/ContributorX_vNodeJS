@@ -30,6 +30,29 @@ router.get('/count/:communityid/:searchValue', async (req, res) => {
     }
 });
 
+router.get('/getbyname/:name', async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", community: null });
+        }
+
+        const pool = await getPool();
+
+        const communityResult = await pool.request()
+            .input('Name', req.params.name)
+            .query('SELECT * FROM Communities WHERE Name = @Name');
+        const community = communityResult.recordset.length > 0 ? communityResult.recordset[0] : null;
+
+        if (community) {
+            res.json({ issuccess: true, message: "", community });
+        } else {
+            res.json({ issuccess: false, message: "No community with id found", community });
+        }
+    } catch (err) {
+        res.json({ issuccess: false, message: "Server Error: " + err, community: null });
+    }
+});
+
 router.get('', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -117,7 +140,7 @@ router.post('/', async (req, res) => {
         
         res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
     } catch (err) {
-        res.json({ issuccess: false, message: "Error saving community. " + err, community: { Id: 0, Name, Description, date } });
+        res.json({ issuccess: false, message: "Error saving community. " + err, community: null });
     }
 });
 
@@ -139,7 +162,7 @@ router.post('/update/:id', async (req, res) => {
         
         res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
     } catch (err) {
-        res.json({ issuccess: false, message: "Server Error: " + err, community: { Id: 0, Name, Description, date } });
+        res.json({ issuccess: false, message: "Server Error: " + err, community: null });
     }
 });
 

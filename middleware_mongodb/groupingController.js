@@ -24,7 +24,7 @@ const groupingIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -35,7 +35,7 @@ const groupingCreateGet = async (req, res) => {
         res.render('grouping/create', { title: 'New Grouping', contributors, groups });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -47,7 +47,7 @@ const groupingCreatePost = async (req, res) => {
         res.redirect('/grouping');
     } catch (err) {
         console.error("Error saving grouping:", err);
-        res.status(500).send("Error saving grouping.");
+        res.send("Error saving grouping.");
     }
 };
 
@@ -56,12 +56,12 @@ const groupingUpdateGet = async (req, res) => {
         const grouping = await Grouping.findById(req.params.id);
         const contributors = await Contributor.find();
         const groups = await Group.find();
-        if (!grouping) return res.status(404).send('Grouping not found');
+        if (!grouping) return res.send('Grouping not found');
 
         res.render('grouping/update', { title: 'Update Grouping', grouping, contributors, groups });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -76,19 +76,19 @@ const groupingUpdatePost = async (req, res) => {
         res.redirect('/grouping');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
 const groupingDeleteGet = async (req, res) => {
     try {
         const grouping = await Grouping.findById(req.params.id).populate('Contributor').populate('Group');
-        if (!grouping) return res.status(404).send('Grouping not found');
+        if (!grouping) return res.send('Grouping not found');
 
         res.render('grouping/delete', { title: 'Delete Grouping', grouping });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -98,7 +98,7 @@ const groupingDeletePost = async (req, res) => {
         res.redirect('/grouping');
     } catch (err) {
         console.error(err);
-        res.status(500).send({ error: "Error deleting grouping" });
+        res.send({ error: "Error deleting grouping" });
     }
 };
 

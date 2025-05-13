@@ -122,5 +122,5 @@ app.use('/grouping/api', groupingapiController);
 app.use('/expectation/api', expectationapiController);
 
 app.use((req, res) => {
-    res.status(404).render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
+    res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
 });

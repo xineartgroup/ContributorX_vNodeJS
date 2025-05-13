@@ -6,9 +6,9 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
-    const { UserName, Password } = req.body;
-
     try {
+        const { UserName, Password } = req.body;
+
         const pool = await getPool();
         const result = await pool.request()
             .input('UserName', sql.NVarChar, UserName)
@@ -33,9 +33,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, Picture, IsActive } = req.body;
-
     try {
+        const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, Picture, IsActive } = req.body;
+
         const pool = await getPool();
 
         // Check if username already exists
@@ -44,12 +44,12 @@ router.post('/register', async (req, res) => {
             .query('SELECT * FROM Contributors WHERE UserName = @UserName');
 
         if (existingUser.recordset.length > 0) {
-            return res.status(400).json({ issuccess: false, message: "Username already exists.", contributor: null });
+            return res.json({ issuccess: false, message: "Username already exists.", contributor: null });
         }
 
         let newCommunityId = CommunityId;
 
-        if (!CommunityId || CommunityId == '') {
+        if (!CommunityId || CommunityId == '' || CommunityId == 0) {
             if (req.body.CommunityName && req.body.CommunityName.trim() !== '') {
                 const newCommunityResult = await pool.request()
                     .input('CommunityName', sql.NVarChar, req.body.CommunityName)
@@ -63,7 +63,7 @@ router.post('/register', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(Password, 10);
 
-        await pool.request()
+        const result = await pool.request()
             .input('UserID', UserName)
             .input('UserName', UserName)
             .input('Password', hashedPassword)
@@ -76,9 +76,11 @@ router.post('/register', async (req, res) => {
             .input('CommunityId', newCommunityId)
             .input('IsActive', IsActive)
             .input('StartDate', new Date())
-            .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
+            .query("INSERT INTO Contributors (UserID, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive, StartDate) OUTPUT INSERTED.ID VALUES (@UserID, @UserName, @Password, @FirstName, @LastName, @Email, @Role, @PhoneNumber, @Picture, @CommunityId, @IsActive, @StartDate)");
 
-        return res.status(201).json({ issuccess: true, message: "Registration successful", contributor: null });
+        const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
+        
+        return res.json({ issuccess: true, message: "Registration successful", contributor: { Id, UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, Picture, CommunityId, IsActive } });
     } catch (error) {
         return res.json({ issuccess: false, message: "Registration error: " + error, contributor: null });
     }

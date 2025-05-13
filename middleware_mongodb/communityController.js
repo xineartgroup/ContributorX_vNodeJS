@@ -26,7 +26,7 @@ const communityIndex = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -60,7 +60,7 @@ const communityCreatePost = (req, res) => {
         })
         .catch(err => {
             console.error("Error saving community:", err);
-            res.status(500).send("Error saving community.");
+            res.send("Error saving community.");
         });
 };
 
@@ -74,12 +74,12 @@ const communityUpdateGet = async (req, res) => {
     
         const community = await Community.findById(req.params.id);
         if (!community) {
-            return res.status(404).send('Community not found');
+            return res.send('Community not found');
         }
         res.render('community/update', { title: 'Update Community', community });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -101,7 +101,7 @@ const communityUpdatePost = async (req, res) => {
         res.redirect('/community');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err);
+        res.send('Server Error: ' + err);
     }
 };
 
@@ -115,12 +115,12 @@ const communityDeleteGet = async (req, res) => {
     
         const community = await Community.findById(req.params.id);
         if (!community) {
-            return res.status(404).send('Community not found');
+            return res.send('Community not found');
         }
         res.render('community/delete', { title: 'Delete Community', community });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -137,7 +137,7 @@ const communityDeletePost = async (req, res) => {
         })
         .catch((err) => {
             console.error(err);
-            res.status(500).json({ error: "Error deleting community" });
+            res.json({ error: "Error deleting community" });
         });
 };
 

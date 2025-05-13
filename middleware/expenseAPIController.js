@@ -118,7 +118,7 @@ router.get("/:id", async (req, res) => {
             .input("id", req.params.id)
             .query("SELECT * FROM Expenses WHERE id = @id");
         if (result.recordset.length === 0) {
-            return res.status(404).json({ message: "Expenses not found" });
+            return res.json({ message: "Expenses not found" });
         }
         const expense = result.recordset.length > 0 ? result.recordset[0] : null;
         

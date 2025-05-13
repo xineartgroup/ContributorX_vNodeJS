@@ -31,7 +31,7 @@ const contributorIndex = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -66,11 +66,11 @@ const contributorDetailGet = async (req, res) => {
                 res.render('contributor/detail', { title: 'Contributor Detail', contributor, groups, groupings, expectations, groupHtml });
             }
         } else {
-            return res.status(404).send('Contributor not found');
+            return res.send('Contributor not found');
         }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 }
 
@@ -100,7 +100,7 @@ const contributorDetailPost = async (req, res) => {
         res.redirect('/contributor'); // Redirect to list after updating
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err);
+        res.send('Server Error: ' + err);
     }
 }
 
@@ -115,12 +115,12 @@ const contributorUpdateGet = async (req, res) => {
         const contributor = await Contributor.findById(req.params.id);
         const communities = await Community.find();
         if (!contributor) {
-            return res.status(404).send('Contributor not found');
+            return res.send('Contributor not found');
         }
         res.render('contributor/update', { title: 'Update Contributor', contributor, communities });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 }
 
@@ -150,7 +150,7 @@ const contributorUpdatePost = async (req, res) => {
         res.redirect('/contributor'); // Redirect to list after updating
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err);
+        res.send('Server Error: ' + err);
     }
 }
 
@@ -165,7 +165,7 @@ const contributorUpdate1 = async (req, res) => {
         const { groups, id } = req.body; // Use req.body for POST
         
         if (!id) {
-            return res.status(400).json({ message: "Contributor ID is required." });
+            return res.json({ message: "Contributor ID is required." });
         }
 
         // Convert comma-separated string to an array and remove empty values
@@ -175,14 +175,14 @@ const contributorUpdate1 = async (req, res) => {
         const groupDocs = await Group.find({ Name: { $in: groupNames } });
 
         if (groupDocs.length === 0) {
-            return res.status(400).json({ message: "No valid groups found." });
+            return res.json({ message: "No valid groups found." });
         }
 
         const groupIds = groupDocs.map(group => group._id);
 
         let contributor = await Contributor.findById(id);
         if (!contributor) {
-            return res.status(404).json({ message: "Contributor not found." });
+            return res.json({ message: "Contributor not found." });
         }
 
         // Update contributor's groups in the Grouping model
@@ -198,7 +198,7 @@ const contributorUpdate1 = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: "Server error" });
+        res.send({ message: "Server error" });
     }
 };
 
@@ -215,7 +215,7 @@ const contributorCreateGet = async (req, res) => {
         res.render('contributor/create', { title: 'New Contributor', communities });
     } catch(err) {
         console.error(err);
-        res.status(500).send("Server Error.");
+        res.send("Server Error.");
     };
 }
 
@@ -244,7 +244,7 @@ const contributorCreatePost = (req, res) => {
         contributor.save();
     } catch(err) {
         console.error("Error saving contributor:", err);
-        res.status(500).send("Error saving contributor.");
+        res.send("Error saving contributor.");
     };
 }
 
@@ -258,12 +258,12 @@ const contributorDeleteGet = async (req, res) => {
 
         const contributor = await Contributor.findById(req.params.id).populate('Community');
         if (!contributor) {
-            return res.status(404).send('Contributor not found');
+            return res.send('Contributor not found');
         }
         res.render('contributor/delete', { title: 'Delete Contributor', contributor });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 }
 
@@ -281,11 +281,11 @@ const contributorDeletePost = async (req, res) => {
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({ error: "Error deleting contributor" });
+                res.json({ error: "Error deleting contributor" });
             });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 }
 

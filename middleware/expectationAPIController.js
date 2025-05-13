@@ -101,7 +101,7 @@ router.get('', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectations });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ issuccess: true, message: err, expectations: [] });
+        res.json({ issuccess: true, message: err, expectations: [] });
     }
 });
 
@@ -132,7 +132,7 @@ router.get('/:id', async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ issuccess: false, message: err, expectation: null });
+        return res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -171,7 +171,7 @@ router.get('/getbycontributor/:id/:searchValue', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectations });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ issuccess: false, message: err, expectation: null });
+        return res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -197,7 +197,7 @@ router.post('/', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: { Id, ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } });
     } catch (err) {
         console.error("Error saving expectation:", err);
-        return res.status(500).json({ issuccess: false, message: err, expectation: null });
+        return res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -220,7 +220,7 @@ router.post('/update/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: { Id: req.params.id, ContributorId, ContributionId, AmountPaid, AmountToApprove, PaymentStatus } });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ issuccess: false, message: err, expectation: null });
+        return res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -237,7 +237,7 @@ router.post('/delete/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ issuccess: false, message: err, expectation: null });
+        return res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -261,7 +261,7 @@ router.post('/payment/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (err) {
         console.error("Error processing payment:", err);
-        res.status(500).json({ issuccess: false, message: err, expectation: null });
+        res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -276,7 +276,7 @@ router.get('/paymentapprove/:id', async (req, res) => {
         const expectations = await pool.request().query(`SELECT * FROM Expectations WHERE id = ${req.params.id}`);
 
         if (expectations.length === 0)
-            return res.status(404).json({ issuccess: false, message: "Expectation not found", expectation: null });
+            return res.json({ issuccess: false, message: "Expectation not found", expectation: null });
 
         const expectation = expectations.recordset[0];
 
@@ -296,7 +296,7 @@ router.get('/paymentapprove/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).json({ issuccess: false, message: err, expectation: null });
+        res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -316,7 +316,7 @@ router.get('/paymentreject/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).json({ issuccess: false, message: err, expectation: null });
+        res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 
@@ -331,7 +331,7 @@ router.get('/paymentwriteoff/:id', async (req, res) => {
         const expectations = await pool.request().query(`SELECT * FROM Expectations WHERE id = ${req.params.id}`);
 
         if (expectations.length === 0)
-            return res.status(404).json({ issuccess: false, message: "Expectation not found", expectation: null });
+            return res.json({ issuccess: false, message: "Expectation not found", expectation: null });
 
         const expectation = expectations.recordset.length > 0 ? expectations.recordset[0] : null;
 
@@ -343,7 +343,7 @@ router.get('/paymentwriteoff/:id', async (req, res) => {
         return res.json({ issuccess: true, message: "", expectation: null });
     } catch (error) {
         console.error("Error: ", error);
-        res.status(500).json({ issuccess: false, message: err, expectation: null });
+        res.json({ issuccess: false, message: err, expectation: null });
     }
 });
 

@@ -26,7 +26,7 @@ const contributionIndex = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -42,7 +42,7 @@ const contributionCreateGet = async (req, res) => {
         res.render('contribution/create', { title: 'New Contribution', groups });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -75,7 +75,7 @@ const contributionCreatePost = async (req, res) => {
         res.redirect('/contribution');
     } catch (err) {
         console.error("Error saving contribution:", err);
-        res.status(500).send("Error saving contribution.");
+        res.send("Error saving contribution.");
     }
 };
 
@@ -89,12 +89,12 @@ const contributionUpdateGet = async (req, res) => {
     
         const contribution = await Contribution.findById(req.params.id);
         const groups = await Group.find();
-        if (!contribution) return res.status(404).send('Contribution not found');
+        if (!contribution) return res.send('Contribution not found');
 
         res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -117,7 +117,7 @@ const contributionUpdatePost = async (req, res) => {
         res.redirect('/contribution');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -130,12 +130,12 @@ const contributionDeleteGet = async (req, res) => {
           }
     
         const contribution = await Contribution.findById(req.params.id).populate('Group');
-        if (!contribution) return res.status(404).send('Contribution not found');
+        if (!contribution) return res.send('Contribution not found');
 
         res.render('contribution/delete', { title: 'Delete Contribution', contribution });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.send('Server Error');
     }
 };
 
@@ -151,7 +151,7 @@ const contributionDeletePost = async (req, res) => {
         res.redirect('/contribution');
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Error deleting contribution" });
+        res.json({ error: "Error deleting contribution" });
     }
 };
 

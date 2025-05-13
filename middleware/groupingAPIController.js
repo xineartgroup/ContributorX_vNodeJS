@@ -23,7 +23,7 @@ router.get("/all", async (req, res) => {
         const groupings = result.recordset;
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+        res.json({ issuccess: false, message: err.message, groupings: [] });
     }
 });
 
@@ -35,7 +35,7 @@ router.get("/bygroup/:groupId", async (req, res) => {
         const groupings = result.recordset;
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+        res.json({ issuccess: false, message: err.message, groupings: [] });
     }
 });
 
@@ -47,7 +47,7 @@ router.get("/bycontributor/:contributorId", async (req, res) => {
         const groupings = result.recordset;
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
-        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+        res.json({ issuccess: false, message: err.message, groupings: [] });
     }
 });
 
@@ -79,7 +79,7 @@ router.get("/", async (req, res) => {
         res.json({ issuccess: true, message: "", groupings });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ issuccess: false, message: err.message, groupings: [] });
+        res.json({ issuccess: false, message: err.message, groupings: [] });
     }
 });
 
@@ -108,46 +108,47 @@ router.get("/:id", async (req, res) => {
             return res.json({ issuccess: true, message: "", grouping });
         }
         
-        res.status(500).json({ issuccess: false, message: "No grouping found", grouping });
+        res.json({ issuccess: false, message: "No grouping found", grouping });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ issuccess: false, message: err.message, result: grouping });
+        res.json({ issuccess: false, message: err.message, result: grouping });
     }
 });
 
 // Create a new grouping
 router.post("/", async (req, res) => {
     try {
-        const { Contributor, Group } = req.body;
+        const { ContributorId, GroupId } = req.body;
         const pool = await getPool();
-        await pool.request()
-            .input('ContributorId', Contributor)
-            .input('GroupId', Group)
+        const result = await pool.request()
+            .input('ContributorId', ContributorId)
+            .input('GroupId', GroupId)
             .query('INSERT INTO Groupings (ContributorId, GroupId) OUTPUT INSERTED.ID VALUES (@ContributorId, @GroupId)');
         
         const Id = result.recordset.length > 0 ? result.recordset[0].ID : 0;
         
-        res.json({ issuccess: true, message: "", grouping: { Id, Contributor, Group } });
+        res.json({ issuccess: true, message: "", grouping: { Id, ContributorId, GroupId } });
     } catch (err) {
         console.error('Error saving grouping:', err);
-        res.status(500).json({ issuccess: false, message: err.message, grouping: null });
+        res.json({ issuccess: false, message: err.message, grouping: null });
     }
 });
 
 // Update an existing grouping
 router.post("/update/:id", async (req, res) => {
     try {
+        const { ContributorId, GroupId } = req.body;
         const pool = await getPool();
         await pool.request()
             .input('id', req.params.id)
-            .input('ContributorId', req.body.Contributor)
-            .input('GroupId', req.body.Group)
+            .input('ContributorId', ContributorId)
+            .input('GroupId', GroupId)
             .query('UPDATE Groupings SET ContributorId = @ContributorId, GroupId = @GroupId WHERE Id = @id');
             
-            res.json({ issuccess: true, message: "", grouping: { Id, Contributor, Group } });
+            res.json({ issuccess: true, message: "", grouping: { Id, ContributorId, GroupId } });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ issuccess: false, message: err.message, grouping: null });
+        res.json({ issuccess: false, message: err.message, grouping: null });
     }
 });
 
@@ -161,7 +162,7 @@ router.post("/delete/:id", async (req, res) => {
         res.json({ issuccess: true, message: "", grouping: null });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ issuccess: false, message: err.message, grouping: null });
+        res.json({ issuccess: false, message: err.message, grouping: null });
     }
 });
 
