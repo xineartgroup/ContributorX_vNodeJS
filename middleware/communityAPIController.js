@@ -30,6 +30,22 @@ router.get('/count/:communityid/:searchValue', async (req, res) => {
     }
 });
 
+// Get all communities
+router.get("/all", async (req, res) => {
+    try {
+        if (!req.session?.isLoggedIn) {
+            //return res.json({ issuccess: false, message: "User not authorized", communities: [] });
+        }
+
+        const pool = await getPool();
+        const result = await pool.request().query("SELECT * FROM Communities");
+        const communities = result.recordset;
+        res.json({ issuccess: true, message: "", communities });
+    } catch (err) {
+        res.json({ issuccess: false, message: err.message, communities: [] });
+    }
+});
+
 router.get('/getbyname/:name', async (req, res) => {
     try {
         if (!req.session?.isLoggedIn) {
@@ -138,7 +154,7 @@ router.post('/', async (req, res) => {
         
         const Id = newCommunityResult.recordset.length > 0 ? newCommunityResult.recordset[0].ID : 0;
         
-        res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
+        res.json({ issuccess: true, message: "", community: { Id, Name, Description, DateCreated: date } });
     } catch (err) {
         res.json({ issuccess: false, message: "Error saving community. " + err, community: null });
     }
@@ -160,7 +176,7 @@ router.post('/update/:id', async (req, res) => {
             .input('Description', Description)
             .query('UPDATE Communities SET Name = @Name, Description = @Description WHERE Id = @id');
         
-        res.json({ issuccess: true, message: "", community: { Id, Name, Description, date } });
+        res.json({ issuccess: true, message: "", community: { Id, Name, Description, DateCreated: date } });
     } catch (err) {
         res.json({ issuccess: false, message: "Server Error: " + err, community: null });
     }

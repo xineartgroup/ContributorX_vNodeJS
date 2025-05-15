@@ -10,7 +10,7 @@ const showLoginPage = (req, res) => {
 };
 
 const getCommunities = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/community/api', sessionCookie);
+    const result = await makeApiRequest('GET', '/community/api/all', sessionCookie);
     if (result.issuccess) {
         return result.communities;
     }else{
