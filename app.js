@@ -95,10 +95,6 @@ app.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
 });
 
-app.get('/user/changepassword', (req, res) => {
-    res.render('/user/changepassword', { title: 'Change Password' });
-});
-
 app.get('/users', (req, res) => {
     res.redirect('/contributor');
 });

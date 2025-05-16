@@ -377,23 +377,25 @@ router.post('/changepassword/:id', async (req, res) => {
 
         const contributor = result.recordset.length > 0 ? result.recordset[0] : null;
 
-        if (!contributor) {
+        if (contributor) {
             const isMatch = await bcrypt.compare(PasswordOld, contributor.Password);
             if (!isMatch) {
                 return res.json({ issuccess: false, message: "Password mismatch!!!", contributor: null });
             }
+
+            const hashedPassword = await bcrypt.hash(PasswordNew, 10);
+
+            await pool.request()
+                .input('Password', hashedPassword)
+                .input('id', id)
+                .query(`UPDATE Contributors SET Password = @Password WHERE ID = @id`);
+
+            return res.json({ issuccess: true, message: "", contributor });
         }
-
-        const hashedPassword = await bcrypt.hash(PasswordNew, 10);
-
-        await pool.request()
-            .input('Password', hashedPassword)
-            .input('id', id)
-            .query(`UPDATE Contributors SET Password = @Password WHERE ID = @id`);
-
-        return res.json({ issuccess: true, message: "", contributor: null });
+        else {
+            return res.json({ issuccess: false, message: "Coontributor not found!!!", contributor });
+        }
     } catch (error) {
-        return res.json({ issuccess: false, message: "Login error: " + error, contributor: null });
     }
 });
 
