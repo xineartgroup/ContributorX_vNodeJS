@@ -16,7 +16,7 @@ const expenseIndex = async (req, res) => {
         const totalExpenses = await Expense.countDocuments();
         const expenses = await Expense.find().populate('Community').sort({ createdAt: -1 }).skip(skip).limit(limit);
 
-        res.render('expense/index', {
+        res.render('expenses/index', {
             title: 'Expense List',
             expenses,
             currentPage: page,
@@ -37,7 +37,7 @@ const expenseCreateGet = async (req, res) => {
         }
 
         const communities = await Community.find();
-        res.render('expense/create', { title: 'New Expense', communities });
+        res.render('expenses/create', { title: 'New Expense', communities });
     } catch (err) {
         console.error(err);
         res.send('Server Error: ' + err);
@@ -66,7 +66,7 @@ const expenseCreatePost = async (req, res) => {
         });
 
         await expense.save();
-        res.redirect('/expense');
+        res.redirect('/expenses');
     } catch (err) {
         console.error("Error saving expense:", err);
         res.send("Error saving expense.");
@@ -85,7 +85,7 @@ const expenseUpdateGet = async (req, res) => {
         const communities = await Community.find();
         if (!expense) return res.send('Expense not found');
 
-        res.render('expense/update', { title: 'Update Expense', expense, communities });
+        res.render('expenses/update', { title: 'Update Expense', expense, communities });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -111,7 +111,7 @@ const expenseUpdatePost = async (req, res) => {
         };
 
         await Expense.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.redirect('/expense');
+        res.redirect('/expenses');
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -129,7 +129,7 @@ const expenseDeleteGet = async (req, res) => {
         const expense = await Expense.findById(req.params.id).populate('Community');
         if (!expense) return res.send('Expense not found');
 
-        res.render('expense/delete', { title: 'Delete Expense', expense });
+        res.render('expenses/delete', { title: 'Delete Expense', expense });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -145,7 +145,7 @@ const expenseDeletePost = async (req, res) => {
         }
 
         await Expense.findByIdAndDelete(req.params.id);
-        res.redirect('/expense');
+        res.redirect('/expenses');
     } catch (err) {
         console.error(err);
         res.json({ error: 'Error deleting expense' });

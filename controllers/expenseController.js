@@ -4,7 +4,7 @@ const upload = require('./upload');
 const router = express.Router();
 
 const fetchTotalExpenses = async (sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/expense/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/expenses/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalExpenses;
     } else {
@@ -13,7 +13,7 @@ const fetchTotalExpenses = async (sessionCookie, session, searchValue) => {
 };
 
 const fetchExpenses = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
-    const result = await makeApiRequest('GET', `/expense/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/expenses/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.expenses;
     } else {
@@ -41,7 +41,7 @@ const expenseIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        return res.render('expense/index', {
+        return res.render('expenses/index', {
             title: 'Expense List',
             expenses,
             currentPage: page,
@@ -61,7 +61,7 @@ const expenseCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        return res.render('expense/create', { title: 'New Expense', error: null });
+        return res.render('expenses/create', { title: 'New Expense', error: null });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -78,12 +78,12 @@ const expenseCreatePost = async (req, res) => {
         const PaymentReceipt = req.file ? req.file.filename : '';
         const DateCreated = new Date();
 
-        const result = await makeApiRequest('POST', `/expense/api/`, req.headers.cookie, {
+        const result = await makeApiRequest('POST', `/expenses/api/`, req.headers.cookie, {
             Name, Description, DateCreated, AmountPaid, CommunityId, PaymentReceipt
         });
 
         if (result.issuccess) {
-            return res.redirect('/expense');
+            return res.redirect('/expenses');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -98,10 +98,10 @@ const expenseUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/expense/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/expenses/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('expense/update', { title: 'Update Expense', expense: result.expense });
+            return res.render('expenses/update', { title: 'Update Expense', expense: result.expense });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -120,12 +120,12 @@ const expenseUpdatePost = async (req, res) => {
         const CommunityId = req.session.contributor.CommunityId;
         const PaymentReceipt = req.file ? req.file.filename : req.body.PaymentReceipt || '';
 
-        const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
+        const result = await makeApiRequest('POST', `/expenses/api/update/${req.params.id}`, req.headers.cookie, {
             Name, Description, AmountPaid, CommunityId, PaymentReceipt
         });
 
         if (result.issuccess) {
-            return res.redirect('/expense');
+            return res.redirect('/expenses');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -140,10 +140,10 @@ const expenseDeleteGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/expense/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/expenses/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('expense/delete', { title: 'Delete Expense', expense: result.expense });
+            return res.render('expenses/delete', { title: 'Delete Expense', expense: result.expense });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -158,10 +158,10 @@ const expenseDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('POST', `/expense/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/expenses/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.redirect('/expense');
+            return res.redirect('/expenses');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }

@@ -107,7 +107,7 @@ const groupingUpdatePost = async (req, res) => {
     try {
         const { ContributorId, GroupId } = req.body;
 
-        const result = await makeApiRequest('POST', `/expense/api/update/${req.params.id}`, req.headers.cookie, {
+        const result = await makeApiRequest('POST', `/expenses/api/update/${req.params.id}`, req.headers.cookie, {
             ContributorId, GroupId
         });
         

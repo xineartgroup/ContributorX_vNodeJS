@@ -102,18 +102,18 @@ app.get('/users', (req, res) => {
 app.use(authController);
 app.use('/communities', communityController);
 app.use('/contributions', contributionController);
-app.use('/groups', groupController);
-app.use('/expense', expenseController);
 app.use('/contributor', contributorController);
+app.use('/groups', groupController);
+app.use('/expenses', expenseController);
 app.use('/grouping', groupingController);
 app.use('/expectation', expectationController);
 
 app.use('/auth/api', authapiController);
 app.use('/communities/api', communityapiController);
 app.use('/contributions/api', contributionapiController);
-app.use('/groups/api', groupapiController);
-app.use('/expense/api', expenseapiController);
 app.use('/contributor/api', contributorapiController);
+app.use('/groups/api', groupapiController);
+app.use('/expenses/api', expenseapiController);
 app.use('/grouping/api', groupingapiController);
 app.use('/expectation/api', expectationapiController);
 

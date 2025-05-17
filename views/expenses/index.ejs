@@ -4,7 +4,7 @@
         
         <div class="table-container">
             <h2>Expenses</h2>
-            <form action="/expense" method="GET">
+            <form action="/expenses" method="GET">
                 <div class="form-search">
                     <input type="text" id="searchValue" name="searchValue" placeholder = "Search" value="<%= searchValue ? searchValue : '' %>">
                     <button type="submit">
@@ -26,12 +26,12 @@
                     <tbody>
                         <% expenses.forEach(expense => { %>
                             <tr>
-                                <td><a href="/expense/update/<%= expense.Id %>"><%= expense.Name %></a></td>
+                                <td><a href="/expenses/update/<%= expense.Id %>"><%= expense.Name %></a></td>
                                 <td><%= expense.Description %></td>
                                 <td><%= expense.DateCreated.split('T')[0] %></td>
                                 <td><%= expense.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
-                                    <a class="delete" href="/expense/delete/<%= expense.Id %>">
+                                    <a class="delete" href="/expenses/delete/<%= expense.Id %>">
                                         <img src="/images/delete-icon.png" alt="Delete" width="20">
                                     </a>
                                 </td>
@@ -52,7 +52,7 @@
         <%- include('../partials/pagination') %>
         <div class="row pb-3">
             <div class="col-6 text-end">
-                <a href="/expense/create" class="btn">Create Expense</a>
+                <a href="/expenses/create" class="btn">Create Expense</a>
             </div>
         </div>
     </body>
