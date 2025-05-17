@@ -75,7 +75,7 @@ app.get('/', async (req, res) => {
     try {
         const contributor = req.session.contributor;
         if (!contributor) {
-            return res.render('error', { title: 'Error', detail: "No contributor found in session." });
+            return res.render('error', { title: 'Error', message: "No contributor found in session.", expectations: [] });
         }
 
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
@@ -85,9 +85,9 @@ app.get('/', async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('index', { title: "Home", expectations: result.expectations, searchValue });
+        res.render('index', { title: "Home", message: "", expectations: result.expectations, searchValue });
     } catch (err) {
-        res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
+        res.render('error', { title: 'Error', message: `Page '${req.url}' not found.`, expectations: [] });
     }
 });
 
@@ -118,5 +118,5 @@ app.use('/grouping/api', groupingapiController);
 app.use('/expectation/api', expectationapiController);
 
 app.use((req, res) => {
-    res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });
+    res.render('error', { title: 'Error', message: `Page '${req.url}' not found.` });
 });
