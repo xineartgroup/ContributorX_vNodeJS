@@ -3,7 +3,7 @@ const { makeApiRequest } = require("./_baseController");
 const router = express.Router();
 
 const fetchTotalGroups = async (sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/group/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/groups/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalGroups;
     }else{
@@ -12,7 +12,7 @@ const fetchTotalGroups = async (sessionCookie, session, searchValue) => {
 };
 
 const fetchGroups = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
-    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/groups/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     }else{
@@ -40,7 +40,7 @@ const groupIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('group/index', {
+        res.render('groups/index', {
             title: 'Group List',
             groups,
             currentPage: page,
@@ -59,7 +59,7 @@ const groupCreateGet = async (req, res) => {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-        return res.render('group/create', { title: 'New Group', error: null });
+        return res.render('groups/create', { title: 'New Group', error: null });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -74,10 +74,10 @@ const groupCreatePost = async (req, res) => {
         const { Name, Description } = req.body;
         const CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/group/api/`, req.headers.cookie, { Name, Description, CommunityId });
+        const result = await makeApiRequest('POST', `/groups/api/`, req.headers.cookie, { Name, Description, CommunityId });
 
         if (result.issuccess) {
-            return res.redirect('/group');
+            return res.redirect('/groups');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -92,10 +92,10 @@ const groupUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/groups/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('group/update', { title: 'Update Group', group: result.group });
+            return res.render('groups/update', { title: 'Update Group', group: result.group });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -113,10 +113,10 @@ const groupUpdatePost = async (req, res) => {
         const { Name, Description } = req.body;
         const CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/group/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, CommunityId });
+        const result = await makeApiRequest('POST', `/groups/api/update/${req.params.id}`, req.headers.cookie, { Name, Description, CommunityId });
 
         if (result.issuccess) {
-            return res.redirect('/group');
+            return res.redirect('/groups');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -131,10 +131,10 @@ const groupDeleteGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/group/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/groups/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('group/delete', { title: 'Delete Group', group: result.group });
+            return res.render('groups/delete', { title: 'Delete Group', group: result.group });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -149,10 +149,10 @@ const groupDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('POST', `/group/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/groups/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.redirect('/group');
+            return res.redirect('/groups');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }

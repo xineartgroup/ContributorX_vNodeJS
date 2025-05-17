@@ -16,7 +16,7 @@ const groupIndex = async (req, res) => {
         const totalGroups = await Group.countDocuments();
         const groups = await Group.find().populate('Community').sort({ createdAt: -1 }).skip(skip).limit(limit);
 
-        res.render('group/index', { 
+        res.render('groups/index', { 
             title: 'Group List', 
             groups, 
             currentPage: page,
@@ -37,7 +37,7 @@ const groupCreateGet = async (req, res) => {
           }
     
         const communities = await Community.find();
-        res.render('group/create', { title: 'New Group', communities });
+        res.render('groups/create', { title: 'New Group', communities });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -55,7 +55,7 @@ const groupCreatePost = async (req, res) => {
         const { Name, Description, Community } = req.body;
         const group = new Group({ Name, Description, Community });
         await group.save();
-        res.redirect('/group');
+        res.redirect('/groups');
     } catch (err) {
         console.error("Error saving group:", err);
         res.send("Error saving group.");
@@ -74,7 +74,7 @@ const groupUpdateGet = async (req, res) => {
         const communities = await Community.find();
         if (!group) return res.send('Group not found');
 
-        res.render('group/update', { title: 'Update Group', group, communities });
+        res.render('groups/update', { title: 'Update Group', group, communities });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -96,7 +96,7 @@ const groupUpdatePost = async (req, res) => {
         };
 
         await Group.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.redirect('/group');
+        res.redirect('/groups');
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -114,7 +114,7 @@ const groupDeleteGet = async (req, res) => {
         const group = await Group.findById(req.params.id).populate('Community');
         if (!group) return res.send('Group not found');
 
-        res.render('group/delete', { title: 'Delete Group', group });
+        res.render('groups/delete', { title: 'Delete Group', group });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -130,7 +130,7 @@ const groupDeletePost = async (req, res) => {
           }
     
         await Group.findByIdAndDelete(req.params.id);
-        res.redirect('/group');
+        res.redirect('/groups');
     } catch (err) {
         console.error(err);
         res.send({ error: "Error deleting group" });

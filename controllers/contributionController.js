@@ -4,7 +4,7 @@ const { makeApiRequest } = require('./_baseController');
 const router = express.Router();
 
 const getGroups = async (sessionCookie, session) => {
-    const result = await makeApiRequest('GET', `/group/api?communityid=${session.contributor.CommunityId}&searchValue=*&sortName=Name&sortOrder=ASC`, sessionCookie);
+    const result = await makeApiRequest('GET', `/groups/api?communityid=${session.contributor.CommunityId}&searchValue=*&sortName=Name&sortOrder=ASC`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     } else {

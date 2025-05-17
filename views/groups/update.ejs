@@ -3,26 +3,21 @@
     <%- include('../partials/nav.ejs') %>
 
     <div class="detail-ui content">
-        <h2>New Group</h2>
-        
-        <% if (error) { %>
-            <div class="error-message"><%= error %></div>
-        <% } %>
-
-        <form action="/group" method="POST">
+        <h2>Update Group</h2>
+        <form action="/groups/update/<%= group.Id %>" method="POST">
             <div class="form-group">
                 <label for="Name">Group Name:</label>
-                <input type="text" id="Name" name="Name" required>
+                <input type="text" id="Name" name="Name" value="<%= group.Name %>" required>
             </div>
 
             <div class="form-group">
                 <label for="Description">Description:</label>
-                <textarea id="Description" name="Description" required></textarea>
+                <textarea id="Description" name="Description" required><%= group.Description %></textarea>
             </div>
 
             <div class="form-buttons">
-                <button type="submit">Create</button>
-                <a href="/group" class="cancel-button">Cancel</a>
+                <button type="submit">Update</button>
+                <a href="/groups" class="cancel-button">Cancel</a>
             </div>
         </form>
     </div>

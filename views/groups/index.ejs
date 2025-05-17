@@ -4,7 +4,7 @@
     
     <div class="table-container">
         <h2>Groups</h2>
-        <form action="/group" method="GET">
+        <form action="/groups" method="GET">
             <div class="form-search">
                 <input type="text" id="searchValue" name="searchValue" placeholder = "Search" value="<%= searchValue ? searchValue : '' %>">
                 <button type="submit">
@@ -25,11 +25,11 @@
                 <tbody>
                     <% groups.forEach(group => { %>
                         <tr>
-                            <td><a href="/group/update/<%= group.Id %>"><%= group.Name %></a></td>
+                            <td><a href="/groups/update/<%= group.Id %>"><%= group.Name %></a></td>
                             <td><%= group.Description %></td>
                             <td><%= group.DateCreated.split('T')[0] %></td>
                             <td>
-                                <a class="delete" href="/group/delete/<%= group.Id %>">
+                                <a class="delete" href="/groups/delete/<%= group.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">
                                 </a>
                             </td>
@@ -50,7 +50,7 @@
     <%- include('../partials/pagination') %>
     <div class="row pb-3">
         <div class="col-6 text-end">
-            <a href="/group/create" class="btn">Create Group</a>
+            <a href="/groups/create" class="btn">Create Group</a>
         </div>
     </div>
 </body>

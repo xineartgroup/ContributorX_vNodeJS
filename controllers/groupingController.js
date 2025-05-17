@@ -13,7 +13,7 @@ const getContributors = async (sessionCookie) => {
 };
 
 const getGroups = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/group/api/all', sessionCookie);
+    const result = await makeApiRequest('GET', '/groups/api/all', sessionCookie);
     if (result.issuccess) {
         return result.groups;
     } else {
@@ -22,7 +22,7 @@ const getGroups = async (sessionCookie) => {
 };
 
 const fetchTotalGroups = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/group/api/count/0', sessionCookie);
+    const result = await makeApiRequest('GET', '/groups/api/count/0', sessionCookie);
     if (result.issuccess) {
         return result.totalGroups;
     } else {
@@ -31,7 +31,7 @@ const fetchTotalGroups = async (sessionCookie) => {
 };
 
 const fetchGroups = async (skip, limit, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/group/api?skip=${skip}&limit=${limit}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/groups/api?skip=${skip}&limit=${limit}`, sessionCookie);
     if (result.issuccess) {
         return result.groups;
     } else {
