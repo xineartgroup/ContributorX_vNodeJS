@@ -5,20 +5,25 @@
 
     <div class="detail-ui content">
         <h2><%= title %></h2>
-        <form action="/community/update/<%= community.Id %>" method="POST">
+        
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
+        <form action="/communities" method="POST">
             <div class="form-group">
                 <label for="Name">Community Name:</label>
-                <input type="text" id="Name" name="Name" value="<%= community.Name %>" required>
+                <input type="text" id="Name" name="Name" required>
             </div>
 
             <div class="form-group">
                 <label for="Description">Description:</label>
-                <textarea id="Description" name="Description" required><%= community.Description %></textarea>
+                <textarea id="Description" name="Description" required></textarea>
             </div>
 
             <div class="form-buttons">
-                <button type="submit">Update</button>
-                <a href="/" class="cancel-button">Cancel</a>
+                <button type="submit">Create</button>
+                <a href="/communities" class="cancel-button">Cancel</a>
             </div>
         </form>
     </div>

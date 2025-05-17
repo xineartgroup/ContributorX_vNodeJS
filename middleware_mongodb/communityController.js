@@ -18,7 +18,7 @@ const communityIndex = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        res.render('community/index', { 
+        res.render('communities/index', { 
             title: 'Community List', sessionData,
             communities, 
             currentPage: page,
@@ -37,7 +37,7 @@ const communityCreateGet = async (req, res) => {
         res.redirect('/login');
       }
 
-    res.render('community/create', { title: 'New Community' });
+    res.render('communities/create', { title: 'New Community' });
 };
 
 const communityCreatePost = (req, res) => {
@@ -56,7 +56,7 @@ const communityCreatePost = (req, res) => {
 
     community.save()
         .then(() => {
-            res.redirect('/community');
+            res.redirect('/communities');
         })
         .catch(err => {
             console.error("Error saving community:", err);
@@ -76,7 +76,7 @@ const communityUpdateGet = async (req, res) => {
         if (!community) {
             return res.send('Community not found');
         }
-        res.render('community/update', { title: 'Update Community', community });
+        res.render('communities/update', { title: 'Update Community', community });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -98,7 +98,7 @@ const communityUpdatePost = async (req, res) => {
 
         await Community.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
-        res.redirect('/community');
+        res.redirect('/communities');
     } catch (err) {
         console.error(err);
         res.send('Server Error: ' + err);
@@ -117,7 +117,7 @@ const communityDeleteGet = async (req, res) => {
         if (!community) {
             return res.send('Community not found');
         }
-        res.render('community/delete', { title: 'Delete Community', community });
+        res.render('communities/delete', { title: 'Delete Community', community });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -133,7 +133,7 @@ const communityDeletePost = async (req, res) => {
 
     await Community.findByIdAndDelete(req.params.id)
         .then(() => {
-            res.redirect('/community');
+            res.redirect('/communities');
         })
         .catch((err) => {
             console.error(err);

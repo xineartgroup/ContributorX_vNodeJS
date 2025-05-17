@@ -5,7 +5,7 @@
 
     <div class="table-container">
         <h2>Communities</h2>
-        <form action="/community" method="GET">
+        <form action="/communities" method="GET">
             <div class="form-search">
                 <input type="text" id="searchValue" name="searchValue" placeholder = "Search" value="<%= searchValue ? searchValue : '' %>">
                 <button type="submit">
@@ -27,14 +27,14 @@
                     <% communities.forEach(community => { %>
                         <tr>
                             <td>
-                                <a href="/community/update/<%= community.Id %>">
+                                <a href="/communities/update/<%= community.Id %>">
                                     <%= community.Name %>
                                 </a>
                             </td>
                             <td><%= community.Description %></td>
                             <td><%= community.DateCreated.split('T')[0] %></td>
                             <td>
-                                <a class="delete" href="/community/delete/<%= community.Id %>">
+                                <a class="delete" href="/communities/delete/<%= community.Id %>">
                                     <img src="/images/delete-icon.png" alt="Delete" width="20">
                                 </a>
                             </td>
@@ -67,7 +67,7 @@
     </div>
     <div class="row pb-3">
         <div class="col-6 text-end">
-            <a href="/community/create" class="btn">Create Community</a>
+            <a href="/communities/create" class="btn">Create Community</a>
         </div>
     </div>
 </body>

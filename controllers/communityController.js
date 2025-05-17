@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Community Count (Get)
 const fetchTotalCommunities = async (sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/community/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/communities/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalCommunities;
     } else {
@@ -15,7 +15,7 @@ const fetchTotalCommunities = async (sessionCookie, session, searchValue) => {
 
 // Community List (List)
 const fetchCommunities = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
-    const result = await makeApiRequest('GET', `/community/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/communities/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.communities;
     } else {
@@ -44,7 +44,7 @@ const communityIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('community/index', {
+        res.render('communities/index', {
             title: 'Community List',
             communities,
             currentPage: page,
@@ -64,7 +64,7 @@ const communityCreateGet = (req, res) => {
         if (!req.session?.isLoggedIn) {
             return res.redirect('/login');
         }
-        res.render('community/create', { title: 'New Community' });
+        res.render('communities/create', { title: 'New Community' });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -79,10 +79,10 @@ const communityCreatePost = async (req, res) => {
 
         const { Name, Description } = req.body;
 
-        const result = await makeApiRequest('POST', `/community/api/`, req.headers.cookie, { Name, Description });
+        const result = await makeApiRequest('POST', `/communities/api/`, req.headers.cookie, { Name, Description });
 
         if (result.issuccess) {
-            return res.redirect('/community');
+            return res.redirect('/communities');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -98,10 +98,10 @@ const communityUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/communities/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('community/update', { title: 'Update Community', community: result.community });
+            return res.render('communities/update', { title: 'Update Community', community: result.community });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -119,7 +119,7 @@ const communityUpdatePost = async (req, res) => {
 
         const { Name, Description } = req.body;
 
-        const result = await makeApiRequest('POST', `/community/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
+        const result = await makeApiRequest('POST', `/communities/api/update/${req.params.id}`, req.headers.cookie, { Name, Description });
 
         if (result.issuccess) {
             return res.redirect('/');
@@ -138,10 +138,10 @@ const communityDeleteGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/community/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/communities/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('community/delete', { title: 'Delete Community', community: result.community });
+            return res.render('communities/delete', { title: 'Delete Community', community: result.community });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -157,10 +157,10 @@ const communityDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('POST', `/community/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/communities/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.redirect('/community');
+            return res.redirect('/communities');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }

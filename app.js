@@ -100,7 +100,7 @@ app.get('/users', (req, res) => {
 });
 
 app.use(authController);
-app.use('/community', communityController);
+app.use('/communities', communityController);
 app.use('/contribution', contributionController);
 app.use('/group', groupController);
 app.use('/expense', expenseController);
@@ -109,7 +109,7 @@ app.use('/grouping', groupingController);
 app.use('/expectation', expectationController);
 
 app.use('/auth/api', authapiController);
-app.use('/community/api', communityapiController);
+app.use('/communities/api', communityapiController);
 app.use('/contribution/api', contributionapiController);
 app.use('/group/api', groupapiController);
 app.use('/expense/api', expenseapiController);
