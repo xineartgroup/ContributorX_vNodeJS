@@ -101,7 +101,7 @@ app.get('/users', (req, res) => {
 
 app.use(authController);
 app.use('/communities', communityController);
-app.use('/contribution', contributionController);
+app.use('/contributions', contributionController);
 app.use('/group', groupController);
 app.use('/expense', expenseController);
 app.use('/contributor', contributorController);
@@ -110,7 +110,7 @@ app.use('/expectation', expectationController);
 
 app.use('/auth/api', authapiController);
 app.use('/communities/api', communityapiController);
-app.use('/contribution/api', contributionapiController);
+app.use('/contributions/api', contributionapiController);
 app.use('/group/api', groupapiController);
 app.use('/expense/api', expenseapiController);
 app.use('/contributor/api', contributorapiController);

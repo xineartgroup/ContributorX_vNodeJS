@@ -31,7 +31,7 @@ const createExpectationAsync = async (expectation, sessionCookie) => {
 };
 
 const fetchTotalContributions = async (sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/contribution/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/contributions/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributions;
     }else{
@@ -40,7 +40,7 @@ const fetchTotalContributions = async (sessionCookie, session, searchValue) => {
 }
 
 const fetchContributions = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
-    const result = await makeApiRequest('GET', `/contribution/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/contributions/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.contributions;
     }else{
@@ -49,7 +49,7 @@ const fetchContributions = async (skip, limit, sessionCookie, session, searchVal
 }
 
 const fetchContribution = async (id, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/contribution/api/${id}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/contributions/api/${id}`, sessionCookie);
     if (result.issuccess) {
         return result.contribution;
     }else{
@@ -77,7 +77,7 @@ const contributionIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        res.render('contribution/index', { 
+        res.render('contributions/index', { 
             title: 'Contribution List', 
             contributions,
             currentPage: page,
@@ -98,7 +98,7 @@ const contributionCreateGet = async (req, res) => {
         }
     
         const groups = await getGroups(req.headers.cookie, req.session);
-        res.render('contribution/create', { title: 'New Contribution', groups });
+        res.render('contributions/create', { title: 'New Contribution', groups });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -111,7 +111,7 @@ const contributionCreatePost = async (req, res) => {
         }
         
         const { Name, Amount, GroupId, DueDate } = req.body;
-        const result = await makeApiRequest('POST', `/contribution/api/create`, req.headers.cookie, { Name, Amount, GroupId, DueDate });
+        const result = await makeApiRequest('POST', `/contributions/api/create`, req.headers.cookie, { Name, Amount, GroupId, DueDate });
         
         if (result.issuccess) {
             const groupings = await getGroupingsForGroup(result.contribution.Group, req.headers.cookie);
@@ -127,7 +127,7 @@ const contributionCreatePost = async (req, res) => {
                 await createExpectationAsync(expectation, req.headers.cookie);
             }
             
-            return res.redirect('/contribution');
+            return res.redirect('/contributions');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -145,7 +145,7 @@ const contributionUpdateGet = async (req, res) => {
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
         let groups = await getGroups(req.headers.cookie, req.session);
 
-        return res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
+        return res.render('contributions/update', { title: 'Update Contribution', contribution, groups });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -159,10 +159,10 @@ const contributionUpdatePost = async (req, res) => {
     
         const { Name, Amount, GroupId, DueDate } = req.body;
 
-        const result = await makeApiRequest('POST', `/contribution/api/update/${req.params.id}`, req.headers.cookie, { Id: req.params.id, Name, Amount, GroupId, DueDate });
+        const result = await makeApiRequest('POST', `/contributions/api/update/${req.params.id}`, req.headers.cookie, { Id: req.params.id, Name, Amount, GroupId, DueDate });
 
         if (result.issuccess) {
-            return res.redirect('/contribution');
+            return res.redirect('/contributions');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -180,7 +180,7 @@ const contributionDeleteGet = async (req, res) => {
         let contribution = await fetchContribution(req.params.id, req.headers.cookie);
         let groups = await getGroups(req.headers.cookie, req.session);
 
-        return res.render('contribution/delete', { title: 'Delete Contribution', contribution, groups });
+        return res.render('contributions/delete', { title: 'Delete Contribution', contribution, groups });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -192,10 +192,10 @@ const contributionDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
     
-        const result = await makeApiRequest('POST', `/contribution/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/contributions/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.redirect('/contribution');
+            return res.redirect('/contributions');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }

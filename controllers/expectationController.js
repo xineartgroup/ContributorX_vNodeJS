@@ -14,7 +14,7 @@ const getContributors = async (sessionCookie) => {
 };
 
 const getContributions = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contribution/api/all', sessionCookie);
+    const result = await makeApiRequest('GET', '/contributions/api/all', sessionCookie);
     if (result.issuccess) {
         return result.contributions;
     }else{

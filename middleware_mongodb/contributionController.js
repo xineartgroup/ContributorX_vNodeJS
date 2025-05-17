@@ -18,7 +18,7 @@ const contributionIndex = async (req, res) => {
         const totalContributions = await Contribution.countDocuments();
         const contributions = await Contribution.find().populate('Group').sort({ createdAt: -1 }).skip(skip).limit(limit);
 
-        res.render('contribution/index', { 
+        res.render('contributions/index', { 
             title: 'Contribution List', 
             contributions, 
             currentPage: page,
@@ -39,7 +39,7 @@ const contributionCreateGet = async (req, res) => {
           }
     
         const groups = await Group.find();
-        res.render('contribution/create', { title: 'New Contribution', groups });
+        res.render('contributions/create', { title: 'New Contribution', groups });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -72,7 +72,7 @@ const contributionCreatePost = async (req, res) => {
             await expectation.save();
         }        
 
-        res.redirect('/contribution');
+        res.redirect('/contributions');
     } catch (err) {
         console.error("Error saving contribution:", err);
         res.send("Error saving contribution.");
@@ -91,7 +91,7 @@ const contributionUpdateGet = async (req, res) => {
         const groups = await Group.find();
         if (!contribution) return res.send('Contribution not found');
 
-        res.render('contribution/update', { title: 'Update Contribution', contribution, groups });
+        res.render('contributions/update', { title: 'Update Contribution', contribution, groups });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -114,7 +114,7 @@ const contributionUpdatePost = async (req, res) => {
         };
 
         await Contribution.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.redirect('/contribution');
+        res.redirect('/contributions');
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -132,7 +132,7 @@ const contributionDeleteGet = async (req, res) => {
         const contribution = await Contribution.findById(req.params.id).populate('Group');
         if (!contribution) return res.send('Contribution not found');
 
-        res.render('contribution/delete', { title: 'Delete Contribution', contribution });
+        res.render('contributions/delete', { title: 'Delete Contribution', contribution });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -148,7 +148,7 @@ const contributionDeletePost = async (req, res) => {
           }
     
         await Contribution.findByIdAndDelete(req.params.id);
-        res.redirect('/contribution');
+        res.redirect('/contributions');
     } catch (err) {
         console.error(err);
         res.json({ error: "Error deleting contribution" });
