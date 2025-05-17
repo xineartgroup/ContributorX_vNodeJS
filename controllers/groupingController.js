@@ -48,7 +48,7 @@ const groupingIndex = async (req, res) => {
         const totalGroupings = await fetchTotalGroups(req.headers.cookie);
         const groupings = await fetchGroups(skip, limit, req.headers.cookie);
 
-        return res.render('grouping/index', {
+        return res.render('groupings/index', {
             title: 'Grouping List',
             groupings,
             currentPage: page,
@@ -64,7 +64,7 @@ const groupingCreateGet = async (req, res) => {
         const contributors = await getContributors(req.headers.cookie);
         const groups = await getGroups(req.headers.cookie);
 
-        return res.render('grouping/create', { title: 'New Grouping', contributors, groups });
+        return res.render('groupings/create', { title: 'New Grouping', contributors, groups });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -74,10 +74,10 @@ const groupingCreatePost = async (req, res) => {
     try {
         const { ContributorId, GroupId } = req.body;
 
-        const result = await makeApiRequest('POST', `/grouping/api/`, req.headers.cookie, { ContributorId, GroupId });
+        const result = await makeApiRequest('POST', `/groupings/api/`, req.headers.cookie, { ContributorId, GroupId });
 
         if (result.issuccess) {
-            return res.redirect('/grouping');
+            return res.redirect('/groupings');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -88,13 +88,13 @@ const groupingCreatePost = async (req, res) => {
 
 const groupingUpdateGet = async (req, res) => {
     try {
-        const result = await makeApiRequest('GET', `/grouping/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/groupings/api/${req.params.id}`, req.headers.cookie);
 
         const contributors = await getContributors(req.headers.cookie);
         const groups = await getGroups(req.headers.cookie);
 
         if (result.issuccess){
-            return res.render('grouping/update', { title: 'Update Grouping', grouping, contributors, groups });
+            return res.render('groupings/update', { title: 'Update Grouping', grouping, contributors, groups });
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -112,7 +112,7 @@ const groupingUpdatePost = async (req, res) => {
         });
         
         if (result.issuccess) {
-            return res.redirect('/grouping');
+            return res.redirect('/groupings');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -123,10 +123,10 @@ const groupingUpdatePost = async (req, res) => {
 
 const groupingDeleteGet = async (req, res) => {
     try {
-        const result = await makeApiRequest('GET', `/grouping/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/groupings/api/${req.params.id}`, req.headers.cookie);
 
         if (result.expense) {
-            return res.render('grouping/delete', { title: 'Delete Grouping', grouping });
+            return res.render('groupings/delete', { title: 'Delete Grouping', grouping });
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -137,10 +137,10 @@ const groupingDeleteGet = async (req, res) => {
 
 const groupingDeletePost = async (req, res) => {
     try {
-        const result = await makeApiRequest('POST', `/grouping/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/groupings/api/delete/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            res.redirect('/grouping');
+            res.redirect('/groupings');
         } else {
             return res.render('error', { title: 'Error', detail: result.message });
         }

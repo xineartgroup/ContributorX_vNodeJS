@@ -16,7 +16,7 @@ const groupingIndex = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        res.render('grouping/index', { 
+        res.render('groupings/index', { 
             title: 'Grouping List', 
             groupings, 
             currentPage: page,
@@ -32,7 +32,7 @@ const groupingCreateGet = async (req, res) => {
     try {
         const contributors = await Contributor.find();
         const groups = await Group.find();
-        res.render('grouping/create', { title: 'New Grouping', contributors, groups });
+        res.render('groupings/create', { title: 'New Grouping', contributors, groups });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -44,7 +44,7 @@ const groupingCreatePost = async (req, res) => {
         const { Contributor, Group } = req.body;
         const grouping = new Grouping({ Contributor, Group });
         await grouping.save();
-        res.redirect('/grouping');
+        res.redirect('/groupings');
     } catch (err) {
         console.error("Error saving grouping:", err);
         res.send("Error saving grouping.");
@@ -58,7 +58,7 @@ const groupingUpdateGet = async (req, res) => {
         const groups = await Group.find();
         if (!grouping) return res.send('Grouping not found');
 
-        res.render('grouping/update', { title: 'Update Grouping', grouping, contributors, groups });
+        res.render('groupings/update', { title: 'Update Grouping', grouping, contributors, groups });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -73,7 +73,7 @@ const groupingUpdatePost = async (req, res) => {
         };
 
         await Grouping.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.redirect('/grouping');
+        res.redirect('/groupings');
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -85,7 +85,7 @@ const groupingDeleteGet = async (req, res) => {
         const grouping = await Grouping.findById(req.params.id).populate('Contributor').populate('Group');
         if (!grouping) return res.send('Grouping not found');
 
-        res.render('grouping/delete', { title: 'Delete Grouping', grouping });
+        res.render('groupings/delete', { title: 'Delete Grouping', grouping });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -95,7 +95,7 @@ const groupingDeleteGet = async (req, res) => {
 const groupingDeletePost = async (req, res) => {
     try {
         await Grouping.findByIdAndDelete(req.params.id);
-        res.redirect('/grouping');
+        res.redirect('/groupings');
     } catch (err) {
         console.error(err);
         res.send({ error: "Error deleting grouping" });

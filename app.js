@@ -106,7 +106,7 @@ app.use('/contributors', contributorController);
 app.use('/expectations', expectationController);
 app.use('/expenses', expenseController);
 app.use('/groups', groupController);
-app.use('/grouping', groupingController);
+app.use('/groupings', groupingController);
 
 app.use('/auth/api', authapiController);
 app.use('/communities/api', communityapiController);
@@ -115,7 +115,7 @@ app.use('/contributors/api', contributorapiController);
 app.use('/expectations/api', expectationapiController);
 app.use('/expenses/api', expenseapiController);
 app.use('/groups/api', groupapiController);
-app.use('/grouping/api', groupingapiController);
+app.use('/groupings/api', groupingapiController);
 
 app.use((req, res) => {
     res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });

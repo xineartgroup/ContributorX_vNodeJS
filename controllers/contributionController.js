@@ -13,7 +13,7 @@ const getGroups = async (sessionCookie, session) => {
 };
 
 const getGroupingsForGroup = async (groupId, sessionCookie) => {
-    const result = await makeApiRequest('GET', `/grouping/api/bygroup/${groupId}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/groupings/api/bygroup/${groupId}`, sessionCookie);
     if (result.issuccess) {
         return result.groupings;
     } else {
