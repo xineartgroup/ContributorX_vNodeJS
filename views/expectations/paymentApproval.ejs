@@ -6,7 +6,7 @@
     <div class="detail-ui content">
         <h2>Approve Payment</h2>
 
-        <form action="/expectation/approve" method="POST">
+        <form action="/expectations/approve" method="POST">
             <input type="hidden" name="Id" value="<%= expectation.Id %>">
             <input type="hidden" name="ContributionId" value="<%= expectation.ContributionId %>">
             <input type="hidden" name="ContributorId" value="<%= expectation.ContributorId %>">
@@ -43,9 +43,9 @@
             </div>
 
             <div class="form-buttons">
-                <a href="/expectation/paymentapprove/<%= expectation.Id %>" class="btn">Approve</a>
-                <a href="/expectation/paymentreject/<%= expectation.Id %>" class="btn-danger">Reject</a>
-                <a href="/expectation" class="btn-cancel">Cancel</a>
+                <a href="/expectations/paymentapprove/<%= expectation.Id %>" class="btn">Approve</a>
+                <a href="/expectations/paymentreject/<%= expectation.Id %>" class="btn-danger">Reject</a>
+                <a href="/expectations" class="btn-cancel">Cancel</a>
             </div>
         </form>
     </div>

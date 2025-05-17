@@ -80,7 +80,7 @@ app.get('/', async (req, res) => {
 
         let searchValue = req.query.searchValue != null && req.query.searchValue != '' ? encodeURIComponent(req.query.searchValue) : "*";
 
-        const result = await makeApiRequest('GET', `/expectation/api/getbycontributor/${contributor.Id}/${searchValue}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/expectations/api/getbycontributor/${contributor.Id}/${searchValue}`, req.headers.cookie);
 
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
@@ -103,19 +103,19 @@ app.use(authController);
 app.use('/communities', communityController);
 app.use('/contributions', contributionController);
 app.use('/contributors', contributorController);
-app.use('/groups', groupController);
+app.use('/expectations', expectationController);
 app.use('/expenses', expenseController);
+app.use('/groups', groupController);
 app.use('/grouping', groupingController);
-app.use('/expectation', expectationController);
 
 app.use('/auth/api', authapiController);
 app.use('/communities/api', communityapiController);
 app.use('/contributions/api', contributionapiController);
 app.use('/contributors/api', contributorapiController);
-app.use('/groups/api', groupapiController);
+app.use('/expectations/api', expectationapiController);
 app.use('/expenses/api', expenseapiController);
+app.use('/groups/api', groupapiController);
 app.use('/grouping/api', groupingapiController);
-app.use('/expectation/api', expectationapiController);
 
 app.use((req, res) => {
     res.render('error', { title: 'Error', detail: `Page '${req.url}' not found.` });

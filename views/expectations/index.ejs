@@ -3,7 +3,7 @@
     <%- include('../partials/nav.ejs') %>
     <div class="table-container">
         <h2>Expectations</h2>
-        <form action="/expectation" method="GET">
+        <form action="/expectations" method="GET">
             <div class="form-search">
                 <input type="text" id="searchValue" name="searchValue" placeholder = "Search" value="<%= searchValue ? searchValue : '' %>">
                 <button type="submit">
@@ -31,7 +31,7 @@
                                 <td><%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></td>
                                 <td>
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
-                                        <a href="/expectation/rollback/<%= item.Id %>" class="table-button danger">
+                                        <a href="/expectations/rollback/<%= item.Id %>" class="table-button danger">
                                             Rollback <%= item.AmountPaid.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
@@ -42,11 +42,11 @@
                                     <% if (item.PaymentStatus === 2 || item.PaymentStatus === 3) { %>
                                         <label><%= (0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %></label>
                                     <% } else if (item.PaymentStatus === 1) { %>
-                                        <a href="/expectation/paymentApproval/<%= item.Id %>" class="table-button">
+                                        <a href="/expectations/paymentApproval/<%= item.Id %>" class="table-button">
                                             Approve/Reject <%= item.AmountToApprove.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } else { %>
-                                        <a href="/expectation/paymentwriteoff/<%= item.Id %>" class="table-button">
+                                        <a href="/expectations/paymentwriteoff/<%= item.Id %>" class="table-button">
                                             Write-off <%= (item.Contribution.Amount - item.AmountPaid).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) %>
                                         </a>
                                     <% } %>

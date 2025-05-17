@@ -22,7 +22,7 @@ const getGroupingsForGroup = async (groupId, sessionCookie) => {
 };
 
 const createExpectationAsync = async (expectation, sessionCookie) => {
-    const result = await makeApiRequest('POST', `/expectation/api/`, sessionCookie, expectation);
+    const result = await makeApiRequest('POST', `/expectations/api/`, sessionCookie, expectation);
     if (result.issuccess) {
         return result.expectation;
     } else {

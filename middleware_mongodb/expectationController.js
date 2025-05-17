@@ -18,7 +18,7 @@ const expectationIndex = async (req, res) => {
         const totalExpectations = await Expectation.countDocuments();
         const expectations = await Expectation.find().populate('Contributor Contribution').sort({ createdAt: -1 }).skip(skip).limit(limit);
 
-        res.render('expectation/index', {
+        res.render('expectations/index', {
             title: 'Expectation List',
             expectations,
             currentPage: page,
@@ -39,7 +39,7 @@ const expectationCreateGet = async (req, res) => {
 
         const contributors = await Contributor.find();
         const contributions = await Contribution.find();
-        res.render('expectation/create', { title: 'New Expectation', contributors, contributions });
+        res.render('expectations/create', { title: 'New Expectation', contributors, contributions });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -64,7 +64,7 @@ const expectationCreatePost = async (req, res) => {
         });
 
         await expectation.save();
-        res.redirect('/expectation');
+        res.redirect('/expectations');
     } catch (err) {
         console.error("Error saving expectation:", err);
         res.send("Error saving expectation.");
@@ -83,7 +83,7 @@ const expectationUpdateGet = async (req, res) => {
         const contributions = await Contribution.find();
         if (!expectation) return res.send('Expectation not found');
 
-        res.render('expectation/update', { title: 'Update Expectation', expectation, contributors, contributions });
+        res.render('expectations/update', { title: 'Update Expectation', expectation, contributors, contributions });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -107,7 +107,7 @@ const expectationUpdatePost = async (req, res) => {
         };
 
         await Expectation.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.redirect('/expectation');
+        res.redirect('/expectations');
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -124,7 +124,7 @@ const expectationDeleteGet = async (req, res) => {
         const expectation = await Expectation.findById(req.params.id).populate('Contributor Contribution');
         if (!expectation) return res.send('Expectation not found');
 
-        res.render('expectation/delete', { title: 'Delete Expectation', expectation });
+        res.render('expectations/delete', { title: 'Delete Expectation', expectation });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -139,7 +139,7 @@ const expectationDeletePost = async (req, res) => {
         }
 
         await Expectation.findByIdAndDelete(req.params.id);
-        res.redirect('/expectation');
+        res.redirect('/expectations');
     } catch (err) {
         console.error(err);
         res.json({ error: 'Error deleting expectation' });
@@ -157,7 +157,7 @@ const expectationPaymentGet = async (req, res) => {
         const expectation = await Expectation.findById(req.params.id).populate('Contributor Contribution');
         if (!expectation) return res.send("Expectation not found");
 
-        res.render('expectation/makePayment', { title: 'Update Expectation', expectation });
+        res.render('expectations/makePayment', { title: 'Update Expectation', expectation });
     } catch (err) {
         console.error("Error fetching expectation:", err);
         res.send("Server error");
@@ -201,7 +201,7 @@ const paymentApproval = async (req, res) => {
             expectation.Contribution = await Contribution.findById(expectation.Contribution._id);
             expectation.Contributor = await Contributor.findById(expectation.Contributor._id);
             console.log("Expectation: ", expectation);
-            res.render("expectation/paymentApproval", { title: "Approve Payment", expectation });
+            res.render("expectations/paymentApproval", { title: "Approve Payment", expectation });
         } else {
             console.error("Error: Expectation not found");
         }
@@ -227,7 +227,7 @@ const paymentApprove = async (req, res) => {
             expectation.PaymentStatus = expectation.Contribution.Amount - expectation.AmountPaid === 0 ? 3 : 2; //"Cleared" : "Approved"
             await expectation.save();
 
-            return res.redirect("/expectation");
+            return res.redirect("/expectations");
         } else {
             console.error("Error: Expectation not found");
         }
@@ -251,7 +251,7 @@ const paymentReject = async (req, res) => {
             expectation.PaymentStatus = 0; //"New"
             await expectation.save();
 
-            return res.redirect("/expectation");
+            return res.redirect("/expectations");
         } else {
             console.error("Error: Expectation not found");
         }
@@ -278,7 +278,7 @@ const paymentWriteOff = async (req, res) => {
             await expectation.save();
 
             req.flash("message", "Success");
-            return res.redirect("/expectation");
+            return res.redirect("/expectations");
         } else {
             console.error("Error: Expectation not found");
         }

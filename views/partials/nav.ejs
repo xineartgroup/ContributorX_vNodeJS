@@ -11,7 +11,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="/contributors/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Update Profile</a></li>
                         <li><a href="/contributors/changepassword">Change Password</a></li>
-                        <li><a href="/expectation/paymentReport">My Payment Report</a></li>
+                        <li><a href="/expectations/paymentReport">My Payment Report</a></li>
                     </ul>
                 </li>
                 <% if (session.contributor && session.contributor.Role == "Administrator") { %>
@@ -23,8 +23,8 @@
                         <li><a href="/contributors">Contributors</a></li>
                         <li><a href="/contributions">Contributions</a></li>
                         <li><a href="/expenses">Expenses</a></li>
-                        <li><a href="/expectation">Expectations</a></li>
-                        <li><a href="/expectation/paymentReportAll">Payment Report</a></li>
+                        <li><a href="/expectations">Expectations</a></li>
+                        <li><a href="/expectations/paymentReportAll">Payment Report</a></li>
                     </ul>
                 </li>
                 <% } %>
