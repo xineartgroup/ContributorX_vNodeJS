@@ -6,7 +6,7 @@
 
     <div class="detail-ui content">
         <h2>Update Contributor</h2>
-        <form action="/contributor/update/<%= contributor.Id %>" method="POST" enctype="multipart/form-data">
+        <form action="/contributors/update/<%= contributor.Id %>" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="UserName">Username:</label>
                 <input type="text" id="UserName" name="UserName" value="<%= contributor.UserName %>" disabled>
@@ -49,9 +49,9 @@
 
             <div class="form-group">
                 <label for="IsActive">Status:</label>
-                <select id="IsActive" name="IsActive" disabled>
-                    <option value="true" <%= contributor.IsActive ? 'selected' : '' %>>Yes</option>
-                    <option value="false" <%= !contributor.IsActive ? 'selected' : '' %>>No</option>
+                <select id="IsActive" name="IsActive" value="<%= contributor.IsActive ? true : false %>" disabled>
+                    <option value="true" <%= contributor.IsActive ? 'selected' : '' %>>Active</option>
+                    <option value="false" <%= !contributor.IsActive ? 'selected' : '' %>>Inactive</option>
                 </select>
             </div>
 

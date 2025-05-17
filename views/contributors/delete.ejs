@@ -5,7 +5,7 @@
 
     <div class="detail-ui content">
         <h2><%= title %></h2>
-        <form action="/contributor/delete/<%= contributor.Id %>" method="POST">
+        <form action="/contributors/delete/<%= contributor.Id %>" method="POST">
             <div class="form-single">
                 <p>Are you sure you want to delete the contributor "<strong><%= contributor.UserName %></strong>"?</p>
             </div>
@@ -15,7 +15,7 @@
 
             <div class="form-buttons">
                 <button type="submit" class="btn-danger">Delete</button>
-                <a href="/contributor" class="cancel-button">Cancel</a>
+                <a href="/contributors" class="cancel-button">Cancel</a>
             </div>
         </form>
     </div>

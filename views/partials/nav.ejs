@@ -9,8 +9,8 @@
                 <li class="dropdown">
                     <a href="#">User ▼</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/contributor/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Update Profile</a></li>
-                        <li><a href="/contributor/changepassword">Change Password</a></li>
+                        <li><a href="/contributors/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Update Profile</a></li>
+                        <li><a href="/contributors/changepassword">Change Password</a></li>
                         <li><a href="/expectation/paymentReport">My Payment Report</a></li>
                     </ul>
                 </li>
@@ -20,7 +20,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="/communities/update/<%= (session.contributor) ? session.contributor.Id : '0' %>">Community</a></li>
                         <li><a href="/groups">Groups</a></li>
-                        <li><a href="/contributor">Contributors</a></li>
+                        <li><a href="/contributors">Contributors</a></li>
                         <li><a href="/contributions">Contributions</a></li>
                         <li><a href="/expenses">Expenses</a></li>
                         <li><a href="/expectation">Expectations</a></li>

@@ -237,16 +237,18 @@ router.post("/update/:id", async (req, res) => {
             contributor.Email = Email;
             contributor.PhoneNumber = PhoneNumber;
             contributor.CommunityId = CommunityId;
-            contributor.IsActive = IsActive;
+            if (IsActive) {
+                contributor.IsActive = IsActive;
+            }
 
             await pool.request()
-                .input('FirstName', FirstName)
-                .input('LastName', LastName)
-                .input('Email', Email)
-                .input('PhoneNumber', PhoneNumber)
-                .input('CommunityId', CommunityId)
-                .input('IsActive', IsActive)
-                .input('id', id)
+                .input('FirstName', contributor.FirstName)
+                .input('LastName', contributor.LastName)
+                .input('Email', contributor.Email)
+                .input('PhoneNumber', contributor.PhoneNumber)
+                .input('CommunityId', contributor.CommunityId)
+                .input('IsActive', contributor.IsActive)
+                .input('id', contributor.Id)
                 .query(`UPDATE Contributors SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, IsActive = @IsActive, CommunityId = @CommunityId WHERE ID = @id`);
 
             res.json({ issuccess: true, message: "", contributor });

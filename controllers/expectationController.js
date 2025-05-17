@@ -5,7 +5,7 @@ const upload = require('./upload');
 const router = express.Router();
 
 const getContributors = async (sessionCookie) => {
-    const result = await makeApiRequest('GET', '/contributor/api/all', sessionCookie);
+    const result = await makeApiRequest('GET', '/contributors/api/all', sessionCookie);
     if (result.issuccess) {
         return result.contributors;
     }else{

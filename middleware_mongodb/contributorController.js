@@ -23,7 +23,7 @@ const contributorIndex = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        res.render('contributor/index', { 
+        res.render('contributors/index', { 
             title: 'Contributor List', 
             contributors, 
             currentPage: page,
@@ -63,7 +63,7 @@ const contributorDetailGet = async (req, res) => {
                     })
                 );
                 console.log("groupings: ", groupings);
-                res.render('contributor/detail', { title: 'Contributor Detail', contributor, groups, groupings, expectations, groupHtml });
+                res.render('contributors/detail', { title: 'Contributor Detail', contributor, groups, groupings, expectations, groupHtml });
             }
         } else {
             return res.send('Contributor not found');
@@ -97,7 +97,7 @@ const contributorDetailPost = async (req, res) => {
 
         await Contributor.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
-        res.redirect('/contributor'); // Redirect to list after updating
+        res.redirect('/contributors'); // Redirect to list after updating
     } catch (err) {
         console.error(err);
         res.send('Server Error: ' + err);
@@ -117,7 +117,7 @@ const contributorUpdateGet = async (req, res) => {
         if (!contributor) {
             return res.send('Contributor not found');
         }
-        res.render('contributor/update', { title: 'Update Contributor', contributor, communities });
+        res.render('contributors/update', { title: 'Update Contributor', contributor, communities });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -147,7 +147,7 @@ const contributorUpdatePost = async (req, res) => {
 
         await Contributor.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
-        res.redirect('/contributor'); // Redirect to list after updating
+        res.redirect('/contributors'); // Redirect to list after updating
     } catch (err) {
         console.error(err);
         res.send('Server Error: ' + err);
@@ -212,7 +212,7 @@ const contributorCreateGet = async (req, res) => {
 
         const communities = await Community.find();
 
-        res.render('contributor/create', { title: 'New Contributor', communities });
+        res.render('contributors/create', { title: 'New Contributor', communities });
     } catch(err) {
         console.error(err);
         res.send("Server Error.");
@@ -260,7 +260,7 @@ const contributorDeleteGet = async (req, res) => {
         if (!contributor) {
             return res.send('Contributor not found');
         }
-        res.render('contributor/delete', { title: 'Delete Contributor', contributor });
+        res.render('contributors/delete', { title: 'Delete Contributor', contributor });
     } catch (err) {
         console.error(err);
         res.send('Server Error');
@@ -277,7 +277,7 @@ const contributorDeletePost = async (req, res) => {
 
         await Contributor.findByIdAndDelete(req.params.id)
             .then((result) => {
-                res.redirect('/contributor'); // Redirect to the list page
+                res.redirect('/contributors'); // Redirect to the list page
             })
             .catch((err) => {
                 console.error(err);

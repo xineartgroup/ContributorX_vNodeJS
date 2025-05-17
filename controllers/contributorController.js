@@ -4,7 +4,7 @@ const upload = require('./upload');
 const router = express.Router();
 
 const fetchTotalContributors = async (sessionCookie, session, searchValue) => {
-    const result = await makeApiRequest('GET', `/contributor/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/contributors/api/count/${session.contributor.CommunityId}/${searchValue}`, sessionCookie);
     if (result.issuccess) {
         return result.totalContributors;
     } else {
@@ -13,7 +13,7 @@ const fetchTotalContributors = async (sessionCookie, session, searchValue) => {
 };
 
 const fetchContributors = async (skip, limit, sessionCookie, session, searchValue, sortName, sortOrder) => {
-    const result = await makeApiRequest('GET', `/contributor/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
+    const result = await makeApiRequest('GET', `/contributors/api?communityid=${session.contributor.CommunityId}&skip=${skip}&limit=${limit}&searchValue=${searchValue}&sortName=${sortName}&sortOrder=${sortOrder}`, sessionCookie);
     if (result.issuccess) {
         return result.contributors;
     } else {
@@ -41,7 +41,7 @@ const contributorIndex = async (req, res) => {
         searchValue = decodeURIComponent(searchValue);
         if (searchValue == "*") searchValue = "";
 
-        return res.render('contributor/index', {
+        return res.render('contributors/index', {
             title: 'Contributor List',
             contributors,
             currentPage: page,
@@ -61,10 +61,10 @@ const contributorDetailGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/contributors/api/${req.params.id}`, req.headers.cookie);
 
         if (result.issuccess) {
-            return res.render('contributor/detail', { title: 'Contributor Detail', contributor: result.contributor, groups: result.groups, groupings: result.groupings, expectations: result.expectations });
+            return res.render('contributors/detail', { title: 'Contributor Detail', contributor: result.contributor, groups: result.groups, groupings: result.groupings, expectations: result.expectations });
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -79,10 +79,10 @@ const contributorDetailPost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('POST', `/contributor/api/${req.params.id}`, req.headers.cookie, req.body);
+        const result = await makeApiRequest('POST', `/contributors/api/${req.params.id}`, req.headers.cookie, req.body);
 
         if (result.issuccess) {
-            return res.redirect('/contributor');
+            return res.redirect('/contributors');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -97,7 +97,7 @@ const contributorCreateGet = async (req, res) => {
             return res.redirect('/login');
         }
         
-        return res.render('contributor/create', { title: 'New Contributor' });
+        return res.render('contributors/create', { title: 'New Contributor' });
     } catch (error) {
         return res.render('error', { title: 'Error', detail: error });
     }
@@ -112,10 +112,10 @@ const contributorCreatePost = async (req, res) => {
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
         CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', '/contributor/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
+        const result = await makeApiRequest('POST', '/contributors/api', req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
         
         if (result.issuccess) {
-            return res.redirect('/contributor');
+            return res.redirect('/contributors');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -130,10 +130,10 @@ const contributorUpdateGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/contributors/api/${req.params.id}`, req.headers.cookie);
         
         if (result.issuccess) {
-            return res.render('contributor/update', { title: 'Update Contributor', contributor: result.contributor });
+            return res.render('contributors/update', { title: 'Update Contributor', contributor: result.contributor });
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -151,7 +151,7 @@ const contributorUpdatePost = async (req, res) => {
         const { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, IsActive } = req.body;
         CommunityId = req.session.contributor.CommunityId;
 
-        const result = await makeApiRequest('POST', `/contributor/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
+        const result = await makeApiRequest('POST', `/contributors/api/update/${req.params.id}`, req.headers.cookie, { UserName, Password, FirstName, LastName, Email, Role, PhoneNumber, CommunityId, IsActive });
         
         if (result.issuccess) {
             return res.redirect('/');
@@ -169,10 +169,10 @@ const contributorDeleteGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('GET', `/contributor/api/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('GET', `/contributors/api/${req.params.id}`, req.headers.cookie);
         
         if (result.issuccess) {
-            return res.render('contributor/delete', { title: 'Delete Contributor', contributor: result.contributor });
+            return res.render('contributors/delete', { title: 'Delete Contributor', contributor: result.contributor });
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -187,10 +187,10 @@ const contributorDeletePost = async (req, res) => {
             return res.redirect('/login');
         }
 
-        const result = await makeApiRequest('POST', `/contributor/api/delete/${req.params.id}`, req.headers.cookie);
+        const result = await makeApiRequest('POST', `/contributors/api/delete/${req.params.id}`, req.headers.cookie);
         
         if (result.issuccess) {
-            return res.redirect('/contributor');
+            return res.redirect('/contributors');
         }else{
             return res.render('error', { title: 'Error', detail: result.message });
         }
@@ -205,9 +205,9 @@ const changePasswordGet = async (req, res) => {
             return res.redirect('/login');
         }
 
-        res.render('contributor/changepassword', { title: 'Change Password' });
+        res.render('contributors/changepassword', { title: 'Change Password' });
     } catch (error) {
-        return res.render("contributor/changepassword", { title: 'Change Password', error: "Login error: " + error });
+        return res.render("contributors/changepassword", { title: 'Change Password', error: "Login error: " + error });
     }
 };
 
@@ -219,16 +219,16 @@ const changePasswordPost = async (req, res) => {
 
         const { PasswordOld, PasswordNew, PasswordConfirm } = req.body;
 
-        const result = await makeApiRequest('POST', `/contributor/api/changepassword/${req.session.contributor.Id}`, req.headers.cookie, { PasswordOld, PasswordNew, PasswordConfirm });
+        const result = await makeApiRequest('POST', `/contributors/api/changepassword/${req.session.contributor.Id}`, req.headers.cookie, { PasswordOld, PasswordNew, PasswordConfirm });
 
         if (result.issuccess) {
             res.redirect("/");
         } else {
             console.log("error: ", result.message);
-            return res.render("contributor/changepassword", { title: 'Change Password', error: result.message });
+            return res.render("contributors/changepassword", { title: 'Change Password', error: result.message });
         }
     } catch (error) {
-        return res.render("contributor/changepassword", { title: 'Change Password', error: "Login error: " + error });
+        return res.render("contributors/changepassword", { title: 'Change Password', error: "Login error: " + error });
     }
 };
 
